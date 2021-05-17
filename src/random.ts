@@ -1,7 +1,7 @@
 import { User } from "./resolvers/user"
 
-export function randomInt(max: number, min = 0, skew = 1) {
-    return min + Math.floor(max*Math.pow(Math.random(), skew))
+export function randomInt(range: number, min = 0, skew = 1) {
+    return min + Math.floor(range*Math.pow(Math.random(), skew))
 }
 
 export function pick<T>(things: T[]): T {
@@ -25,6 +25,10 @@ const names = [
     undefined,
 ]
 
+export function randomArray<T>(count: number, initializer: () => T): T[] {
+    return new Array(count).fill(undefined).map(initializer)
+}
+
 export function randomUser() {
     return new User(
         pick(adjectives),
@@ -33,7 +37,5 @@ export function randomUser() {
 }
 
 export function randomUsers(count: number) {
-    return new Array(count).fill(undefined).map(
-        () => randomUser()
-    )
+    return randomArray(count, randomUser)
 }
