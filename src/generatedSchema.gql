@@ -15,6 +15,7 @@ directive @requires(fields: String!) on FIELD_DEFINITION
 
 type Answer {
   answer: String
+  date: Timestamp!
   score: Float
 }
 

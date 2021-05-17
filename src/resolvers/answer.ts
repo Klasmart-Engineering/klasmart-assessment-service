@@ -8,7 +8,7 @@ export class Answer {
   @Field({nullable: true})
   public score?: number
 
-  @Field()
+  @Field(type => Date)
   public date = Date.now()
 
   constructor(
