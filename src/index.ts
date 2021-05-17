@@ -3,6 +3,7 @@ import express from 'express'
 import { createApolloServer } from './createApolloServer'
 import 'reflect-metadata'
 import { buildFederatedSchema } from './buildFederatedSchema'
+import compression = require('compression')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
@@ -17,6 +18,7 @@ async function main() {
   const server = createApolloServer(schema)
 
   const app = express()
+  app.use(compression())
   server.applyMiddleware({
     app,
     path: routePrefix,
