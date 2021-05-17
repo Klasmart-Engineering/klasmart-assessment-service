@@ -23,6 +23,10 @@ type ContentScores {
   scores: [UserContentScore!]!
 }
 
+type Mutation {
+  setScore(content_id: String!, score: Float!, student_id: String!): TeacherScore!
+}
+
 type Query {
   Room(room_id: String): Room!
   ready: Boolean!
