@@ -10,7 +10,7 @@ import {
   } from 'type-graphql'
 import { Service } from 'typedi'
   import { v4 } from 'uuid'
-import { randomInt, pick, randomUsers, randomContents } from '../random'
+import { randomInt, pick, randomUsers, randomContents, randomAnswer } from '../random'
 import { Content } from './material'
 import { Score } from './score'
 import { ContentScores } from './scoresByContent'
@@ -60,10 +60,8 @@ export class Room {
       for(const content of contents) {
         const score = new Score()
         const count = randomInt(10,0,2)
-        const {minimumPossibleScore, maximumPossibleScore} = content
-        const range = maximumPossibleScore - minimumPossibleScore
         for(let i = 0; i < count; i++) {
-          score.addScore(randomInt(range, minimumPossibleScore, 2))
+          score.addAnswer(randomAnswer(content))
         }
         const userContentScores = new UserContentScore(user, content, score)
         this.scores.push(userContentScores)

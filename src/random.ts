@@ -1,3 +1,4 @@
+import { Answer } from "./resolvers/answer"
 import { Content } from "./resolvers/material"
 import { User } from "./resolvers/user"
 
@@ -69,4 +70,22 @@ export function randomContent() {
 
 export function randomContents(count: number) {
     return randomArray(count, randomContent)
+}
+
+
+
+const answers = [
+    'yes',
+    'no',
+    'maybe',
+    'number',
+]
+
+export function randomAnswer({maximumPossibleScore, minimumPossibleScore}: Content) {
+    const range = maximumPossibleScore - minimumPossibleScore
+    const answer = pick(answers)
+    return new Answer(
+        answer==='number' ? randomInt(100).toString() : answer,
+        randomInt(range, minimumPossibleScore),
+    )
 }

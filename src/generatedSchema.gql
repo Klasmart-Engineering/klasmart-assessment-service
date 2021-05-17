@@ -13,6 +13,11 @@ directive @provides(fields: String!) on FIELD_DEFINITION
 
 directive @requires(fields: String!) on FIELD_DEFINITION
 
+type Answer {
+  answer: String
+  score: Float
+}
+
 type Content {
   content_id: String!
   name: String!
@@ -41,12 +46,13 @@ type Room {
 }
 
 type Score {
-  frequency: Float!
+  answers: [Answer!]!
   max: Float
   mean: Float
   median: Float
   medians: [Float!]
   min: Float
+  scoreFrequency: Float!
   scores: [Int!]!
   sum: Float!
 }

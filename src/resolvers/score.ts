@@ -1,4 +1,5 @@
 import { ObjectType, Field, Float, Int } from "type-graphql"
+import { Answer } from "./answer"
 
 @ObjectType()
 export class Score {
@@ -12,16 +13,19 @@ export class Score {
   public sum: number = 0
 
   @Field()
-  public frequency: number = 0
+  public scoreFrequency: number = 0
 
   @Field(type => Float, {nullable: true})
   public mean() {
-    if(!this.frequency) { return }
-    return this.sum / this.frequency
+    if(!this.scoreFrequency) { return }
+    return this.sum / this.scoreFrequency
   }
 
   @Field(type => [Int])
   public scores: number[] = []
+
+  @Field(type => [Answer])
+  public answers: Answer[] = []
 
   @Field(type => Float, {nullable: true})
   public median() {
@@ -44,19 +48,23 @@ export class Score {
     }
   }
 
-  constructor(score?: number) {
-      if(score) { this.addScore(score) }
+  constructor(answer?: Answer) {
+      if(answer) { this.addAnswer(answer) }
   }
 
-  public addScore(score: number) {
-    if(this.min === undefined || score < this.min) {
-      this.min = score
+  public addAnswer(answer: Answer) {
+    const {score} = answer
+    if(score) {
+      if(this.min === undefined || score < this.min) {
+        this.min = score
+      }
+      if(this.max === undefined || score > this.max) {
+        this.max = score
+      }
+      this.sum += score
+      this.scoreFrequency += 1
+      this.scores.push(score)
     }
-    if(this.max === undefined || score > this.max) {
-      this.max = score
-    }
-    this.scores.push(score)
-    this.sum += score
-    this.frequency += 1
+    this.answers.push(answer)
   }
 }
