@@ -67,6 +67,8 @@ type User {
 
 type UserContentScore {
   content: Content!
+  maximumPossibleScore: Float!
+  minimumPossibleScore: Float!
   score: Score!
   teacherScores: [TeacherScore!]!
   user: User!

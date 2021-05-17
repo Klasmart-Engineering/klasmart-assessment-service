@@ -15,12 +15,19 @@ export class UserContentScore {
   public score: Score
   @Field(type => [TeacherScore])
   public teacherScores: TeacherScore[]
+  @Field()
+  public minimumPossibleScore: number
+  @Field()
+  public maximumPossibleScore: number
 
   constructor(user: User, content: Content, score = new Score()) {
     this.user = user
     this.content = content
     this.score = score
+    
     const {maximumPossibleScore, minimumPossibleScore} = content
+    this.minimumPossibleScore = minimumPossibleScore 
+    this.maximumPossibleScore = maximumPossibleScore
     const range = maximumPossibleScore - minimumPossibleScore
     this.teacherScores = randomArray(
         randomInt(3,0),
