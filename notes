@@ -1,0 +1,83 @@
+RoomId -> Attendance
+    - UserId
+    - Time ranges
+
+UserId + Time Range -> xAPI Events
+    - User Id
+    - ContentId
+    - Score
+    - Max Score
+    - Min Score
+    - Raw Score
+    - Scaled Score
+    - Response
+
+
+ContentId -> CMS Record
+    - Content Name
+
+(RoomId, User Id, ContentId) -> Percentage
+    - Check User is teacher
+
+Query {
+    Room {
+        User [
+            {
+                User Id
+                Name
+                Contents: [
+                    Score {
+                        Content {
+                            ContentId
+                            Content Name
+                        }
+                        Best Score
+                        Teacher Score {
+                            Teacher
+                            Score
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+    Room {
+        Content [
+            {
+                ContentId
+                Content Name
+                Users: [
+                    {
+                        User {
+                            UserId
+                            Name
+                        }
+                        Best Score
+                        Teacher Score {
+                            Teacher
+                            Score
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+Mutation {
+    submit_score(
+        RoomId
+        User Id
+        ContentId
+        Score
+    ) {
+
+    }
+
+}
+
+
+
+Future Audio Upload
+
