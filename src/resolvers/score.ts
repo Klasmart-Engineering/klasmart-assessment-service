@@ -45,7 +45,7 @@ export class Score {
   }
 
   constructor(score?: number) {
-    if(score) { this.addScore(score) }
+      if(score) { this.addScore(score) }
   }
 
   public addScore(score: number) {
