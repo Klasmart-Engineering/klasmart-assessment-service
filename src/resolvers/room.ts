@@ -36,8 +36,8 @@ export class Room {
 
   constructor(
     room_id = v4(),
-    users = randomUsers(randomInt(4,0)),
-    contents = randomContents(randomInt(5,0)),
+    users = randomUsers(randomInt(4,0,0.5)),
+    contents = randomContents(randomInt(5,0,0.5)),
   ) {
     this.room_id = room_id
     this.users = users
