@@ -66,8 +66,9 @@ export class Room {
         const score = new Score()
         const count = randomInt(10,0,2)
         const {minimumPossibleScore, maximumPossibleScore} = content
+        const range = maximumPossibleScore - minimumPossibleScore
         for(let i = 0; i < count; i++) {
-          score.addScore(randomInt(maximumPossibleScore, minimumPossibleScore, 2))
+          score.addScore(randomInt(range, minimumPossibleScore, 2))
         }
         const userContentScores = new UserContentScore(user, content, score)
         this.scores.push(userContentScores)
