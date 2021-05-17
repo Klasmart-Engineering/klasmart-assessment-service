@@ -8,6 +8,9 @@ export class Answer {
   @Field({nullable: true})
   public score?: number
 
+  @Field()
+  public date = Date.now()
+
   constructor(
     answer?: string,
     score?: number,
