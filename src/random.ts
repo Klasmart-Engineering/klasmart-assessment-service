@@ -49,9 +49,19 @@ const activity_names = [
     'Video',
 ]
 
+const activity_types = [
+    'Interactive Video',
+    'Course Presentation',
+    'Multiple Choice',
+    'Quiz',
+    'Fill in the Blank',
+    'Drag the Words',
+]
+
 export function randomContent() {
     return new Content(
         pick(activity_names),
+        pick(activity_types),
         randomInt(20),
         randomInt(3,0),
     )

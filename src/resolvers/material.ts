@@ -9,15 +9,20 @@ export class Content {
   @Field()
   public name: string
 
+  @Field()
+  public type: string
+
   public minimumPossibleScore: number
   public maximumPossibleScore: number
 
   constructor(
     name: string,
+    type: string,
     scoreRange = 10,
     minimumPossibleScore = 0,
   ) {
     this.name = name
+    this.type = type
     this.minimumPossibleScore = minimumPossibleScore
     this.maximumPossibleScore = minimumPossibleScore + scoreRange
   }

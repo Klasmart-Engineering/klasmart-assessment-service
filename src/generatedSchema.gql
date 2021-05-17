@@ -16,6 +16,7 @@ directive @requires(fields: String!) on FIELD_DEFINITION
 type Content {
   content_id: String!
   name: String!
+  type: String!
 }
 
 type ContentScores {
