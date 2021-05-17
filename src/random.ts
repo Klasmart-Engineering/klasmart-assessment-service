@@ -1,3 +1,4 @@
+import { Content } from "./resolvers/material"
 import { User } from "./resolvers/user"
 
 export function randomInt(range: number, min = 0, skew = 1) {
@@ -38,4 +39,24 @@ export function randomUser() {
 
 export function randomUsers(count: number) {
     return randomArray(count, randomUser)
+}
+
+const activity_names = [
+    'Matching Words with Pictures',
+    'Listen and repeat',
+    'Word search',
+    'Essay',
+    'Video',
+]
+
+export function randomContent() {
+    return new Content(
+        pick(activity_names),
+        randomInt(20),
+        randomInt(3,0),
+    )
+}
+
+export function randomContents(count: number) {
+    return randomArray(count, randomContent)
 }

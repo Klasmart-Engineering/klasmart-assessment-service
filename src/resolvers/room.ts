@@ -10,7 +10,7 @@ import {
   } from 'type-graphql'
 import { Service } from 'typedi'
   import { v4 } from 'uuid'
-import { randomInt, pick, randomUsers } from '../random'
+import { randomInt, pick, randomUsers, randomContents } from '../random'
 import { Content } from './material'
 import { Score } from './score'
 import { ContentScores } from './scoresByContent'
@@ -37,12 +37,7 @@ export class Room {
   constructor(
     room_id = v4(),
     users = randomUsers(randomInt(4,0)),
-    contents = [
-      new Content('Matching Words with Pictures', randomInt(20), randomInt(3,0,3)),
-      new Content('Listen and repeat',randomInt(20), randomInt(3,0,3)),
-      new Content('Word search', randomInt(20), randomInt(3,0,3)),
-      new Content('Essay', randomInt(20), randomInt(3,0,3)),
-    ]
+    contents = randomContents(randomInt(5,0)),
   ) {
     this.room_id = room_id
     this.users = users
