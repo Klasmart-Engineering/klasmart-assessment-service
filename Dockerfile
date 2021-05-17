@@ -20,10 +20,9 @@ WORKDIR /root/app
 # expose port and define CMD
 ENV PORT=8080
 EXPOSE 8080
-RUN npm install -g pm2
 # install production node_modules
 RUN npm ci --only=production
 RUN npm audit fix --only=production
 # copy app sources
 COPY --from=build /root/app/dist ./dist
-CMD pm2-runtime dist/index.js
+CMD node dist/index.js
