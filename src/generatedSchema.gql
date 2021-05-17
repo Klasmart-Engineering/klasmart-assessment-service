@@ -46,6 +46,19 @@ type Score {
   sum: Float!
 }
 
+type TeacherScore {
+  content: Content!
+  date: Timestamp!
+  score: Float!
+  student: User!
+  teacher: User!
+}
+
+"""
+The javascript `Date` as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp
+
 type User {
   family_name: String
   given_name: String
@@ -55,6 +68,7 @@ type User {
 type UserContentScore {
   content: Content!
   score: Score!
+  teacherScores: [TeacherScore!]!
   user: User!
 }
 
