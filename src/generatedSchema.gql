@@ -39,7 +39,10 @@ type Score {
   frequency: Float!
   max: Float
   mean: Float
+  median: Float
+  medians: [Float!]
   min: Float
+  scores: [Int!]!
   sum: Float!
 }
 
