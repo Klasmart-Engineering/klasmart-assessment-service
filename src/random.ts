@@ -1,5 +1,6 @@
 import { Answer } from "./resolvers/answer"
 import { Content } from "./resolvers/material"
+import { TeacherComment } from "./resolvers/teacherComments"
 import { User } from "./resolvers/user"
 
 export function randomInt(range: number, min = 0, skew = 1) {
@@ -16,6 +17,9 @@ const adjectives = [
     'Brilliant',
     'Clever',
     'Dependable',
+    'Exciting',
+    'Fabulous',
+    'Gregarious',
     undefined,
 ]
 
@@ -24,6 +28,9 @@ const names = [
     'Bob',
     'Chris',
     'Dave',
+    'Emily',
+    'Fiona',
+    'George',
     undefined,
 ]
 
@@ -88,4 +95,22 @@ export function randomAnswer({maximumPossibleScore, minimumPossibleScore}: Conte
         answer==='number' ? randomInt(100).toString() : answer,
         randomInt(range, minimumPossibleScore),
     )
+}
+
+export const teacherComments = [
+    'Good Job!',
+    'Almost, please try harder next time.',
+    'A great improvement!',
+    'Keep up the good work'
+]
+export function randomTeacherComments(count: number, teachers: User[], students: User[]) {
+    const comment = pick(teacherComments)
+    return randomArray(
+        count,
+        () => new TeacherComment(
+          pick(teachers),
+          pick(students),
+          pick(teacherComments),
+        ),
+      )
 }

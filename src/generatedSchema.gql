@@ -31,11 +31,13 @@ type ContentScores {
 }
 
 type Mutation {
-  setScore(content_id: String!, score: Float!, student_id: String!): TeacherScore!
+  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment!
+  setScore(content_id: String!, room_id: String!, score: Float!, student_id: String!): TeacherScore!
 }
 
 type Query {
   Room(room_id: String): Room!
+  addQuery(room_id: String): Room!
   ready: Boolean!
 }
 
@@ -44,6 +46,8 @@ type Room {
   scores: [UserContentScore!]!
   scoresByContent: [ContentScores!]!
   scoresByUser: [UserScores!]!
+  teacherComments: [TeacherComment!]!
+  teacherCommentsByStudent: [TeacherCommentsByStudent!]!
 }
 
 type Score {
@@ -56,6 +60,18 @@ type Score {
   scoreFrequency: Float!
   scores: [Int!]!
   sum: Float!
+}
+
+type TeacherComment {
+  comment: String!
+  date: Timestamp!
+  student: User!
+  teacher: User!
+}
+
+type TeacherCommentsByStudent {
+  student: User!
+  teacherComments: [TeacherComment!]!
 }
 
 type TeacherScore {
