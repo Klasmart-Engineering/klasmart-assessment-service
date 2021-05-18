@@ -6,6 +6,9 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
+    "lint": "eslint . --ext .ts",
+    "lint-and-fix": "eslint . --ext .ts --fix",
+    "prettier-format": "prettier --config .prettierrc **/*.ts --write",
     "start": "ts-node src/index.ts",
     "build": "tsc -p . --outDir ./dist",
     "dev": "nodemon --config nodemon.json src/index.ts",

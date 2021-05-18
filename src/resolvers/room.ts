@@ -31,7 +31,7 @@ export class Room {
 
   public users: User[]
   public contents: Content[]
-  
+
   @Field(type => [TeacherComment])
   public teacherComments: TeacherComment[]
   public teacherCommentsByStudent: Map<User, TeacherComment[]> = new Map()

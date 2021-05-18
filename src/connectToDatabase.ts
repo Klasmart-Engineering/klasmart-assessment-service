@@ -10,9 +10,7 @@ export async function connectToDatabase(): Promise<void> {
     await createConnection({
       name: 'default',
       type: 'postgres',
-      url:
-        process.env.DATABASE_URL ||
-        'postgres://postgres:kidsloop@localhost',
+      url: process.env.DATABASE_URL || 'postgres://postgres:kidsloop@localhost',
       synchronize: false,
       logging: Boolean(process.env.DATABASE_LOGGING),
       entities: [
