@@ -1,13 +1,17 @@
+import 'reflect-metadata'
 import path from 'path'
 import express from 'express'
-import { createApolloServer } from './createApolloServer'
-import 'reflect-metadata'
+import compression from 'compression'
+
 import { buildFederatedSchema } from './buildFederatedSchema'
-import compression = require('compression')
+import { connectToDatabase } from './connectToDatabase'
+import { createApolloServer } from './createApolloServer'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
 async function main() {
+  await connectToDatabase()
+
   const schema = await buildFederatedSchema({
     resolvers: [
       path.join(__dirname, '/resolvers/**/*.ts'),
