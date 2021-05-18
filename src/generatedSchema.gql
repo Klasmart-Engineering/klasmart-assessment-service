@@ -98,6 +98,7 @@ type UserContentScore {
   maximumPossibleScore: Float!
   minimumPossibleScore: Float!
   score: Score!
+  seen: Boolean!
   teacherScores: [TeacherScore!]!
   user: User!
 }

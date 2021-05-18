@@ -114,3 +114,7 @@ export function randomTeacherComments(count: number, teachers: User[], students:
         ),
       )
 }
+
+export function randomBool(chance = 0.5) {
+    return Math.random() < chance
+}

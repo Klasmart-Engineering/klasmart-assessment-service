@@ -1,5 +1,5 @@
 import { ObjectType, Field } from "type-graphql"
-import { randomArray, randomInt, randomUser } from "../random"
+import { randomArray, randomBool, randomInt, randomUser } from "../random"
 import { Content } from "./material"
 import { Score } from "./score"
 import { TeacherScore } from "./teacherScore"
@@ -13,6 +13,8 @@ export class UserContentScore {
   public content: Content
   @Field()
   public score: Score
+  @Field()
+  public seen: boolean
   @Field(type => [TeacherScore])
   public teacherScores: TeacherScore[]
   @Field()
@@ -38,5 +40,6 @@ export class UserContentScore {
             randomInt(range, minimumPossibleScore)
         )
     )
+    this.seen = randomBool(0.9)
   }
 }
