@@ -19,6 +19,13 @@ type Answer {
   score: Float
 }
 
+type CmsContent {
+  author: String!
+  contentName: String!
+  contentType: Float!
+  id: ID!
+}
+
 type Content {
   content_id: String!
   name: String!

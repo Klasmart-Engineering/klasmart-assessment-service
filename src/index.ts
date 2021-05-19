@@ -2,20 +2,26 @@ import 'reflect-metadata'
 import path from 'path'
 import express from 'express'
 import compression from 'compression'
+import { useContainer } from 'typeorm'
+import { Container } from 'typeorm-typedi-extensions'
 
+import { connectToCmsDatabase } from './db/cms/connectToCmsDatabase'
+import { connectToUserDatabase } from './db/users/connectToUserDatabase'
 import { buildFederatedSchema } from './buildFederatedSchema'
-import { connectToDatabase } from './connectToDatabase'
 import { createApolloServer } from './createApolloServer'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
+useContainer(Container)
+
 async function main() {
-  await connectToDatabase()
+  await connectToCmsDatabase()
+  await connectToUserDatabase()
 
   const schema = await buildFederatedSchema({
     resolvers: [
-      path.join(__dirname, '/resolvers/**/*.ts'),
-      path.join(__dirname, '/resolvers/**/*.js'),
+      path.join(__dirname, './resolvers/**/*.ts'),
+      path.join(__dirname, './resolvers/**/*.js'),
     ],
   })
 
