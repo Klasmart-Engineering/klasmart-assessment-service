@@ -1,10 +1,12 @@
-import { ObjectType, Field } from "type-graphql"
-import { randomArray, randomBool, randomInt, randomUser } from "../random"
-import { Content } from "./material"
-import { Score } from "./score"
-import { TeacherScore } from "./teacherScore"
-import { User } from "./user"
+import { ObjectType, Field } from 'type-graphql'
+import { Column, Entity } from 'typeorm'
+import { randomArray, randomBool, randomInt, randomUser } from '../random'
+import { Content } from './material'
+import { Score } from './score'
+import { TeacherScore } from './teacherScore'
+import { User } from './user'
 
+@Entity({ name: 'user_content_score' })
 @ObjectType()
 export class UserContentScore {
   @Field()
@@ -15,10 +17,14 @@ export class UserContentScore {
   public score: Score
   @Field()
   public seen: boolean
-  @Field(type => [TeacherScore])
+  @Field((type) => [TeacherScore])
   public teacherScores: TeacherScore[]
+
+  @Column({ name: 'minimum_possible_score' })
   @Field()
   public minimumPossibleScore: number
+
+  @Column({ name: 'maximum_possible_score' })
   @Field()
   public maximumPossibleScore: number
 
@@ -26,19 +32,20 @@ export class UserContentScore {
     this.user = user
     this.content = content
     this.score = score
-    
-    const {maximumPossibleScore, minimumPossibleScore} = content
-    this.minimumPossibleScore = minimumPossibleScore 
+
+    const { maximumPossibleScore, minimumPossibleScore } = content
+    this.minimumPossibleScore = minimumPossibleScore
     this.maximumPossibleScore = maximumPossibleScore
     const range = maximumPossibleScore - minimumPossibleScore
     this.teacherScores = randomArray(
-        randomInt(3,0),
-        () => new TeacherScore(
-            randomUser(),
-            user,
-            content,
-            randomInt(range, minimumPossibleScore)
-        )
+      randomInt(3, 0),
+      () =>
+        new TeacherScore(
+          randomUser(),
+          user,
+          content,
+          randomInt(range, minimumPossibleScore),
+        ),
     )
     this.seen = randomBool(0.9)
   }

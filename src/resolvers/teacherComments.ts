@@ -1,13 +1,15 @@
-import { ObjectType, Field, Arg, Mutation, Resolver } from "type-graphql"
-import { Service } from "typedi"
-import { randomUser } from "../random"
-import { User } from "./user"
+import { ObjectType, Field, Arg, Mutation, Resolver } from 'type-graphql'
+import { Service } from 'typedi'
+import { Column, Entity } from 'typeorm'
+import { randomUser } from '../random'
+import { User } from './user'
 
+@Entity({ name: 'teacher_comment' })
 @ObjectType()
 export class TeacherComment {
-//   @Field()
-//   public room: Room
-    
+  //   @Field()
+  //   public room: Room
+
   @Field()
   public student: User
 
@@ -17,11 +19,17 @@ export class TeacherComment {
   @Field()
   public date: Date
 
+  @Column({ name: 'comment' })
   @Field()
   public comment: string
 
-  constructor(teacher: User, student: User, comment: string, date = new Date()) {
-    // this.room = room  
+  constructor(
+    teacher: User,
+    student: User,
+    comment: string,
+    date = new Date(),
+  ) {
+    // this.room = room
     this.teacher = teacher
     this.student = student
     this.comment = comment
@@ -32,7 +40,7 @@ export class TeacherComment {
 @Service()
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {
-  @Mutation(type => TeacherComment)
+  @Mutation((type) => TeacherComment)
   public async addComment(
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
@@ -40,11 +48,7 @@ export default class TeacherCommentResolver {
   ) {
     const teacher = randomUser()
     const student = randomUser()
-    student.user_id  = student_id
-    return new TeacherComment(
-      teacher,
-      student,
-      comment,
-    )
+    student.user_id = student_id
+    return new TeacherComment(teacher, student, comment)
   }
 }

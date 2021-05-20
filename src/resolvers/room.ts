@@ -26,9 +26,12 @@ import { TeacherCommentsByStudent } from './teacherCommentsByUser'
 import { User } from './user'
 import { UserContentScore } from './userContentScore'
 import { UserRepo } from '../db/users/repo'
+import { Column, Entity, PrimaryColumn } from 'typeorm'
 
+@Entity({ name: 'room' })
 @ObjectType()
 export class Room {
+  @PrimaryColumn()
   @Field()
   public room_id: string
 
@@ -44,7 +47,10 @@ export class Room {
   public teacherComments: TeacherComment[]
   public teacherCommentsByStudent: Map<User, TeacherComment[]> = new Map()
 
+  @Column()
   public start_time: Date
+
+  @Column()
   public end_time: Date
 
   constructor(
