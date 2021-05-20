@@ -58,7 +58,7 @@ type Room {
   teacherCommentsByStudent: [TeacherCommentsByStudent!]!
 }
 
-type Score {
+type ScoreSummary {
   answers: [Answer!]!
   max: Float
   mean: Float
@@ -103,7 +103,7 @@ type User {
 
 type UserContentScore {
   content: Content!
-  score: Score!
+  score: ScoreSummary!
   seen: Boolean!
   teacherScores: [TeacherScore!]!
   user: User!

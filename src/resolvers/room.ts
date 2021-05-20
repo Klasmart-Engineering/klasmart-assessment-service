@@ -18,7 +18,7 @@ import {
   randomTeacherComments,
 } from '../random'
 import { Content } from './material'
-import { Score } from './score'
+import { ScoreSummary } from './scoreSummary'
 import { ContentScores } from './scoresByContent'
 import { UserScores } from './scoresByUser'
 import { TeacherComment } from './teacherComments'
@@ -82,11 +82,11 @@ export class Room {
       }
     }
 
-    for (const user of users) {
-      for (const content of contents) {
-        const score = new Score()
-        const count = randomInt(10, 0, 2)
-        for (let i = 0; i < count; i++) {
+    for(const user of users) {
+      for(const content of contents) {
+        const score = new ScoreSummary()
+        const count = randomInt(10,0,2)
+        for(let i = 0; i < count; i++) {
           score.addAnswer(randomAnswer(content))
         }
         const userContentScores = new UserContentScore(user, content, score)

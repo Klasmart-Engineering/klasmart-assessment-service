@@ -2,7 +2,7 @@ import { ObjectType, Field, Float, Int } from "type-graphql"
 import { Answer } from "./answer"
 
 @ObjectType()
-export class Score {
+export class ScoreSummary {
   @Field({nullable: true})
   public min?: number
 
