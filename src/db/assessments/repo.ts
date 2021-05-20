@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { Service } from 'typedi'
-import { Comment } from './entities'
+import { Comment } from '.'
 
 @Service()
 export class AssessmentRepo {

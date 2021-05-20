@@ -1,9 +1,10 @@
-import { ObjectType, Field } from "type-graphql"
-import { randomArray, randomBool, randomInt, randomUser } from "../random"
-import { Content } from "./material"
-import { ScoreSummary } from "./scoreSummary"
-import { TeacherScore } from "./teacherScore"
-import { User } from "./user"
+import { ObjectType, Field } from 'type-graphql'
+import { Column, Entity } from 'typeorm'
+import { randomArray, randomBool, randomInt, randomUser } from '../../../random'
+import { Content } from './material'
+import { ScoreSummary } from './scoreSummary'
+import { TeacherScore } from './teacherScore'
+import { User } from './user'
 
 @Entity({ name: 'user_content_score' })
 @ObjectType()
@@ -23,8 +24,8 @@ export class UserContentScore {
     this.user = user
     this.content = content
     this.score = score
-    
-    const {maximumPossibleScore, minimumPossibleScore} = content
+
+    const { maximumPossibleScore, minimumPossibleScore } = content
     const range = maximumPossibleScore - minimumPossibleScore
     this.teacherScores = randomArray(
       randomInt(3, 0),

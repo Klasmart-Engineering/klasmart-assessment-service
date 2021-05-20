@@ -1,7 +1,7 @@
 import { Answer } from './resolvers/answer'
-import { Content } from './resolvers/material'
+import { Content } from './db/assessments/entities/material'
 import { TeacherComment } from './resolvers/teacherComments'
-import { User } from './resolvers/user'
+import { User } from './db/assessments/entities/user'
 
 export function randomInt(range: number, min = 0, skew = 1) {
   return min + Math.floor(range * Math.pow(Math.random(), skew))
