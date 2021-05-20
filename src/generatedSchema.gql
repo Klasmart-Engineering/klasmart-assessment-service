@@ -46,7 +46,6 @@ type Mutation {
 
 type Query {
   Room(room_id: String): Room!
-  addQuery(room_id: String): Room!
   ready: Boolean!
 }
 

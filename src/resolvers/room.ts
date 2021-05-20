@@ -116,12 +116,7 @@ export default class RoomResolver {
     return new Room(room_id)
   }
 
-  @Query((type) => Room)
-  public async addQuery(@Arg('room_id', { nullable: true }) room_id: string) {
-    return new Room(room_id)
-  }
-
-  @FieldResolver((type) => [UserScores])
+  @FieldResolver(type => [UserScores])
   public async scoresByUser(@Root() room: Room) {
     const entries = [...room.scoresByUser.entries()]
     const userScores = entries.map(
