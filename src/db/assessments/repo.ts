@@ -4,9 +4,9 @@ import { Service } from 'typedi'
 import { Comment } from './entities'
 
 @Service()
-export class NewRepo {
+export class AssessmentRepo {
   constructor(
-    @InjectRepository(Comment, 'new')
+    @InjectRepository(Comment, 'assessments')
     private readonly commentRepository: Repository<Comment>,
   ) {}
 
