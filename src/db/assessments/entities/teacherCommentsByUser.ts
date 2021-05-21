@@ -1,7 +1,5 @@
 import { ObjectType, Field, Arg, Mutation, Resolver } from 'type-graphql'
-import { Service } from 'typedi'
-import { randomUser } from '../../../random'
-import { TeacherComment } from '../../../resolvers/teacherComments'
+import { TeacherComment } from './teacherComments'
 import { User } from './user'
 
 @ObjectType()
