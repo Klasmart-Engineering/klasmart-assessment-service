@@ -10,8 +10,6 @@ import { UserRepo } from '../db/users/repo'
 @Service()
 @Resolver(() => Room)
 export default class RoomResolver {
-  public userRepo = Container.get(UserRepo)
-
   @Query(() => Room)
   public async Room(@Arg('room_id', { nullable: true }) room_id: string) {
     return Room.random(room_id)

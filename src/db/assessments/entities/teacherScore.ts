@@ -66,7 +66,6 @@ export class TeacherScore {
   }
 
   public static mock(
-    room_id: string,
     userContentScore: UserContentScore,
     teacher: User,
     score: number,

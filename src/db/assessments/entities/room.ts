@@ -37,11 +37,7 @@ export class Room {
   @Column()
   public endTime?: Date
 
-  private constructor(
-    room_id = v4(),
-    startTime?: Date,
-    endTime?: Date,
-  ) {
+  private constructor(room_id = v4(), startTime?: Date, endTime?: Date) {
     this.room_id = room_id
     this.startTime = startTime
     this.endTime = endTime
@@ -76,6 +72,25 @@ export class Room {
             teacherScores,
             seen,
           )
+
+          const answerCount = randomInt(5)
+          const { maximumPossibleScore, minimumPossibleScore } = content
+          const range = maximumPossibleScore - minimumPossibleScore
+          const mockAnswers = ['yes', 'no', 'maybe', 'number']
+          for (let j = 0; j < answerCount; j++) {
+            const mockAnswerText = pick(mockAnswers)
+            const answer = Answer.mock(
+              userContentScore,
+              new Date(randomInt(duration, start)),
+              mockAnswerText === 'number'
+                ? randomInt(100).toString()
+                : mockAnswerText,
+              randomInt(range, minimumPossibleScore),
+              minimumPossibleScore,
+              maximumPossibleScore,
+            )
+            answers.push(answer)
+          }
           room.scores.push(userContentScore)
         }
       }

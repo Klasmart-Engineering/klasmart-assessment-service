@@ -20,6 +20,6 @@ export default class TeacherScoreResolver {
     const content = randomContent()
     content.content_id = content_id
     const userContentScore = UserContentScore.mock(room_id, student, content)
-    return TeacherScore.mock(room_id, userContentScore, teacher, score)
+    return TeacherScore.mock(userContentScore, teacher, score)
   }
 }

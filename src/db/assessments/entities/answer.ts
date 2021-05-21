@@ -44,14 +44,21 @@ export class Answer {
   @Field()
   public maximumPossibleScore?: number
 
-  constructor(room_id: string, student_id: string, content_id: string) {
+  constructor(
+    room_id: string,
+    student_id: string,
+    content_id: string,
+    date: Date,
+  ) {
     this.room_id = room_id
     this.student_id = student_id
     this.content_id = content_id
+    this.date = date
   }
 
   public static mock(
     userContentScore: UserContentScore,
+    date: Date,
     answer?: string,
     score?: number,
     minimumPossibleScore?: number,
@@ -61,6 +68,7 @@ export class Answer {
       userContentScore.room_id,
       userContentScore.student_id,
       userContentScore.content_id,
+      date,
     )
     x.userContentScore = userContentScore
     x.answer = answer

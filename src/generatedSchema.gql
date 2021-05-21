@@ -58,9 +58,9 @@ type ScoreSummary {
   median: Float
   medians: [Float!]
   min: Float
-  scoreFrequency: Float!
+  scoreFrequency: Int!
   scores: [Int!]!
-  sum: Float!
+  sum: Int!
 }
 
 type TeacherComment {

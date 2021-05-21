@@ -7,13 +7,6 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm'
-import {
-  pick,
-  randomAnswer,
-  randomArray,
-  randomBool,
-  randomInt,
-} from '../../../random'
 import { Answer } from './answer'
 import { Content } from './material'
 import { Room } from './room'
@@ -56,8 +49,19 @@ export class UserContentScore {
   @Column()
   public seen!: boolean
 
+  public async scores(): Promise<number[]> {
+    const answers = await this.answers
+    if (!answers) {
+      return []
+    }
+    const scores = answers.map((x) => x.score)
+    return scores.filter((x) => typeof x === 'number') as number[]
+  }
+
   @Field(() => ScoreSummary)
-  public score = () => new ScoreSummary()
+  public async score(): Promise<ScoreSummary> {
+    return new ScoreSummary(await this.answers)
+  }
 
   @Column({ nullable: true })
   public min?: number
@@ -91,6 +95,8 @@ export class UserContentScore {
       content.content_id,
     )
     userContentScore.answers = answers
+    userContentScore.user = student
+    userContentScore.content = content
     userContentScore.teacherScores = teacherScores
     userContentScore.seen = seen
 

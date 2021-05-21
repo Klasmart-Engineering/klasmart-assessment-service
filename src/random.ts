@@ -39,11 +39,11 @@ export function randomArray<T>(count: number, initializer: () => T): T[] {
   return new Array(count).fill(undefined).map(initializer)
 }
 
-export function randomUser() {
+export function randomUser(): User {
   return new User(pick(adjectives), pick(names))
 }
 
-export function randomUsers(count: number) {
+export function randomUsers(count: number): User[] {
   return randomArray(count, randomUser)
 }
 
@@ -75,24 +75,6 @@ export function randomContent() {
 
 export function randomContents(count: number) {
   return randomArray(count, randomContent)
-}
-
-const answers = ['yes', 'no', 'maybe', 'number']
-
-export function randomAnswer(userContentScore: UserContentScore) {
-  const minimumPossibleScore =
-    userContentScore.content?.minimumPossibleScore || 0
-  const maximumPossibleScore =
-    userContentScore.content?.maximumPossibleScore || 10
-  const range = maximumPossibleScore - minimumPossibleScore
-  const answer = pick(answers)
-  return Answer.mock(
-    userContentScore,
-    answer === 'number' ? randomInt(100).toString() : answer,
-    randomInt(range, minimumPossibleScore),
-    minimumPossibleScore,
-    maximumPossibleScore,
-  )
 }
 
 export function randomBool(chance = 0.5) {
