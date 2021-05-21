@@ -3,95 +3,102 @@ import { v4 } from 'uuid'
 import {
   randomInt,
   randomUsers,
-  randomContents,
-  randomAnswer,
-  randomTeacherComments,
+  randomContent,
+  randomArray,
+  pick,
 } from '../../../random'
-import { Content } from './material'
-import { ScoreSummary } from './scoreSummary'
 import { TeacherComment } from './teacherComments'
-import { User } from './user'
 import { UserContentScore } from './userContentScore'
-import { Column, Entity, PrimaryColumn } from 'typeorm'
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm'
+import { TeacherScore } from './teacherScore'
+import { Answer } from './answer'
 
 @Entity({ name: 'room' })
 @ObjectType()
 export class Room {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'room_id' })
   @Field()
   public room_id: string
 
-  @Field((type) => [UserContentScore])
-  public scores: UserContentScore[] = []
-  public scoresByUser: Map<User, UserContentScore[]> = new Map()
-  public scoresByContent: Map<Content, UserContentScore[]> = new Map()
+  @Field(() => [UserContentScore])
+  @OneToMany(
+    () => UserContentScore,
+    (userContentScore) => userContentScore.room,
+  )
+  public scores!: UserContentScore[]
 
-  public users: User[]
-  public contents: Content[]
-
-  @Field((type) => [TeacherComment])
-  public teacherComments: TeacherComment[]
-  public teacherCommentsByStudent: Map<User, TeacherComment[]> = new Map()
-
-  @Column()
-  public start_time: Date
+  @Field(() => [TeacherComment])
+  @OneToMany(() => TeacherComment, (userContentScore) => userContentScore.room)
+  public teacherComments!: Promise<TeacherComment[]> | TeacherComment[]
 
   @Column()
-  public end_time: Date
+  public startTime?: Date
 
-  constructor(
+  @Column()
+  public endTime?: Date
+
+  private constructor(
     room_id = v4(),
-    users = randomUsers(randomInt(4, 0, 0.5)),
-    contents = randomContents(randomInt(5, 0, 0.5)),
+    startTime?: Date,
+    endTime?: Date,
   ) {
     this.room_id = room_id
-    this.users = users
-    this.contents = contents
-    this.teacherComments = randomTeacherComments(
-      room_id,
-      randomInt(users.length),
-      randomUsers(randomInt(2, 1)),
-      this.users,
-    )
+    this.startTime = startTime
+    this.endTime = endTime
+  }
 
-    const start =
-      Date.now() - randomInt(1000 * 60 * 60 * 24 * 365, 1000 * 60 * 60, 0.5)
-    const duration = randomInt(1000 * 60 * 90, 1000 * 60 * 5, 1.5)
-    this.start_time = new Date(start)
-    this.end_time = new Date(start + duration)
+  public static random(room_id: string = v4()): Room {
+    const room = new Room(room_id)
+    const students = randomUsers(5)
+    const teachers = randomUsers(2)
+    const contents = randomArray(randomInt(5), randomContent)
 
-    function addToMap<T, U>(map: Map<T, U[]>, key: T, score: U) {
-      const array = map.get(key)
-      if (array) {
-        array.push(score)
-      } else {
-        map.set(key, [score])
-      }
-    }
+    const oneMinute = 1000 * 60
+    const oneYear = oneMinute * 60 * 24 * 365
+    const start = Date.now() - randomInt(oneYear, 60 * oneMinute, 0.5)
+    const duration = randomInt(90 * oneMinute, 5 * oneMinute, 1.5)
+    room.startTime = new Date(start)
+    room.endTime = new Date(start + duration)
 
-    for (const user of users) {
-      for (const content of contents) {
-        const score = new ScoreSummary()
+    room.scores = []
+    for (const content of contents) {
+      for (const user of [...students, ...teachers]) {
         const count = randomInt(10, 0, 2)
         for (let i = 0; i < count; i++) {
-          score.addAnswer(
-            randomAnswer(room_id, user.user_id, content.content_id, content),
+          const seen = true
+          const answers: Answer[] = []
+          const teacherScores: TeacherScore[] = []
+          const userContentScore = UserContentScore.mock(
+            room_id,
+            user,
+            content,
+            answers,
+            teacherScores,
+            seen,
           )
+          room.scores.push(userContentScore)
         }
-        const userContentScores = new UserContentScore(
-          room_id,
-          user,
-          content,
-          score,
-        )
-        this.scores.push(userContentScores)
-        addToMap(this.scoresByUser, user, userContentScores)
-        addToMap(this.scoresByContent, content, userContentScores)
       }
     }
 
-    for (const comment of this.teacherComments) {
-      addToMap(this.teacherCommentsByStudent, comment.student, comment)
-    }
+    room.teacherComments = randomArray(
+      randomInt(students.length * teachers.length),
+      () =>
+        TeacherComment.mock(
+          room.room_id,
+          pick(teachers),
+          pick(students),
+          pick(teacherComments),
+        ),
+    )
+
+    return room
   }
 }
+
+const teacherComments = [
+  'Good Job!',
+  'Almost, please try harder next time.',
+  'A great improvement!',
+  'Keep up the good work',
+]

@@ -9,14 +9,17 @@ import { connectToCmsDatabase } from './db/cms/connectToCmsDatabase'
 import { connectToUserDatabase } from './db/users/connectToUserDatabase'
 import { buildFederatedSchema } from './buildFederatedSchema'
 import { createApolloServer } from './createApolloServer'
+import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
 useContainer(Container)
 
 async function main() {
-  await connectToCmsDatabase()
-  await connectToUserDatabase()
+  // await connectToCmsDatabase()
+  // await connectToUserDatabase()
+  await connectToAssessmentDatabase()
+
 
   const schema = await buildFederatedSchema({
     resolvers: [

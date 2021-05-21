@@ -2,6 +2,7 @@ import { Answer } from './db/assessments/entities/answer'
 import { Content } from './db/assessments/entities/material'
 import { TeacherComment } from './db/assessments/entities/teacherComments'
 import { User } from './db/assessments/entities/user'
+import { UserContentScore } from './db/assessments/entities/userContentScore'
 
 export function randomInt(range: number, min = 0, skew = 1) {
   return min + Math.floor(range * Math.pow(Math.random(), skew))
@@ -78,45 +79,19 @@ export function randomContents(count: number) {
 
 const answers = ['yes', 'no', 'maybe', 'number']
 
-export function randomAnswer(
-  roomId: string,
-  studentId: string,
-  contentId: string,
-  { maximumPossibleScore, minimumPossibleScore }: Content,
-) {
+export function randomAnswer(userContentScore: UserContentScore) {
+  const minimumPossibleScore =
+    userContentScore.content?.minimumPossibleScore || 0
+  const maximumPossibleScore =
+    userContentScore.content?.maximumPossibleScore || 10
   const range = maximumPossibleScore - minimumPossibleScore
   const answer = pick(answers)
-  return new Answer(
-    roomId,
-    studentId,
-    contentId,
+  return Answer.mock(
+    userContentScore,
     answer === 'number' ? randomInt(100).toString() : answer,
     randomInt(range, minimumPossibleScore),
-  )
-}
-
-export const teacherComments = [
-  'Good Job!',
-  'Almost, please try harder next time.',
-  'A great improvement!',
-  'Keep up the good work',
-]
-export function randomTeacherComments(
-  roomId: string,
-  count: number,
-  teachers: User[],
-  students: User[],
-) {
-  const comment = pick(teacherComments)
-  return randomArray(
-    count,
-    () =>
-      new TeacherComment(
-        roomId,
-        pick(teachers),
-        pick(students),
-        pick(teacherComments),
-      ),
+    minimumPossibleScore,
+    maximumPossibleScore,
   )
 }
 

@@ -1,11 +1,13 @@
-import { ObjectType, Field, Arg, Mutation, Resolver } from 'type-graphql'
-import { Column, Entity, PrimaryColumn } from 'typeorm'
+import { ObjectType, Field } from 'type-graphql'
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'
+import { pick } from '../../../random'
+import { Room } from './room'
 import { User } from './user'
 
 @Entity({ name: 'teacher_comment' })
 @ObjectType()
 export class TeacherComment {
-  @PrimaryColumn({ name: 'room_id' })
+  @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly roomId: string
 
   @PrimaryColumn({ name: 'teacher_id' })
@@ -14,33 +16,43 @@ export class TeacherComment {
   @PrimaryColumn({ name: 'student_id' })
   public readonly studentId: string
 
-  @Field()
-  public student: User
+  @ManyToOne(() => Room, (room) => room.teacherComments)
+  @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
+  public readonly room!: Promise<Room> | Room
 
   @Field()
-  public teacher: User
-
-  @Column()
+  public teacher?: User //TODO: Federate
   @Field()
-  public date: Date
+  public student?: User //TODO: Federate
 
-  @Column()
+  @Column({ nullable: false })
   @Field()
-  public comment: string
+  public date!: Date
 
-  constructor(
+  @Column({ nullable: false })
+  @Field()
+  public comment!: string
+
+  constructor(roomId: string, teacherId: string, studentId: string) {
+    this.roomId = roomId
+    this.teacherId = teacherId
+    this.studentId = studentId
+  }
+
+  public static mock(
     roomId: string,
-    teacher: User,
-    student: User,
+    teachers: User,
+    students: User,
     comment: string,
     date = new Date(),
-  ) {
-    this.roomId = roomId
-    this.teacher = teacher
-    this.teacherId = teacher.user_id
-    this.student = student
-    this.studentId = student.user_id
-    this.comment = comment
-    this.date = date
+  ): TeacherComment {
+    const teacherComment = new TeacherComment(
+      roomId,
+      teachers.user_id,
+      students.user_id,
+    )
+    teacherComment.date = date
+    teacherComment.comment = comment
+    return teacherComment
   }
 }

@@ -28,6 +28,11 @@ export async function buildFederatedSchema(
     skipCheck: true,
     container: Container,
     dateScalarMode: 'timestamp',
+    emitSchemaFile: {
+      path: __dirname + '/generatedSchema.gql',
+      // By default the printed schema is sorted alphabetically.
+      sortedSchema: true,
+    },
   })
 
   const federatedSchema = buildApolloFederationSchema({

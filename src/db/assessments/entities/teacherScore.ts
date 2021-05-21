@@ -1,55 +1,86 @@
 import { ObjectType, Field } from 'type-graphql'
-import { Column, Entity, PrimaryColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+} from 'typeorm'
 import { Content } from './material'
 import { User } from './user'
+import { UserContentScore } from './userContentScore'
 
 @Entity({ name: 'teacher_score' })
 @ObjectType()
 export class TeacherScore {
-  @PrimaryColumn({ name: 'room_id' })
-  public readonly roomId: string
+  @PrimaryColumn({ name: 'room_id', nullable: false })
+  public readonly room_id: string
 
-  @PrimaryColumn({ name: 'teacher_id' })
-  public readonly teacherId: string
+  @PrimaryColumn({ name: 'student_id', nullable: false })
+  public readonly student_id: string
 
-  @PrimaryColumn({ name: 'student_id' })
-  public readonly studentId: string
+  @PrimaryColumn({ name: 'content_id', nullable: false })
+  public readonly content_id: string
 
-  @PrimaryColumn({ name: 'content_id' })
-  public readonly contentId: string
+  @PrimaryColumn({ name: 'teacher_id', nullable: false })
+  public readonly teacher_id: string
+
+  @ManyToOne(
+    () => UserContentScore,
+    (userContentScore) => userContentScore.teacherScores,
+  )
+  @JoinColumn([
+    { name: 'room_id', referencedColumnName: 'room_id' },
+    { name: 'student_id', referencedColumnName: 'student_id' },
+    { name: 'content_id', referencedColumnName: 'content_id' },
+  ])
+  public userContentScore?: Promise<UserContentScore> | UserContentScore
 
   @Field()
-  public teacher: User
+  public teacher?: User //TODO: Source by Federatation
+
+  @Field(() => User)
+  public student = async () => (await this.userContentScore)?.user
+  @Field(() => Content)
+  public content = async () => (await this.userContentScore)?.content
 
   @Field()
-  public student: User
+  @CreateDateColumn()
+  public date!: Date
 
   @Field()
-  public content: Content
-
-  @Column()
-  @Field()
-  public date: Date
-
-  @Column()
-  @Field()
-  public score: number
+  @Column({ nullable: false })
+  public score!: number
 
   constructor(
     roomId: string,
-    teacher: User,
-    student: User,
-    content: Content,
-    score: number,
+    teacherId: string,
+    studentId: string,
+    contentId: string,
   ) {
-    this.roomId = roomId
-    this.teacher = teacher
-    this.teacherId = teacher.user_id
-    this.student = student
-    this.studentId = student.user_id
-    this.content = content
-    this.contentId = content.content_id
-    this.score = score
-    this.date = new Date()
+    this.room_id = roomId
+    this.teacher_id = teacherId
+    this.student_id = studentId
+    this.content_id = contentId
+  }
+
+  public static mock(
+    room_id: string,
+    userContentScore: UserContentScore,
+    teacher: User,
+    score: number,
+  ): TeacherScore {
+    const teacherScore = new TeacherScore(
+      userContentScore.room_id,
+      teacher.user_id,
+      userContentScore.student_id,
+      userContentScore.content_id,
+    )
+    teacherScore.userContentScore = userContentScore
+    teacherScore.teacher = teacher
+    teacherScore.score = score
+
+    return teacherScore
   }
 }

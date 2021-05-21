@@ -5,12 +5,12 @@ import { UserContentScore } from './userContentScore'
 @ObjectType()
 export class ContentScores {
   @Field()
-  public content: Content
+  public content?: Content //TODO: Federate
 
-  @Field((type) => [UserContentScore])
+  @Field(() => [UserContentScore])
   public scores: UserContentScore[]
 
-  constructor(content: Content, scores: UserContentScore[]) {
+  constructor(content?: Content, scores: UserContentScore[] = []) {
     this.content = content
     this.scores = scores
   }

@@ -12,39 +12,67 @@ import { UserRepo } from '../db/users/repo'
 export default class RoomResolver {
   public userRepo = Container.get(UserRepo)
 
-  @Query((type) => Room)
+  @Query(() => Room)
   public async Room(@Arg('room_id', { nullable: true }) room_id: string) {
-    const attendances = this.userRepo.searchAttendances({ roomId: room_id })
-    // const room: Room = {
-    //   room_id,
-    // }
-    return new Room(room_id)
+    return Room.random(room_id)
   }
 
-  @FieldResolver((type) => [UserScores])
-  public async scoresByUser(@Root() room: Room) {
-    const entries = [...room.scoresByUser.entries()]
-    const userScores = entries.map(
-      ([user, scores]) => new UserScores(user, scores),
-    )
-    return userScores
+  @FieldResolver(() => [UserScores])
+  public scoresByUser(@Root() room: Room): UserScores[] {
+    const scoresByUser: Map<string, UserScores> = new Map()
+
+    for (const userContentScore of room.scores) {
+      const userScores = scoresByUser.get(userContentScore.student_id)
+      if (userScores) {
+        userScores.scores.push(userContentScore)
+      } else {
+        scoresByUser.set(
+          userContentScore.student_id,
+          new UserScores(userContentScore.user, [userContentScore]),
+        )
+      }
+    }
+
+    return [...scoresByUser.values()]
   }
 
-  @FieldResolver((type) => [ContentScores])
-  public async scoresByContent(@Root() room: Room) {
-    const entries = [...room.scoresByContent.entries()]
-    const contentScores = entries.map(
-      ([content, scores]) => new ContentScores(content, scores),
-    )
-    return contentScores
+  @FieldResolver(() => [ContentScores])
+  public scoresByContent(@Root() room: Room): ContentScores[] {
+    const scoresByContent: Map<string, ContentScores> = new Map()
+
+    for (const userContentScore of room.scores) {
+      const contentScores = scoresByContent.get(userContentScore.student_id)
+      if (contentScores) {
+        contentScores.scores.push(userContentScore)
+      } else {
+        scoresByContent.set(
+          userContentScore.student_id,
+          new ContentScores(userContentScore.content, [userContentScore]),
+        )
+      }
+    }
+
+    return [...scoresByContent.values()]
   }
 
-  @FieldResolver((type) => [TeacherCommentsByStudent])
-  public async teacherCommentsByStudent(@Root() room: Room) {
-    const entries = [...room.teacherCommentsByStudent.entries()]
-    const contentScores = entries.map(
-      ([student, comments]) => new TeacherCommentsByStudent(student, comments),
-    )
-    return contentScores
+  @FieldResolver(() => [TeacherCommentsByStudent])
+  public async teacherCommentsByStudent(
+    @Root() room: Room,
+  ): Promise<TeacherCommentsByStudent[]> {
+    const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
+
+    for (const comment of await room.teacherComments) {
+      const teacherComments = commentsByStudent.get(comment.studentId)
+      if (teacherComments) {
+        teacherComments.teacherComments.push(comment)
+      } else {
+        commentsByStudent.set(
+          comment.studentId,
+          new TeacherCommentsByStudent(comment.student, [comment]),
+        )
+      }
+    }
+
+    return [...commentsByStudent.values()]
   }
 }

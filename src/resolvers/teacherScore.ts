@@ -1,6 +1,7 @@
 import { Mutation, Arg, Resolver } from 'type-graphql'
 import { Service } from 'typedi'
 import { TeacherScore } from '../db/assessments/entities/teacherScore'
+import { UserContentScore } from '../db/assessments/entities/userContentScore'
 import { randomContent, randomUser } from '../random'
 
 @Service()
@@ -18,6 +19,7 @@ export default class TeacherScoreResolver {
     student.user_id = student_id
     const content = randomContent()
     content.content_id = content_id
-    return new TeacherScore(room_id, teacher, student, content, score)
+    const userContentScore = UserContentScore.mock(room_id, student, content)
+    return TeacherScore.mock(room_id, userContentScore, teacher, score)
   }
 }
