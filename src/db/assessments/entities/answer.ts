@@ -43,11 +43,17 @@ export class Answer {
   public maximumPossibleScore?: number
 
   constructor(
+    roomId: string,
+    studentId: string,
+    contentId: string,
     answer?: string,
     score?: number,
     minimumPossibleScore?: number,
     maximumPossibleScore?: number,
   ) {
+    this.roomId = roomId
+    this.studentId = studentId
+    this.contentId = contentId
     this.answer = answer
     this.score = score
     this.minimumPossibleScore = minimumPossibleScore

@@ -18,6 +18,6 @@ export default class TeacherScoreResolver {
     student.user_id = student_id
     const content = randomContent()
     content.content_id = content_id
-    return new TeacherScore(teacher, student, content, score)
+    return new TeacherScore(room_id, teacher, student, content, score)
   }
 }

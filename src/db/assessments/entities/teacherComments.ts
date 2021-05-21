@@ -29,12 +29,13 @@ export class TeacherComment {
   public comment: string
 
   constructor(
+    roomId: string,
     teacher: User,
     student: User,
     comment: string,
     date = new Date(),
   ) {
-    // this.room = room
+    this.roomId = roomId
     this.teacher = teacher
     this.teacherId = teacher.user_id
     this.student = student

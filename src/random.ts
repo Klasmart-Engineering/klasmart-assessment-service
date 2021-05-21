@@ -1,6 +1,6 @@
-import { Answer } from './resolvers/answer'
+import { Answer } from './db/assessments/entities/answer'
 import { Content } from './db/assessments/entities/material'
-import { TeacherComment } from './resolvers/teacherComments'
+import { TeacherComment } from './db/assessments/entities/teacherComments'
 import { User } from './db/assessments/entities/user'
 
 export function randomInt(range: number, min = 0, skew = 1) {
@@ -78,13 +78,18 @@ export function randomContents(count: number) {
 
 const answers = ['yes', 'no', 'maybe', 'number']
 
-export function randomAnswer({
-  maximumPossibleScore,
-  minimumPossibleScore,
-}: Content) {
+export function randomAnswer(
+  roomId: string,
+  studentId: string,
+  contentId: string,
+  { maximumPossibleScore, minimumPossibleScore }: Content,
+) {
   const range = maximumPossibleScore - minimumPossibleScore
   const answer = pick(answers)
   return new Answer(
+    roomId,
+    studentId,
+    contentId,
     answer === 'number' ? randomInt(100).toString() : answer,
     randomInt(range, minimumPossibleScore),
   )
@@ -97,6 +102,7 @@ export const teacherComments = [
   'Keep up the good work',
 ]
 export function randomTeacherComments(
+  roomId: string,
   count: number,
   teachers: User[],
   students: User[],
@@ -105,7 +111,12 @@ export function randomTeacherComments(
   return randomArray(
     count,
     () =>
-      new TeacherComment(pick(teachers), pick(students), pick(teacherComments)),
+      new TeacherComment(
+        roomId,
+        pick(teachers),
+        pick(students),
+        pick(teacherComments),
+      ),
   )
 }
 

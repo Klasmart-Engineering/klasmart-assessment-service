@@ -38,7 +38,13 @@ export class UserContentScore {
   @Column({ nullable: true })
   public mean?: number
 
-  constructor(user: User, content: Content, score = new ScoreSummary()) {
+  constructor(
+    roomId: string,
+    user: User,
+    content: Content,
+    score = new ScoreSummary(),
+  ) {
+    this.roomId = roomId
     this.user = user
     this.studentId = user.user_id
     this.content = content
@@ -51,6 +57,7 @@ export class UserContentScore {
       randomInt(3, 0),
       () =>
         new TeacherScore(
+          roomId,
           randomUser(),
           user,
           content,

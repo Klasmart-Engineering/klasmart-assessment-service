@@ -15,6 +15,6 @@ export default class TeacherCommentResolver {
     const teacher = randomUser()
     const student = randomUser()
     student.user_id = student_id
-    return new TeacherComment(teacher, student, comment)
+    return new TeacherComment(room_id, teacher, student, comment)
   }
 }

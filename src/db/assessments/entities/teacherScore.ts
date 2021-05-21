@@ -35,8 +35,14 @@ export class TeacherScore {
   @Field()
   public score: number
 
-  constructor(teacher: User, student: User, content: Content, score: number) {
-    // this.room = room
+  constructor(
+    roomId: string,
+    teacher: User,
+    student: User,
+    content: Content,
+    score: number,
+  ) {
+    this.roomId = roomId
     this.teacher = teacher
     this.teacherId = teacher.user_id
     this.student = student

@@ -48,6 +48,7 @@ export class Room {
     this.users = users
     this.contents = contents
     this.teacherComments = randomTeacherComments(
+      room_id,
       randomInt(users.length),
       randomUsers(randomInt(2, 1)),
       this.users,
@@ -73,9 +74,16 @@ export class Room {
         const score = new ScoreSummary()
         const count = randomInt(10, 0, 2)
         for (let i = 0; i < count; i++) {
-          score.addAnswer(randomAnswer(content))
+          score.addAnswer(
+            randomAnswer(room_id, user.user_id, content.content_id, content),
+          )
         }
-        const userContentScores = new UserContentScore(user, content, score)
+        const userContentScores = new UserContentScore(
+          room_id,
+          user,
+          content,
+          score,
+        )
         this.scores.push(userContentScores)
         addToMap(this.scoresByUser, user, userContentScores)
         addToMap(this.scoresByContent, content, userContentScores)
