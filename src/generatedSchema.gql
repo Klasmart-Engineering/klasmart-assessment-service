@@ -33,7 +33,7 @@ type ContentScores {
 }
 
 type Mutation {
-  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment!
+  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment
   setScore(content_id: String!, room_id: String!, score: Float!, student_id: String!): TeacherScore!
 }
 

@@ -80,7 +80,7 @@ export class UserContentScore {
     this.content_id = contentId
   }
 
-  public static mock(
+  public static new(
     roomOrId: Room | string,
     student: User,
     content: Content,
@@ -94,9 +94,9 @@ export class UserContentScore {
       student.user_id,
       content.content_id,
     )
-    userContentScore.answers = answers
     userContentScore.user = student
     userContentScore.content = content
+    userContentScore.answers = answers
     userContentScore.teacherScores = teacherScores
     userContentScore.seen = seen
 

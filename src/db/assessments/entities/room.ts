@@ -3,7 +3,6 @@ import { v4 } from 'uuid'
 import {
   randomInt,
   randomUsers,
-  randomContent,
   randomArray,
   pick,
 } from '../../../random'
@@ -12,6 +11,7 @@ import { UserContentScore } from './userContentScore'
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm'
 import { TeacherScore } from './teacherScore'
 import { Answer } from './answer'
+import { Content } from './material'
 
 @Entity({ name: 'room' })
 @ObjectType()
@@ -47,7 +47,7 @@ export class Room {
     const room = new Room(room_id)
     const students = randomUsers(5)
     const teachers = randomUsers(2)
-    const contents = randomArray(randomInt(5), randomContent)
+    const contents = randomArray(randomInt(5), Content.random)
 
     const oneMinute = 1000 * 60
     const oneYear = oneMinute * 60 * 24 * 365
@@ -64,7 +64,7 @@ export class Room {
           const seen = true
           const answers: Answer[] = []
           const teacherScores: TeacherScore[] = []
-          const userContentScore = UserContentScore.mock(
+          const userContentScore = UserContentScore.new(
             room_id,
             user,
             content,
@@ -99,7 +99,7 @@ export class Room {
     room.teacherComments = randomArray(
       randomInt(students.length * teachers.length),
       () =>
-        TeacherComment.mock(
+        TeacherComment.new(
           room.room_id,
           pick(teachers),
           pick(students),

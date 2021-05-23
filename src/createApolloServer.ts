@@ -1,6 +1,7 @@
 import { ApolloGateway } from '@apollo/gateway'
 import { ApolloServer } from 'apollo-server-express'
 import { GraphQLSchema } from 'graphql'
+import { Context } from './resolvers/context'
 
 export const createApolloServer = (
   schema?: GraphQLSchema,
@@ -15,7 +16,12 @@ export const createApolloServer = (
           return connection.context
         }
         const ip = req.headers['x-forwarded-for'] || req.ip
-        return { ip }
+        const user_id = "teacherId"
+        const context: Context = {
+          ip,
+          user_id,
+        }
+        return context
       } catch (e) {
         console.error(e)
       }

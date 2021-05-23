@@ -41,9 +41,9 @@ export class TeacherScore {
   public teacher?: User //TODO: Source by Federatation
 
   @Field(() => User)
-  public student = async () => (await this.userContentScore)?.user
+  public async student() {return (await this.userContentScore)?.user}
   @Field(() => Content)
-  public content = async () => (await this.userContentScore)?.content
+  public async content() {return (await this.userContentScore)?.content}
 
   @Field()
   @CreateDateColumn()
@@ -65,10 +65,11 @@ export class TeacherScore {
     this.content_id = contentId
   }
 
-  public static mock(
+  public static new(
     userContentScore: UserContentScore,
     teacher: User,
     score: number,
+    date = new Date(),
   ): TeacherScore {
     const teacherScore = new TeacherScore(
       userContentScore.room_id,
@@ -79,6 +80,7 @@ export class TeacherScore {
     teacherScore.userContentScore = userContentScore
     teacherScore.teacher = teacher
     teacherScore.score = score
+    teacherScore.date = date
 
     return teacherScore
   }

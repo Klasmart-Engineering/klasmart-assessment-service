@@ -39,18 +39,20 @@ export class TeacherComment {
     this.studentId = studentId
   }
 
-  public static mock(
+  public static new(
     roomId: string,
-    teachers: User,
-    students: User,
+    teacher: User,
+    student: User,
     comment: string,
     date = new Date(),
   ): TeacherComment {
     const teacherComment = new TeacherComment(
       roomId,
-      teachers.user_id,
-      students.user_id,
+      teacher.user_id,
+      student.user_id,
     )
+    teacherComment.teacher = teacher
+    teacherComment.student = student
     teacherComment.date = date
     teacherComment.comment = comment
     return teacherComment
