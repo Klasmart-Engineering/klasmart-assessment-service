@@ -56,7 +56,7 @@ export class Answer {
     this.date = date
   }
 
-  public static mock(
+  public static new(
     userContentScore: UserContentScore,
     date: Date,
     answer?: string,

@@ -74,7 +74,27 @@ export class UserContentScore {
   @Column({ nullable: true })
   public mean?: number
 
-  private constructor(roomId: string, studentId: string, contentId: string) {
+  public async addAnswer(answer: Answer): Promise<void> {
+    let answers = await this.answers
+    if(!answers) { this.answers = answers = [] }
+    answers.push(answer)
+    
+    const { score } = answer
+    if (!score) {
+      return
+    }
+
+    if (this.min === undefined || score < this.min) {
+      this.min = score
+    }
+    if (this.max === undefined || score > this.max) {
+      this.max = score
+    }
+    this.sum += score
+    this.scoreFrequency += 1
+  }
+
+  constructor(roomId: string, studentId: string, contentId: string) {
     this.room_id = roomId
     this.student_id = studentId
     this.content_id = contentId

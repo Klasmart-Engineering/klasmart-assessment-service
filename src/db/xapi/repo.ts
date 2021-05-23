@@ -6,20 +6,11 @@ interface XAPIRecord {
   serverTimestamp?: number
 }
 
-const awsRegion = process.env.AWS_REGION
-
-if (!awsRegion) {
-  throw new Error(
-    `Dynamodb awsRegion must be set using AWS_REGION environment variable`,
-  )
-}
-
 const docClient = new DocumentClient({
   apiVersion: '2012-08-10',
-  region: awsRegion,
 })
 
-export class Repo {
+export class XAPIRepository {
   private TableName: string
 
   constructor(TableName = process.env.DYNAMODB_TABLE_NAME) {
@@ -35,7 +26,7 @@ export class Repo {
     userId: string,
     from?: number,
     to?: number,
-  ): Promise<XAPIRecord[] | undefined> {
+  ) {
     const xapiRecords = await docClient
       .query({
         TableName: this.TableName,
@@ -49,11 +40,8 @@ export class Repo {
       })
       .promise()
 
-    return xapiRecords.Items?.map((xapiRecord) => {
-      xapiRecord.xapi = JSON.stringify(xapiRecord.xapi)
-      return xapiRecord
-    })
+    return xapiRecords.Items
   }
 }
 
-export const repo = new Repo()
+export const xapiRepository = new XAPIRepository()

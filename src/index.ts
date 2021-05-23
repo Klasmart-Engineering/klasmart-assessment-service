@@ -17,7 +17,7 @@ useContainer(Container)
 
 async function main() {
   // await connectToCmsDatabase()
-  // await connectToUserDatabase()
+  await connectToUserDatabase()
   await connectToAssessmentDatabase()
 
 

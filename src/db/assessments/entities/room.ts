@@ -37,7 +37,7 @@ export class Room {
   @Column()
   public endTime?: Date
 
-  private constructor(room_id = v4(), startTime?: Date, endTime?: Date) {
+  constructor(room_id = v4(), startTime?: Date, endTime?: Date) {
     this.room_id = room_id
     this.startTime = startTime
     this.endTime = endTime
@@ -79,7 +79,7 @@ export class Room {
           const mockAnswers = ['yes', 'no', 'maybe', 'number']
           for (let j = 0; j < answerCount; j++) {
             const mockAnswerText = pick(mockAnswers)
-            const answer = Answer.mock(
+            const answer = Answer.new(
               userContentScore,
               new Date(randomInt(duration, start)),
               mockAnswerText === 'number'

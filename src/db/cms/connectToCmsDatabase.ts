@@ -4,7 +4,7 @@ import { createConnection } from 'typeorm'
 export async function connectToCmsDatabase(): Promise<void> {
   const url = process.env.CMS_DATABASE_URL
   if (!url) {
-    throw Error('Please specify a value for CMS_DATABASE_URL')
+    throw new Error('Please specify a value for CMS_DATABASE_URL')
   }
 
   try {
