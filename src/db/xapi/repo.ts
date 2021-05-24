@@ -22,11 +22,7 @@ export class XAPIRepository {
     this.TableName = TableName
   }
 
-  async searchXApiEvents(
-    userId: string,
-    from?: number,
-    to?: number,
-  ) {
+  async searchXApiEvents(userId: string, from?: number, to?: number) {
     const xapiRecords = await docClient
       .query({
         TableName: this.TableName,

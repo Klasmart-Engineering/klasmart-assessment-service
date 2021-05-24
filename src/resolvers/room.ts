@@ -30,74 +30,90 @@ export default class RoomResolver {
       // const room = await this.roomRepository.findOne(room_id)
       // if(room) { return room }
       const userContentScores = await this.calculateRoom(room_id)
-      if(userContentScores) {
-        let room = new Room(room_id)
+      if (userContentScores) {
+        const room = new Room(room_id)
         room.scores = userContentScores
         return room
       }
       return Room.random(room_id)
-    } catch(e) {
+    } catch (e) {
       console.error(e)
       throw new Error(`Unable to fetch Room(${room_id})`)
     }
   }
 
   private async calculateRoom(roomId: string) {
-    const attendances = await this.attendanceRepository.find({where: {roomId}})
     const userContentScores = new Map<string, UserContentScore>()
+    const attendances = await this.attendanceRepository.find({
+      where: { roomId },
+    })
 
-    for(const {userId, joinTimestamp, leaveTimestamp} of attendances) {
+    for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
       const events = await this.xapiRepository.searchXApiEvents(
         userId,
         joinTimestamp.getTime(),
         leaveTimestamp.getTime(),
       )
-      if(!events) { continue }
-      for(const event of events) {
-        if(!event) { continue }
+      if (!events) {
+        continue
+      }
+      for (const event of events) {
+        if (!event) {
+          continue
+        }
         try {
           const clientTimestamp = event?.xapi?.clientTimestamp
           const statement = event?.xapi?.data?.statement
           const extensions = statement?.object?.definition?.extensions
-          const localId = extensions && extensions["http://h5p.org/x-api/h5p-local-content-id"]
-          const subContentId = extensions && extensions["http://h5p.org/x-api/h5p-subContentId"]
-          
-          const contentId = `${localId}|${subContentId}`
-          const contentTypeCategories = statement?.context?.contextActivities?.category
-          const contentType = (contentTypeCategories instanceof Array) && contentTypeCategories[0]?.id
+          const localId =
+            extensions &&
+            extensions['http://h5p.org/x-api/h5p-local-content-id']
+          const subContentId =
+            extensions && extensions['http://h5p.org/x-api/h5p-subContentId']
+
+          const contentId = `${localId}` //|${subContentId}`
+          const contentTypeCategories =
+            statement?.context?.contextActivities?.category
+          const contentType =
+            contentTypeCategories instanceof Array &&
+            contentTypeCategories[0]?.id
 
           const id = `${roomId}|${userId}|${contentId}`
           let userContentScore = userContentScores.get(id)
-          if(!userContentScore) {
+          if (!userContentScore) {
             userContentScore = UserContentScore.new(
               roomId,
               User.random(userId),
-              new Content(contentId,"",contentType),
+              new Content(contentId, '', contentType),
             )
             userContentScores.set(id, userContentScore)
           }
-          
+
           userContentScore.seen = true
           const min = statement?.result?.score?.min
-          if(min !== undefined) { userContentScore.min = min }
+          if (min !== undefined) {
+            userContentScore.min = min
+          }
           const max = statement?.result?.score?.max
-          if(max !== undefined) { userContentScore.max = max }
+          if (max !== undefined) {
+            userContentScore.max = max
+          }
 
           const response = statement?.result?.response
           const score = statement?.result?.score?.raw
-          if(score !== undefined || response !== undefined) {
-            console.log(JSON.stringify({id, response, score}))
+          if (score !== undefined || response !== undefined) {
+            console.log(JSON.stringify({ id, response, score }))
             const answer = Answer.new(
               userContentScore,
               clientTimestamp,
               response,
               score,
               min,
-              max
+              max,
             )
             userContentScore.addAnswer(answer)
           }
-        } catch(e) {
+        } catch (e) {
           console.error(`Unable to process event: ${e}`)
         }
       }

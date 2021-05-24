@@ -41,9 +41,13 @@ export class TeacherScore {
   public teacher?: User //TODO: Source by Federatation
 
   @Field(() => User)
-  public async student() {return (await this.userContentScore)?.user}
+  public async student() {
+    return (await this.userContentScore)?.user
+  }
   @Field(() => Content)
-  public async content() {return (await this.userContentScore)?.content}
+  public async content() {
+    return (await this.userContentScore)?.content
+  }
 
   @Field()
   @CreateDateColumn()

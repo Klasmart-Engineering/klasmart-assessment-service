@@ -76,9 +76,11 @@ export class UserContentScore {
 
   public async addAnswer(answer: Answer): Promise<void> {
     let answers = await this.answers
-    if(!answers) { this.answers = answers = [] }
+    if (!answers) {
+      this.answers = answers = []
+    }
     answers.push(answer)
-    
+
     const { score } = answer
     if (!score) {
       return

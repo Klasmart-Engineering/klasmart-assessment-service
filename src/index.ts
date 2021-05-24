@@ -20,7 +20,6 @@ async function main() {
   await connectToUserDatabase()
   await connectToAssessmentDatabase()
 
-
   const schema = await buildFederatedSchema({
     resolvers: [
       path.join(__dirname, './resolvers/**/*.ts'),

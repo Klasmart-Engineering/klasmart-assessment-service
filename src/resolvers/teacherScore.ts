@@ -25,7 +25,9 @@ export default class TeacherScoreResolver {
     @UserID() teacher_id?: string,
   ) {
     try {
-      if (!teacher_id) { return }
+      if (!teacher_id) {
+        return
+      }
       const teacher = User.random(teacher_id)
       const student = User.random(student_id)
       const content = Content.random(content_id)
@@ -33,9 +35,9 @@ export default class TeacherScoreResolver {
       const teacherScore = TeacherScore.new(userContentScore, teacher, score)
       await this.repository.save(teacherScore)
       return teacherScore
-    } catch(e) {
+    } catch (e) {
       console.error(e)
-      throw new Error("Unable to save teacher score")
+      throw new Error('Unable to save teacher score')
     }
   }
 }

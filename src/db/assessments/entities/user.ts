@@ -23,11 +23,7 @@ export class User {
     given_name = pick(adjectives),
     family_name = pick(names),
   ) {
-    return new User(
-      user_id,
-      given_name,
-      family_name,
-    )
+    return new User(user_id, given_name, family_name)
   }
 }
 

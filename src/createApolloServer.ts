@@ -16,7 +16,7 @@ export const createApolloServer = (
           return connection.context
         }
         const ip = req.headers['x-forwarded-for'] || req.ip
-        const user_id = "teacherId"
+        const user_id = 'teacherId'
         const context: Context = {
           ip,
           user_id,

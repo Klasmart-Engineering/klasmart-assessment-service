@@ -1,11 +1,6 @@
 import { Field, ObjectType } from 'type-graphql'
 import { v4 } from 'uuid'
-import {
-  randomInt,
-  randomUsers,
-  randomArray,
-  pick,
-} from '../../../random'
+import { randomInt, randomUsers, randomArray, pick } from '../../../random'
 import { TeacherComment } from './teacherComments'
 import { UserContentScore } from './userContentScore'
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm'

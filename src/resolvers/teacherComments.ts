@@ -14,14 +14,16 @@ export default class TeacherCommentResolver {
     private readonly repository: Repository<TeacherComment>,
   ) {}
 
-  @Mutation((type) => TeacherComment, {nullable: true})
+  @Mutation((type) => TeacherComment, { nullable: true })
   public async addComment(
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
     @UserID() teacher_id?: string,
   ) {
-    if (!teacher_id) { return }
+    if (!teacher_id) {
+      return
+    }
     try {
       const teacher = User.random(teacher_id)
       const student = User.random(student_id)
@@ -34,9 +36,9 @@ export default class TeacherCommentResolver {
       )
       await this.repository.save(teacherComment)
       return teacherComment
-    } catch(e) {
+    } catch (e) {
       console.error(e)
-      throw new Error("Unable to save teacher comment")
+      throw new Error('Unable to save teacher comment')
     }
   }
 }

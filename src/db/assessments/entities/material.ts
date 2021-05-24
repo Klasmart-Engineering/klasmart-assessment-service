@@ -1,12 +1,12 @@
-import { ObjectType, Field } from "type-graphql"
-import { v4 } from "uuid"
-import { pick, randomInt } from "../../../random"
+import { ObjectType, Field } from 'type-graphql'
+import { v4 } from 'uuid'
+import { pick, randomInt } from '../../../random'
 
 @ObjectType()
 export class Content {
   @Field()
   public content_id: string
-  
+
   @Field()
   public name: string
 
@@ -30,10 +30,7 @@ export class Content {
     this.maximumPossibleScore = minimumPossibleScore + scoreRange
   }
 
-
-  public static random(
-    content_id: string = v4()
-  ) {
+  public static random(content_id: string = v4()) {
     const min = randomInt(3, 0)
     const max = min + randomInt(20)
     return new Content(
