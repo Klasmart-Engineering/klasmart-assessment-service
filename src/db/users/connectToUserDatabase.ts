@@ -2,8 +2,7 @@ import path from 'path'
 import { createConnection } from 'typeorm'
 
 export async function connectToUserDatabase(): Promise<void> {
-  const url = process.env.USER_DATABASE_URL ||
-  'postgres://postgres:kidsloop@localhost/assessment'
+  const url = process.env.USER_DATABASE_URL
   if (!url) {
     throw new Error('Please specify a value for USER_DATABASE_URL')
   }

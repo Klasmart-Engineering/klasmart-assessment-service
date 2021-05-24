@@ -1,7 +1,7 @@
 import { Arg, FieldResolver, Query, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { Repository } from 'typeorm'
-import { InjectRepository } from 'typeorm-typedi-extensions'
+import { EntityManager, Repository } from 'typeorm'
+import { InjectRepository, InjectManager } from 'typeorm-typedi-extensions'
 import { Answer } from '../db/assessments/entities/answer'
 import { Content } from '../db/assessments/entities/material'
 import { Room } from '../db/assessments/entities/room'
@@ -18,33 +18,39 @@ import { XAPIRepository, xapiRepository } from '../db/xapi/repo'
 export default class RoomResolver {
   private readonly xapiRepository: XAPIRepository = xapiRepository
   constructor(
-    @InjectRepository(Room, 'assessments')
-    private readonly roomRepository: Repository<Room>,
-    @InjectRepository(Attendance, 'users')
-    private readonly attendanceRepository: Repository<Attendance>,
+    @InjectManager('assessments')
+    private readonly assessmentDB: EntityManager,
+    @InjectManager('users')
+    private readonly userDB: EntityManager,
   ) {}
 
   @Query(() => Room)
   public async Room(@Arg('room_id', { nullable: true }) room_id: string) {
     try {
-      // const room = await this.roomRepository.findOne(room_id)
-      // if(room) { return room }
-      const userContentScores = await this.calculateRoom(room_id)
-      if (userContentScores) {
-        const room = new Room(room_id)
-        room.scores = userContentScores
-        return room
+      let room = await this.assessmentDB.findOne(Room, room_id, {})
+      if (room) {
+        if (!room.recalculate) {
+          return room
+        }
+        room.scores = this.calculateRoom(room)
+        room.recalculate = false
+        await this.assessmentDB.save(room)
+      } else {
+        room = new Room(room_id)
+        room.scores = this.calculateRoom(room)
+        await this.assessmentDB.insert(Room, room)
       }
-      return Room.random(room_id)
+      return room
     } catch (e) {
       console.error(e)
-      throw new Error(`Unable to fetch Room(${room_id})`)
     }
+    throw new Error(`Unable to fetch Room(${room_id})`)
   }
 
-  private async calculateRoom(roomId: string) {
+  private async calculateRoom(room: Room) {
+    const roomId = room.room_id
     const userContentScores = new Map<string, UserContentScore>()
-    const attendances = await this.attendanceRepository.find({
+    const attendances = await this.userDB.find(Attendance, {
       where: { roomId },
     })
 
@@ -82,7 +88,7 @@ export default class RoomResolver {
           let userContentScore = userContentScores.get(id)
           if (!userContentScore) {
             userContentScore = UserContentScore.new(
-              roomId,
+              room,
               User.random(userId),
               new Content(contentId, '', contentType),
             )
@@ -105,7 +111,7 @@ export default class RoomResolver {
             console.log(JSON.stringify({ id, response, score }))
             const answer = Answer.new(
               userContentScore,
-              clientTimestamp,
+              new Date(clientTimestamp),
               response,
               score,
               min,
@@ -117,15 +123,15 @@ export default class RoomResolver {
           console.error(`Unable to process event: ${e}`)
         }
       }
-      return [...userContentScores.values()]
     }
+    return [...userContentScores.values()]
   }
 
   @FieldResolver(() => [UserScores])
-  public scoresByUser(@Root() room: Room): UserScores[] {
+  public async scoresByUser(@Root() room: Room): Promise<UserScores[]> {
     const scoresByUser: Map<string, UserScores> = new Map()
 
-    for (const userContentScore of room.scores) {
+    for (const userContentScore of await room.scores) {
       const userScores = scoresByUser.get(userContentScore.student_id)
       if (userScores) {
         userScores.scores.push(userContentScore)
@@ -141,10 +147,10 @@ export default class RoomResolver {
   }
 
   @FieldResolver(() => [ContentScores])
-  public scoresByContent(@Root() room: Room): ContentScores[] {
+  public async scoresByContent(@Root() room: Room): Promise<ContentScores[]> {
     const scoresByContent: Map<string, ContentScores> = new Map()
 
-    for (const userContentScore of room.scores) {
+    for (const userContentScore of await room.scores) {
       const contentScores = scoresByContent.get(userContentScore.student_id)
       if (contentScores) {
         contentScores.scores.push(userContentScore)

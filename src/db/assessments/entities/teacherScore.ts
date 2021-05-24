@@ -29,6 +29,7 @@ export class TeacherScore {
   @ManyToOne(
     () => UserContentScore,
     (userContentScore) => userContentScore.teacherScores,
+    { lazy: true },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },

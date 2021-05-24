@@ -21,6 +21,7 @@ export class Answer {
   @ManyToOne(
     () => UserContentScore,
     (userContentScore) => userContentScore.answers,
+    { lazy: true },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },

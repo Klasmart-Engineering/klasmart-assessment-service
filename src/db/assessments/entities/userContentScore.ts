@@ -26,17 +26,18 @@ export class UserContentScore {
   @PrimaryColumn({ name: 'content_id', nullable: false })
   public readonly content_id: string
 
-  @ManyToOne(() => Room, (room) => room.scores)
+  @ManyToOne(() => Room, (room) => room.scores, { lazy: true })
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public room!: Room
 
-  @OneToMany(() => Answer, (answer) => answer.userContentScore)
+  @OneToMany(() => Answer, (answer) => answer.userContentScore, { lazy: true })
   public answers?: Promise<Answer[]> | Answer[]
 
   @Field(() => [TeacherScore])
   @OneToMany(
     () => TeacherScore,
     (teacherScore) => teacherScore.userContentScore,
+    { lazy: true },
   )
   public teacherScores!: Promise<TeacherScore[]> | TeacherScore[]
 
@@ -67,12 +68,10 @@ export class UserContentScore {
   public min?: number
   @Column({ nullable: true })
   public max?: number
-  @Column()
+  @Column({ default: 0 })
   public sum!: number
-  @Column()
+  @Column({ default: 0 })
   public scoreFrequency!: number
-  @Column({ nullable: true })
-  public mean?: number
 
   public async addAnswer(answer: Answer): Promise<void> {
     let answers = await this.answers
@@ -118,9 +117,14 @@ export class UserContentScore {
     )
     userContentScore.user = student
     userContentScore.content = content
-    userContentScore.answers = answers
+    userContentScore.answers = []
     userContentScore.teacherScores = teacherScores
     userContentScore.seen = seen
+    userContentScore.sum = 0
+    userContentScore.scoreFrequency = 0
+    for (const answer of answers) {
+      userContentScore.addAnswer(answer)
+    }
 
     return userContentScore
   }

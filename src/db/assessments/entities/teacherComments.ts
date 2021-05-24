@@ -16,7 +16,7 @@ export class TeacherComment {
   @PrimaryColumn({ name: 'student_id' })
   public readonly studentId: string
 
-  @ManyToOne(() => Room, (room) => room.teacherComments)
+  @ManyToOne(() => Room, (room) => room.teacherComments, { lazy: true })
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public readonly room!: Promise<Room> | Room
 

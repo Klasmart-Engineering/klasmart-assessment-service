@@ -3,7 +3,7 @@ import { v4 } from 'uuid'
 import { randomInt, randomUsers, randomArray, pick } from '../../../random'
 import { TeacherComment } from './teacherComments'
 import { UserContentScore } from './userContentScore'
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm'
 import { TeacherScore } from './teacherScore'
 import { Answer } from './answer'
 import { Content } from './material'
@@ -19,18 +19,27 @@ export class Room {
   @OneToMany(
     () => UserContentScore,
     (userContentScore) => userContentScore.room,
+    { lazy: true },
   )
-  public scores!: UserContentScore[]
+  public scores!: Promise<UserContentScore[]> | UserContentScore[]
 
   @Field(() => [TeacherComment])
-  @OneToMany(() => TeacherComment, (userContentScore) => userContentScore.room)
-  public teacherComments!: Promise<TeacherComment[]> | TeacherComment[]
+  @OneToMany(
+    () => TeacherComment,
+    (userContentScore) => userContentScore.room,
+    { lazy: true },
+  )
+  @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
+  public teacherComments!: Promise<TeacherComment[]>
 
   @Column()
   public startTime?: Date
 
   @Column()
   public endTime?: Date
+
+  @Column({ default: false })
+  public recalculate!: boolean
 
   constructor(room_id = v4(), startTime?: Date, endTime?: Date) {
     this.room_id = room_id
@@ -51,7 +60,7 @@ export class Room {
     room.startTime = new Date(start)
     room.endTime = new Date(start + duration)
 
-    room.scores = []
+    const scores: UserContentScore[] = []
     for (const content of contents) {
       for (const user of [...students, ...teachers]) {
         const count = randomInt(10, 0, 2)
@@ -86,27 +95,29 @@ export class Room {
             )
             answers.push(answer)
           }
-          room.scores.push(userContentScore)
+          scores.push(userContentScore)
         }
       }
     }
+    room.scores = Promise.resolve(scores)
 
-    room.teacherComments = randomArray(
+    const teacherComments: TeacherComment[] = randomArray(
       randomInt(students.length * teachers.length),
       () =>
         TeacherComment.new(
           room.room_id,
           pick(teachers),
           pick(students),
-          pick(teacherComments),
+          pick(mockTeacherComments),
         ),
     )
+    room.teacherComments = Promise.resolve(teacherComments)
 
     return room
   }
 }
 
-const teacherComments = [
+const mockTeacherComments = [
   'Good Job!',
   'Almost, please try harder next time.',
   'A great improvement!',
