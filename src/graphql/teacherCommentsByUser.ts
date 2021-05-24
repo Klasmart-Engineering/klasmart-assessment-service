@@ -1,17 +1,15 @@
 import { ObjectType, Field, Arg, Mutation, Resolver } from 'type-graphql'
 import { TeacherComment } from '../db/assessments/entities/teacherComments'
-import { User } from './user'
 
 @ObjectType()
 export class TeacherCommentsByStudent {
-  @Field()
-  public student?: User //TODO: Federate
+  public readonly student_id: string
 
   @Field(() => [TeacherComment])
   public teacherComments: TeacherComment[]
 
-  constructor(student?: User, comment: TeacherComment[] = []) {
-    this.student = student
+  constructor(student_id: string, comment: TeacherComment[] = []) {
+    this.student_id = student_id
     this.teacherComments = comment
   }
 }

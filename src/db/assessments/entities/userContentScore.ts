@@ -8,11 +8,9 @@ import {
   PrimaryColumn,
 } from 'typeorm'
 import { Answer } from './answer'
-import { Content } from '../../../graphql/material'
 import { Room } from './room'
 import { ScoreSummary } from '../../../graphql/scoreSummary'
 import { TeacherScore } from './teacherScore'
-import { User } from '../../../graphql/user'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -40,11 +38,6 @@ export class UserContentScore {
     { lazy: true },
   )
   public teacherScores!: Promise<TeacherScore[]> | TeacherScore[]
-
-  @Field()
-  public user?: User //TODO: Federate
-  @Field()
-  public content?: Content //TODO: Federate
 
   @Field(() => Boolean)
   @Column()
@@ -103,20 +96,14 @@ export class UserContentScore {
 
   public static new(
     roomOrId: Room | string,
-    student: User,
-    content: Content,
+    studentId: string,
+    contentId: string,
     answers: Answer[] = [],
     teacherScores: TeacherScore[] = [],
     seen: boolean = answers.length > 0,
   ): UserContentScore {
     const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.room_id
-    const userContentScore = new UserContentScore(
-      roomId,
-      student.user_id,
-      content.content_id,
-    )
-    userContentScore.user = student
-    userContentScore.content = content
+    const userContentScore = new UserContentScore(roomId, studentId, contentId)
     userContentScore.answers = []
     userContentScore.teacherScores = teacherScores
     userContentScore.seen = seen

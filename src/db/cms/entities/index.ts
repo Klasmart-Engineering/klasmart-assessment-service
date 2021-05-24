@@ -1,1 +1,1 @@
-export { CmsContent } from './cmsContent'
+export { Content } from './content'

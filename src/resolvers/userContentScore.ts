@@ -1,29 +1,32 @@
-import { FieldResolver, Resolver, Root } from 'type-graphql'
+import { FieldResolver, Mutation, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { Content } from '../graphql/material'
-import { User } from '../graphql/user'
+import { InjectRepository } from 'typeorm-typedi-extensions'
+import { Repository } from 'typeorm'
+import { User } from '../db/users/entities'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
+import { Content } from '../db/cms/entities/content'
 
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
-  constructor() {}
+  constructor(
+    @InjectRepository(User, 'users')
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Content, 'cms')
+    private readonly contentRepository: Repository<Content>,
+  ) {}
 
-  @FieldResolver(() => User)
-  public async user(@Root() userContentScore: UserContentScore): Promise<User> {
-    if (userContentScore.user) {
-      return userContentScore.user
-    }
-    return User.random(userContentScore.student_id)
+  @FieldResolver(() => User, { nullable: true })
+  public async user(@Root() source: UserContentScore) {
+    return await this.userRepository.findOne({
+      where: { user_id: source.student_id },
+    })
   }
 
-  @FieldResolver(() => Content)
-  public async content(
-    @Root() userContentScore: UserContentScore,
-  ): Promise<Content> {
-    if (userContentScore.content) {
-      return userContentScore.content
-    }
-    return Content.random(userContentScore.content_id)
+  @FieldResolver(() => Content, { nullable: true })
+  public async content(@Root() source: UserContentScore) {
+    return await this.contentRepository.findOne({
+      where: { content_id: source.content_id },
+    })
   }
 }

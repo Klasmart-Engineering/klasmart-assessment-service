@@ -19,6 +19,7 @@ export async function connectToAssessmentDatabase(): Promise<void> {
         path.join(__dirname, './entities/*.ts'),
         path.join(__dirname, './entities/*.js'),
       ],
+      logging: true,
     })
     console.log('🐘 Connected to postgres: Assessment database')
   } catch (e) {

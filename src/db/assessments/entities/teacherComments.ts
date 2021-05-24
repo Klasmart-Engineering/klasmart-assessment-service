@@ -1,8 +1,6 @@
 import { ObjectType, Field } from 'type-graphql'
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'
-import { pick } from '../../../random'
 import { Room } from './room'
-import { User } from '../../../graphql/user'
 
 @Entity({ name: 'assessment_xapi_teacher_comment' })
 @ObjectType()
@@ -20,11 +18,6 @@ export class TeacherComment {
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public readonly room!: Promise<Room> | Room
 
-  @Field()
-  public teacher?: User //TODO: Federate
-  @Field()
-  public student?: User //TODO: Federate
-
   @Column({ nullable: false })
   @Field()
   public date!: Date
@@ -41,18 +34,12 @@ export class TeacherComment {
 
   public static new(
     roomId: string,
-    teacher: User,
-    student: User,
+    teacherId: string,
+    studentId: string,
     comment: string,
     date = new Date(),
   ): TeacherComment {
-    const teacherComment = new TeacherComment(
-      roomId,
-      teacher.user_id,
-      student.user_id,
-    )
-    teacherComment.teacher = teacher
-    teacherComment.student = student
+    const teacherComment = new TeacherComment(roomId, teacherId, studentId)
     teacherComment.date = date
     teacherComment.comment = comment
     return teacherComment

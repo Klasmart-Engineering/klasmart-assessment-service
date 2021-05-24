@@ -28,7 +28,7 @@ type Content {
 }
 
 type ContentScores {
-  content: Content!
+  content: Content
   scores: [UserContentScore!]!
 }
 
@@ -66,21 +66,21 @@ type ScoreSummary {
 type TeacherComment {
   comment: String!
   date: Timestamp!
-  student: User!
-  teacher: User!
+  student: User
+  teacher: User
 }
 
 type TeacherCommentsByStudent {
-  student: User!
+  student: User
   teacherComments: [TeacherComment!]!
 }
 
 type TeacherScore {
-  content: Content!
+  content: Content
   date: Timestamp!
   score: Float!
-  student: User!
-  teacher: User!
+  student: User
+  teacher: User
 }
 
 """
@@ -95,14 +95,14 @@ type User {
 }
 
 type UserContentScore {
-  content: Content!
+  content: Content
   score: ScoreSummary!
   seen: Boolean!
   teacherScores: [TeacherScore!]!
-  user: User!
+  user: User
 }
 
 type UserScores {
   scores: [UserContentScore!]!
-  user: User!
+  user: User
 }

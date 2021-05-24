@@ -3,15 +3,14 @@ import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 import { Answer } from '../db/assessments/entities/answer'
-import { Content } from '../db/assessments/entities/material'
 import { Room } from '../db/assessments/entities/room'
-import { ContentScores } from '../db/assessments/entities/scoresByContent'
-import { UserScores } from '../db/assessments/entities/scoresByUser'
-import { TeacherCommentsByStudent } from '../db/assessments/entities/teacherCommentsByUser'
-import { User } from '../db/assessments/entities/user'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
-import { Attendance } from '../db/users/entities'
+import { Content } from '../db/cms/entities/content'
+import { Attendance, User } from '../db/users/entities'
 import { XAPIRepository, xapiRepository } from '../db/xapi/repo'
+import { ContentScores } from '../graphql/scoresByContent'
+import { UserScores } from '../graphql/scoresByUser'
+import { TeacherCommentsByStudent } from '../graphql/teacherCommentsByUser'
 
 @Service()
 @Resolver(() => Room)
@@ -87,11 +86,7 @@ export default class RoomResolver {
           const id = `${roomId}|${userId}|${contentId}`
           let userContentScore = userContentScores.get(id)
           if (!userContentScore) {
-            userContentScore = UserContentScore.new(
-              room,
-              User.random(userId),
-              new Content(contentId, '', contentType),
-            )
+            userContentScore = UserContentScore.new(room, userId, contentId)
             userContentScores.set(id, userContentScore)
           }
 
@@ -138,7 +133,7 @@ export default class RoomResolver {
       } else {
         scoresByUser.set(
           userContentScore.student_id,
-          new UserScores(userContentScore.user, [userContentScore]),
+          new UserScores(userContentScore.student_id, [userContentScore]),
         )
       }
     }
@@ -157,7 +152,7 @@ export default class RoomResolver {
       } else {
         scoresByContent.set(
           userContentScore.student_id,
-          new ContentScores(userContentScore.content, [userContentScore]),
+          new ContentScores(userContentScore.content_id, [userContentScore]),
         )
       }
     }
@@ -178,7 +173,7 @@ export default class RoomResolver {
       } else {
         commentsByStudent.set(
           comment.studentId,
-          new TeacherCommentsByStudent(comment.student, [comment]),
+          new TeacherCommentsByStudent(comment.studentId, [comment]),
         )
       }
     }

@@ -1,17 +1,15 @@
 import { ObjectType, Field } from 'type-graphql'
-import { Content } from './material'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
 
 @ObjectType()
 export class ContentScores {
-  @Field()
-  public content?: Content //TODO: Federate
+  public readonly content_id: string
 
   @Field(() => [UserContentScore])
   public scores: UserContentScore[]
 
-  constructor(content?: Content, scores: UserContentScore[] = []) {
-    this.content = content
+  constructor(content_id: string, scores: UserContentScore[] = []) {
+    this.content_id = content_id
     this.scores = scores
   }
 }

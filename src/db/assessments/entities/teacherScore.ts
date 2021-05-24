@@ -7,8 +7,6 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm'
-import { Content } from '../../../graphql/material'
-import { User } from '../../../graphql/user'
 import { UserContentScore } from './userContentScore'
 
 @Entity({ name: 'assessment_xapi_teacher_score' })
@@ -39,18 +37,6 @@ export class TeacherScore {
   public userContentScore?: Promise<UserContentScore> | UserContentScore
 
   @Field()
-  public teacher?: User //TODO: Source by Federatation
-
-  @Field(() => User)
-  public async student() {
-    return (await this.userContentScore)?.user
-  }
-  @Field(() => Content)
-  public async content() {
-    return (await this.userContentScore)?.content
-  }
-
-  @Field()
   @CreateDateColumn()
   public date!: Date
 
@@ -72,18 +58,17 @@ export class TeacherScore {
 
   public static new(
     userContentScore: UserContentScore,
-    teacher: User,
+    teacherId: string,
     score: number,
     date = new Date(),
   ): TeacherScore {
     const teacherScore = new TeacherScore(
       userContentScore.room_id,
-      teacher.user_id,
+      teacherId,
       userContentScore.student_id,
       userContentScore.content_id,
     )
     teacherScore.userContentScore = userContentScore
-    teacherScore.teacher = teacher
     teacherScore.score = score
     teacherScore.date = date
 

@@ -16,7 +16,7 @@ const routePrefix = process.env.ROUTE_PREFIX || ''
 useContainer(Container)
 
 async function main() {
-  // await connectToCmsDatabase()
+  await connectToCmsDatabase()
   await connectToUserDatabase()
   await connectToAssessmentDatabase()
 
@@ -25,6 +25,7 @@ async function main() {
       path.join(__dirname, './resolvers/**/*.ts'),
       path.join(__dirname, './resolvers/**/*.js'),
     ],
+    container: Container,
   })
 
   const server = createApolloServer(schema)
