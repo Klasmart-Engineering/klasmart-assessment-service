@@ -1,5 +1,5 @@
 import { ObjectType, Field, Arg, Mutation, Resolver } from 'type-graphql'
-import { TeacherComment } from './teacherComments'
+import { TeacherComment } from '../db/assessments/entities/teacherComments'
 import { User } from './user'
 
 @ObjectType()

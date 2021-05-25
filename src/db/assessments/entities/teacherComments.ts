@@ -2,7 +2,7 @@ import { ObjectType, Field } from 'type-graphql'
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'
 import { pick } from '../../../random'
 import { Room } from './room'
-import { User } from './user'
+import { User } from '../../../graphql/user'
 
 @Entity({ name: 'assessment_xapi_teacher_comment' })
 @ObjectType()

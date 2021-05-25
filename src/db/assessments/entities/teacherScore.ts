@@ -7,8 +7,8 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm'
-import { Content } from './material'
-import { User } from './user'
+import { Content } from '../../../graphql/material'
+import { User } from '../../../graphql/user'
 import { UserContentScore } from './userContentScore'
 
 @Entity({ name: 'assessment_xapi_teacher_score' })

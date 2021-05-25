@@ -2,7 +2,7 @@ import { Arg, Mutation, Resolver } from 'type-graphql'
 import { Service } from 'typedi'
 import { TeacherComment } from '../db/assessments/entities/teacherComments'
 import { UserID } from './context'
-import { User } from '../db/assessments/entities/user'
+import { User } from '../graphql/user'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { Repository } from 'typeorm'
 

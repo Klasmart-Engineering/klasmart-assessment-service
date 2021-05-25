@@ -6,7 +6,7 @@ import { UserContentScore } from './userContentScore'
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm'
 import { TeacherScore } from './teacherScore'
 import { Answer } from './answer'
-import { Content } from './material'
+import { Content } from '../../../graphql/material'
 
 @Entity({ name: 'assessment_xapi_room' })
 @ObjectType()

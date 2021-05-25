@@ -1,6 +1,6 @@
 import { ObjectType, Field } from 'type-graphql'
 import { User } from './user'
-import { UserContentScore } from './userContentScore'
+import { UserContentScore } from '../db/assessments/entities/userContentScore'
 
 @ObjectType()
 export class UserScores {

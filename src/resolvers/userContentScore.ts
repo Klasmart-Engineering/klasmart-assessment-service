@@ -1,7 +1,7 @@
 import { FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { Content } from '../db/assessments/entities/material'
-import { User } from '../db/assessments/entities/user'
+import { Content } from '../graphql/material'
+import { User } from '../graphql/user'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
 
 @Service()

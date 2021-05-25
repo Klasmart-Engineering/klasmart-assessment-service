@@ -1,5 +1,5 @@
 import { ObjectType, Field, Float, Int } from 'type-graphql'
-import { Answer } from './answer'
+import { Answer } from '../db/assessments/entities/answer'
 
 type Medians<T> = [] | [T] | [T, T]
 

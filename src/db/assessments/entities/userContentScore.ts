@@ -8,11 +8,11 @@ import {
   PrimaryColumn,
 } from 'typeorm'
 import { Answer } from './answer'
-import { Content } from './material'
+import { Content } from '../../../graphql/material'
 import { Room } from './room'
-import { ScoreSummary } from './scoreSummary'
+import { ScoreSummary } from '../../../graphql/scoreSummary'
 import { TeacherScore } from './teacherScore'
-import { User } from './user'
+import { User } from '../../../graphql/user'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()

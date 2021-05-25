@@ -1,6 +1,6 @@
 import { ObjectType, Field } from 'type-graphql'
 import { v4 } from 'uuid'
-import { pick } from '../../../random'
+import { pick } from '../random'
 
 @ObjectType()
 export class User {
