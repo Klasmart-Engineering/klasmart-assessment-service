@@ -32,10 +32,10 @@ export class Room {
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public teacherComments!: Promise<TeacherComment[]>
 
-  @Column()
+  @Column({ nullable: false })
   public startTime?: Date
 
-  @Column()
+  @Column({ nullable: false })
   public endTime?: Date
 
   @Column({ default: false })
