@@ -11,7 +11,7 @@ import { Content } from './material'
 import { User } from './user'
 import { UserContentScore } from './userContentScore'
 
-@Entity({ name: 'teacher_score' })
+@Entity({ name: 'assessment_xapi_teacher_score' })
 @ObjectType()
 export class TeacherScore {
   @PrimaryColumn({ name: 'room_id', nullable: false })

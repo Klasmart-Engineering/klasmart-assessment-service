@@ -4,7 +4,7 @@ import { pick } from '../../../random'
 import { Room } from './room'
 import { User } from './user'
 
-@Entity({ name: 'teacher_comment' })
+@Entity({ name: 'assessment_xapi_teacher_comment' })
 @ObjectType()
 export class TeacherComment {
   @PrimaryColumn({ name: 'room_id', nullable: false })

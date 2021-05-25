@@ -2,7 +2,7 @@ import { ObjectType, Field } from 'type-graphql'
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'
 import { UserContentScore } from './userContentScore'
 
-@Entity({ name: 'answer' })
+@Entity({ name: 'assessment_xapi_answer' })
 @ObjectType()
 export class Answer {
   @PrimaryColumn({ name: 'room_id', nullable: false })
