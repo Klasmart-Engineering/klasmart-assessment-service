@@ -31,7 +31,6 @@ pipelines:
 
             - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
 
-            - cp Dockerfile .
             - docker build -t kidsloop-assessment .
 
             - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
@@ -60,7 +59,6 @@ pipelines:
 
             - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
 
-            - cp Dockerfile .
             - docker build -t kidsloop-assessment .
 
             - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
