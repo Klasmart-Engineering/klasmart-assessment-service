@@ -1,0 +1,73 @@
+definitions:
+  caches:
+    nodemodules: ./node_modules
+  steps:
+    - step: &npm-install
+        name: "Build NPM"
+        image: node:lts
+        script:
+          - npm i
+        caches:
+          - nodemodules
+        artifacts:
+          - node_modules/**
+
+pipelines:
+  pull-requests:
+    "**": # This runs as default for any branch not elsewhere defined.:
+      - step: *npm-install
+      - step:
+          name: "Docker build"
+          image: python:3.9-alpine
+          services:
+            - docker
+          script:
+            - pip3 install -U awscli
+
+            - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
+            - export REPO=$DOCKER_REPO_URL/kidsloop-assessment # DOCKER_REPO_URL is workspace wide variable
+            - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
+
+            - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
+
+            - docker build -t kidsloop-assessment .
+
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
+
+            - docker push $REPO:$BRANCH_TAG
+            - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+            - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
+
+  branches:
+    master:
+      - step: *npm-install
+      - step:
+          name: "Docker build and deploy to production"
+          image: python:3.9-alpine
+          services:
+            - docker
+          script:
+            - pip3 install -U awscli
+
+            - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
+            - export REPO=$DOCKER_REPO_URL/kidsloop-assessment # DOCKER_REPO_URL is workspace wide variable
+            - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
+
+            - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
+
+            - docker build -t kidsloop-assessment .
+
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
+            - docker tag kidsloop-assessment:latest $REPO:alpha
+
+            - docker push $REPO:$BRANCH_TAG
+            - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+            - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
+            - docker push $REPO:alpha
+          trigger: manual
