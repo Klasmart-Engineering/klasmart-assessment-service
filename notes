@@ -81,3 +81,34 @@ Mutation {
 
 Future Audio Upload
 
+New tables:
+- room_ids
+- teacher_comment
+- teacher_score
+- answerAndScore
+- userContentScore
+
+level 1:
+- just the 3 queries (slow approach)
+level 2:
+- fetch report from db, if not, calculate and cache it
+level 3:
+- save pre-computed result as the results come in
+level 4:
+- use spark for live near-live processing
+
+
+"Cache":
+- use Postgres to save report in database
+
+
+Authentication:
+- does this teacher teach this class
+- students can't see results of other students
+- parents can only see their children
+- admins can see all teachers
+
+Request comes in:
+- class finished ? if not => nullable
+- if yes => compute report
+- if yes (repeated) => return cached

@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
+  UpdateDateColumn,
 } from 'typeorm'
 import { UserContentScore } from './userContentScore'
 
@@ -27,7 +28,7 @@ export class TeacherScore {
   @ManyToOne(
     () => UserContentScore,
     (userContentScore) => userContentScore.teacherScores,
-    { lazy: true },
+    { lazy: true, cascade: ['insert'] },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
@@ -39,6 +40,10 @@ export class TeacherScore {
   @Field()
   @CreateDateColumn()
   public date!: Date
+
+  @Field()
+  @UpdateDateColumn()
+  public lastUpdated!: Date
 
   @Field()
   @Column({ nullable: false })

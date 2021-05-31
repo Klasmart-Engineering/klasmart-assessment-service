@@ -41,6 +41,7 @@ export class Answer {
   @Column({ name: 'minimum_possible_score' })
   @Field()
   public minimumPossibleScore?: number
+
   @Column({ name: 'maximum_possible_score' })
   @Field()
   public maximumPossibleScore?: number

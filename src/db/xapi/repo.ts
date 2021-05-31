@@ -1,9 +1,35 @@
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { DocumentClient, QueryOutput } from 'aws-sdk/clients/dynamodb'
 
 interface XAPIRecord {
-  xapi?: string
   userId?: string
   serverTimestamp?: number
+  xapi?: {
+    clientTimestamp?: string
+    data?: {
+      statement?: {
+        object?: any
+        definition?: any
+        extensions?: [key: string]
+        context?: {
+          contextActivities?: {
+            category?: [
+              {
+                id?: string
+              },
+            ]
+          }
+        }
+        result?: {
+          score?: {
+            min?: number
+            max?: number
+            raw?: any
+          }
+          response?: string
+        }
+      }
+    }
+  }
 }
 
 const docClient = new DocumentClient({
@@ -22,8 +48,12 @@ export class XAPIRepository {
     this.TableName = TableName
   }
 
-  async searchXApiEvents(userId: string, from?: number, to?: number) {
-    const xapiRecords = await docClient
+  async searchXApiEvents(
+    userId: string,
+    from?: number,
+    to?: number,
+  ): Promise<XAPIRecord[]> {
+    const xapiRecords: QueryOutput = await docClient
       .query({
         TableName: this.TableName,
         KeyConditionExpression:
@@ -36,7 +66,7 @@ export class XAPIRepository {
       })
       .promise()
 
-    return xapiRecords.Items
+    return xapiRecords.Items || []
   }
 }
 

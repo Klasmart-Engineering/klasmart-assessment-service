@@ -25,8 +25,14 @@ export default class UserContentScoreResolver {
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(@Root() source: UserContentScore) {
-    return await this.contentRepository.findOne({
-      where: { content_id: source.content_id },
-    })
+    return (
+      (await this.contentRepository
+        .createQueryBuilder()
+        .where({ content_type: 1 })
+        .andWhere(`data->"$.source" = :contentId`, {
+          contentId: source.content_id,
+        })
+        .getOne()) || null
+    )
   }
 }

@@ -5,12 +5,12 @@ import { InjectManager } from 'typeorm-typedi-extensions'
 import { Answer } from '../db/assessments/entities/answer'
 import { Room } from '../db/assessments/entities/room'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
-import { Content } from '../db/cms/entities/content'
-import { Attendance, User } from '../db/users/entities'
+import { Attendance } from '../db/users/entities'
 import { XAPIRepository, xapiRepository } from '../db/xapi/repo'
 import { ContentScores } from '../graphql/scoresByContent'
 import { UserScores } from '../graphql/scoresByUser'
 import { TeacherCommentsByStudent } from '../graphql/teacherCommentsByUser'
+import { UserID } from './context'
 
 @Service()
 @Resolver(() => Room)
@@ -24,20 +24,28 @@ export default class RoomResolver {
   ) {}
 
   @Query(() => Room)
-  public async Room(@Arg('room_id', { nullable: true }) room_id: string) {
+  public async Room(
+    @Arg('room_id', { nullable: true }) room_id: string,
+    @UserID() user_id?: string,
+  ): Promise<Room> {
+    if (user_id) {
+      throw new Error('Please authenticate')
+    }
+
     try {
       let room = await this.assessmentDB.findOne(Room, room_id, {})
       if (room) {
         if (!room.recalculate) {
           return room
         }
-        room.scores = this.calculateRoom(room)
+        room.scores = await this.calculateRoom(room)
         room.recalculate = false
         await this.assessmentDB.save(room)
       } else {
         room = new Room(room_id)
-        room.scores = this.calculateRoom(room)
         await this.assessmentDB.insert(Room, room)
+        room.scores = await this.calculateRoom(room)
+        await this.assessmentDB.save(Room, room)
       }
       return room
     } catch (e) {
@@ -53,12 +61,29 @@ export default class RoomResolver {
       where: { roomId },
     })
 
-    for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
+    const sessionHandled: { [indexer: string]: string } = {}
+    for (const {
+      sessionId,
+      userId,
+      joinTimestamp,
+      leaveTimestamp,
+    } of attendances) {
+      if (!sessionHandled[sessionId]) {
+        sessionHandled[sessionId] = sessionId
+      } else {
+        continue
+      }
+
+      console.log(`joinTimestamp (ms): ${joinTimestamp.getTime()}`)
+      const joinTimestampTimezoneOffset =
+        joinTimestamp.getTimezoneOffset() * 60000
+      console.log(`joinTimestamp offset (ms): ${joinTimestampTimezoneOffset}`)
       const events = await this.xapiRepository.searchXApiEvents(
         userId,
-        joinTimestamp.getTime(),
-        leaveTimestamp.getTime(),
+        joinTimestamp.getTime() - joinTimestampTimezoneOffset,
+        leaveTimestamp.getTime() - joinTimestampTimezoneOffset,
       )
+      console.log(`events: ${events?.length ?? 0}`)
       if (!events) {
         continue
       }
@@ -102,7 +127,10 @@ export default class RoomResolver {
 
           const response = statement?.result?.response
           const score = statement?.result?.score?.raw
-          if (score !== undefined || response !== undefined) {
+          if (
+            (score !== undefined || response !== undefined) &&
+            clientTimestamp !== undefined
+          ) {
             console.log(JSON.stringify({ id, response, score }))
             const answer = Answer.new(
               userContentScore,
@@ -167,13 +195,13 @@ export default class RoomResolver {
     const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
 
     for (const comment of await room.teacherComments) {
-      const teacherComments = commentsByStudent.get(comment.studentId)
+      const teacherComments = commentsByStudent.get(comment.student_id)
       if (teacherComments) {
         teacherComments.teacherComments.push(comment)
       } else {
         commentsByStudent.set(
-          comment.studentId,
-          new TeacherCommentsByStudent(comment.studentId, [comment]),
+          comment.student_id,
+          new TeacherCommentsByStudent(comment.student_id, [comment]),
         )
       }
     }

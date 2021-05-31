@@ -2,7 +2,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm'
 import { ObjectType, Field, Directive, ID } from 'type-graphql'
 
-@Directive(`@key(fields: "id")`)
 @ObjectType()
 @Entity({ name: 'cms_contents' })
 export class Content {
@@ -13,10 +12,7 @@ export class Content {
   @Column({ name: 'content_type' })
   readonly content_type!: number
 
-  @Field()
-  readonly type?: string
-
-  @Field()
+  @Field({ nullable: true })
   @Column({ name: 'content_name' })
   readonly name?: string
 
@@ -29,20 +25,6 @@ export class Content {
   @Column({ name: 'create_at' })
   readonly createdAt!: number
 
-  public minimumPossibleScore: number
-  public maximumPossibleScore: number
-
-  constructor(
-    content_id: string,
-    name: string,
-    type: string,
-    scoreRange = 10,
-    minimumPossibleScore = 0,
-  ) {
-    this.content_id = content_id
-    this.name = name
-    this.type = type
-    this.minimumPossibleScore = minimumPossibleScore
-    this.maximumPossibleScore = minimumPossibleScore + scoreRange
-  }
+  @Field({ nullable: true })
+  readonly type?: string
 }

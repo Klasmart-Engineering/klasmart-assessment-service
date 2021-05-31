@@ -15,10 +15,4 @@ export class User {
   @Column({ name: 'family_name', nullable: true })
   @Field({ nullable: true })
   public family_name?: string
-
-  constructor(user_id: string, given_name?: string, family_name?: string) {
-    this.user_id = user_id
-    this.given_name = given_name
-    this.family_name = family_name
-  }
 }

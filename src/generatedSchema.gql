@@ -23,8 +23,9 @@ type Answer {
 
 type Content {
   content_id: String!
-  name: String!
-  type: String!
+  fileType: FileType
+  name: String
+  type: String
 }
 
 type ContentScores {
@@ -32,8 +33,18 @@ type ContentScores {
   scores: [UserContentScore!]!
 }
 
+enum FileType {
+  Audio
+  Document
+  H5P
+  H5PExtension
+  Image
+  Video
+}
+
 type Mutation {
-  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment
+  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment @deprecated(reason: "Use comment(room_id, student_id, comment) resolver")
+  comment(comment: String!, room_id: String!, student_id: String!): TeacherComment
   setScore(content_id: String!, room_id: String!, score: Float!, student_id: String!): TeacherScore!
 }
 
@@ -66,6 +77,7 @@ type ScoreSummary {
 type TeacherComment {
   comment: String!
   date: Timestamp!
+  lastUpdated: Timestamp!
   student: User
   teacher: User
 }
@@ -78,6 +90,7 @@ type TeacherCommentsByStudent {
 type TeacherScore {
   content: Content
   date: Timestamp!
+  lastUpdated: Timestamp!
   score: Float!
   student: User
   teacher: User

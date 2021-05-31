@@ -15,9 +15,9 @@ export class Room {
   @OneToMany(
     () => UserContentScore,
     (userContentScore) => userContentScore.room,
-    { lazy: true },
+    { lazy: true, cascade: true },
   )
-  public scores!: Promise<UserContentScore[]> | UserContentScore[]
+  public scores!: UserContentScore[]
 
   @Field(() => [TeacherComment])
   @OneToMany(

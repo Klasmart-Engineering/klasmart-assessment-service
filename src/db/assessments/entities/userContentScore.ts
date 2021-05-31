@@ -35,9 +35,9 @@ export class UserContentScore {
   @OneToMany(
     () => TeacherScore,
     (teacherScore) => teacherScore.userContentScore,
-    { lazy: true },
+    { lazy: true, cascade: true },
   )
-  public teacherScores!: Promise<TeacherScore[]> | TeacherScore[]
+  public teacherScores!: TeacherScore[]
 
   @Field(() => Boolean)
   @Column()

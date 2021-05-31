@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import path from 'path'
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import compression from 'compression'
 import { useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
@@ -32,6 +33,7 @@ async function main() {
 
   const app = express()
   app.use(compression())
+  app.use(cookieParser())
   server.applyMiddleware({
     app,
     path: routePrefix,

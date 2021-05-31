@@ -1,35 +1,47 @@
 import { ObjectType, Field } from 'type-graphql'
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 import { Room } from './room'
 
 @Entity({ name: 'assessment_xapi_teacher_comment' })
 @ObjectType()
 export class TeacherComment {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly roomId: string
+  public readonly room_id: string
 
   @PrimaryColumn({ name: 'teacher_id' })
-  public readonly teacherId: string
+  public readonly teacher_id: string
 
   @PrimaryColumn({ name: 'student_id' })
-  public readonly studentId: string
+  public readonly student_id: string
 
   @ManyToOne(() => Room, (room) => room.teacherComments, { lazy: true })
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public readonly room!: Promise<Room> | Room
 
-  @Column({ nullable: false })
   @Field()
+  @CreateDateColumn()
   public date!: Date
+
+  @Field()
+  @UpdateDateColumn()
+  public lastUpdated!: Date
 
   @Column({ nullable: false })
   @Field()
   public comment!: string
 
   constructor(roomId: string, teacherId: string, studentId: string) {
-    this.roomId = roomId
-    this.teacherId = teacherId
-    this.studentId = studentId
+    this.room_id = roomId
+    this.teacher_id = teacherId
+    this.student_id = studentId
   }
 
   public static new(
