@@ -14,7 +14,14 @@ export default class ContentResolver {
   }
 
   @FieldResolver(() => FileType, { nullable: true })
-  type(@Root() content: Content): string | undefined {
-    return content.type || this.fileType(content)?.toString()
+  type(@Root() content: Content) {
+    if (content.type !== undefined) {
+      return content.type
+    }
+    const fileType =
+      content.data && 'file_type' in content.data && content.data['file_type']
+    if (typeof fileType === 'number') {
+      return FileType[fileType]
+    }
   }
 }
