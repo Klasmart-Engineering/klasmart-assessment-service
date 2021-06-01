@@ -66,17 +66,17 @@ export class Answer {
     minimumPossibleScore?: number,
     maximumPossibleScore?: number,
   ): Answer {
-    const x = new Answer(
+    const answerObject = new Answer(
       userContentScore.room_id,
       userContentScore.student_id,
       userContentScore.content_id,
       date,
     )
-    x.userContentScore = userContentScore
-    x.answer = answer
-    x.score = score
-    x.minimumPossibleScore = minimumPossibleScore
-    x.maximumPossibleScore = maximumPossibleScore
-    return x
+    answerObject.userContentScore = Promise.resolve(userContentScore)
+    answerObject.answer = answer
+    answerObject.score = score
+    answerObject.minimumPossibleScore = minimumPossibleScore
+    answerObject.maximumPossibleScore = maximumPossibleScore
+    return answerObject
   }
 }
