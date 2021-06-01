@@ -28,7 +28,7 @@ export default class RoomResolver {
     @Arg('room_id', { nullable: true }) room_id: string,
     @UserID() user_id?: string,
   ): Promise<Room> {
-    if (user_id) {
+    if (!user_id) {
       throw new Error('Please authenticate')
     }
 
