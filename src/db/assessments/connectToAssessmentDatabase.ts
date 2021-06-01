@@ -17,7 +17,7 @@ export async function connectToAssessmentDatabase(): Promise<void> {
         path.join(__dirname, './entities/*.ts'),
         path.join(__dirname, './entities/*.js'),
       ],
-      logging: Boolean(process.env.ASSESSMENT_DATABASE_LOGGIN),
+      logging: Boolean(process.env.ASSESSMENT_DATABASE_LOGGING),
     })
     console.log('🐘 Connected to postgres: Assessment database')
   } catch (e) {
