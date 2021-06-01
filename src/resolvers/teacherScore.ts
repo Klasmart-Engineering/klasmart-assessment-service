@@ -48,25 +48,17 @@ export default class TeacherScoreResolver {
         )
       }
 
-      let teacherScore = await this.assesmentDB.findOne(TeacherScore, {
-        room_id: room_id,
-        student_id: student_id,
-        content_id: content_id,
-        teacher_id: teacher_id,
-      })
+      const teacherScore =
+        (await this.assesmentDB.findOne(TeacherScore, {
+          room_id: room_id,
+          student_id: student_id,
+          content_id: content_id,
+          teacher_id: teacher_id,
+        })) || TeacherScore.new(userContentScore, teacher_id, score)
 
-      let update = true
-      if (!teacherScore) {
-        update = false
-        teacherScore = TeacherScore.new(userContentScore, teacher_id, score)
-      }
+      teacherScore.score = score
 
-      //TODO: Investigate upsert
-      if (update) {
-        await this.assesmentDB.save(TeacherScore, teacherScore)
-      } else {
-        await this.assesmentDB.insert(TeacherScore, teacherScore)
-      }
+      await this.assesmentDB.save(TeacherScore, teacherScore)
 
       return teacherScore
     } catch (e) {

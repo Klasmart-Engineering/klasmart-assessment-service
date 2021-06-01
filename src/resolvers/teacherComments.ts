@@ -41,29 +41,16 @@ export default class TeacherCommentResolver {
         throw new Error('Please authenticate')
       }
 
-      let teacherComment = await this.assesmentDB.findOne(TeacherComment, {
-        room_id,
-        student_id,
-        teacher_id,
-      })
-
-      let update = true
-      if (!teacherComment) {
-        update = false
-        teacherComment = TeacherComment.new(
+      const teacherComment =
+        (await this.assesmentDB.findOne(TeacherComment, {
           room_id,
           student_id,
           teacher_id,
-          comment,
-        )
-      }
+        })) || TeacherComment.new(room_id, teacher_id, student_id, comment)
 
-      //TODO: Investigate upsert
-      if (update) {
-        await this.assesmentDB.save(TeacherComment, teacherComment)
-      } else {
-        await this.assesmentDB.insert(TeacherComment, teacherComment)
-      }
+      teacherComment.comment = comment
+      await this.assesmentDB.save(TeacherComment, teacherComment)
+
       return teacherComment
     } catch (e) {
       console.error(e)
