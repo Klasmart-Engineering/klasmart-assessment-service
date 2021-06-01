@@ -21,8 +21,9 @@ export default class TeacherCommentResolver {
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
+    @UserID() teacher_id?: string,
   ) {
-    return await this.addComment(room_id, student_id, comment)
+    return await this.addComment(room_id, student_id, comment, teacher_id)
   }
 
   @Mutation(() => TeacherComment, {
