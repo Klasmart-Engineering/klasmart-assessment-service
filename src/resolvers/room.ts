@@ -34,19 +34,18 @@ export default class RoomResolver {
 
     try {
       let room = await this.assessmentDB.findOne(Room, room_id, {})
-      if (room) {
-        if (!room.recalculate) {
-          return room
-        }
-        room.scores = await this.calculateRoom(room)
-        room.recalculate = false
-        await this.assessmentDB.save(room)
-      } else {
-        room = new Room(room_id)
-        await this.assessmentDB.insert(Room, room)
-        room.scores = await this.calculateRoom(room)
-        await this.assessmentDB.save(Room, room)
+      if (room && !room.recalculate) {
+        return room
       }
+
+      if (!room) {
+        room = new Room(room_id)
+      }
+
+      const scores = await this.calculateRoom(room)
+      room.scores = Promise.resolve(scores)
+      room.recalculate = false
+      await this.assessmentDB.save(room)
       return room
     } catch (e) {
       console.error(e)
