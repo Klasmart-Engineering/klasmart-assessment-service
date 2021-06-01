@@ -17,13 +17,14 @@ export class Room {
     (userContentScore) => userContentScore.room,
     { lazy: true, cascade: true },
   )
-  public scores!: UserContentScore[]
+  @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
+  public scores!: Promise<UserContentScore[]>
 
   @Field(() => [TeacherComment])
   @OneToMany(
     () => TeacherComment,
     (userContentScore) => userContentScore.room,
-    { lazy: true },
+    { lazy: true, cascade: true },
   )
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public teacherComments!: Promise<TeacherComment[]>

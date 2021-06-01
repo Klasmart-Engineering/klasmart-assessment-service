@@ -3,7 +3,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
@@ -22,9 +21,12 @@ export class TeacherComment {
   @PrimaryColumn({ name: 'student_id' })
   public readonly student_id: string
 
-  @ManyToOne(() => Room, (room) => room.teacherComments, { lazy: true })
-  @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
-  public readonly room!: Promise<Room> | Room
+  @ManyToOne(
+    () => Room, // Linter bug
+    (room) => room.teacherComments,
+    { lazy: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
+  )
+  public readonly room!: Promise<Room>
 
   @Field()
   @CreateDateColumn()

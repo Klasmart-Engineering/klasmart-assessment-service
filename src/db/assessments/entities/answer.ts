@@ -1,5 +1,5 @@
 import { ObjectType, Field } from 'type-graphql'
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm'
 import { UserContentScore } from './userContentScore'
 
 @Entity({ name: 'assessment_xapi_answer' })
@@ -21,14 +21,9 @@ export class Answer {
   @ManyToOne(
     () => UserContentScore,
     (userContentScore) => userContentScore.answers,
-    { lazy: true },
+    { lazy: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
   )
-  @JoinColumn([
-    { name: 'room_id', referencedColumnName: 'room_id' },
-    { name: 'student_id', referencedColumnName: 'student_id' },
-    { name: 'content_id', referencedColumnName: 'content_id' },
-  ])
-  public userContentScore!: Promise<UserContentScore> | UserContentScore
+  public userContentScore!: Promise<UserContentScore>
 
   @Column({ nullable: true })
   @Field({ nullable: true })

@@ -3,7 +3,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
@@ -28,14 +27,9 @@ export class TeacherScore {
   @ManyToOne(
     () => UserContentScore,
     (userContentScore) => userContentScore.teacherScores,
-    { lazy: true, cascade: ['insert'] },
+    { lazy: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
   )
-  @JoinColumn([
-    { name: 'room_id', referencedColumnName: 'room_id' },
-    { name: 'student_id', referencedColumnName: 'student_id' },
-    { name: 'content_id', referencedColumnName: 'content_id' },
-  ])
-  public userContentScore?: Promise<UserContentScore> | UserContentScore
+  public userContentScore?: Promise<UserContentScore>
 
   @Field()
   @CreateDateColumn()
@@ -73,7 +67,7 @@ export class TeacherScore {
       userContentScore.student_id,
       userContentScore.content_id,
     )
-    teacherScore.userContentScore = userContentScore
+    teacherScore.userContentScore = Promise.resolve(userContentScore)
     teacherScore.score = score
     teacherScore.date = date
 

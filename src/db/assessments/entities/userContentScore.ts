@@ -24,12 +24,24 @@ export class UserContentScore {
   @PrimaryColumn({ name: 'content_id', nullable: false })
   public readonly content_id: string
 
-  @ManyToOne(() => Room, (room) => room.scores, { lazy: true })
-  @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
-  public room!: Room
+  @ManyToOne(
+    () => Room, //Linter bug
+    (room) => room.scores,
+    { lazy: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
+  )
+  public room!: Promise<Room>
 
-  @OneToMany(() => Answer, (answer) => answer.userContentScore, { lazy: true })
-  public answers?: Promise<Answer[]> | Answer[]
+  @OneToMany(
+    () => Answer, //Useless comment due to linter bug
+    (answer) => answer.userContentScore,
+    { lazy: true, cascade: true },
+  )
+  @JoinColumn([
+    { name: 'room_id', referencedColumnName: 'room_id' },
+    { name: 'student_id', referencedColumnName: 'student_id' },
+    { name: 'content_id', referencedColumnName: 'content_id' },
+  ])
+  public answers?: Promise<Answer[]>
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -37,7 +49,12 @@ export class UserContentScore {
     (teacherScore) => teacherScore.userContentScore,
     { lazy: true, cascade: true },
   )
-  public teacherScores!: TeacherScore[]
+  @JoinColumn([
+    { name: 'room_id', referencedColumnName: 'room_id' },
+    { name: 'student_id', referencedColumnName: 'student_id' },
+    { name: 'content_id', referencedColumnName: 'content_id' },
+  ])
+  public teacherScores!: Promise<TeacherScore[]>
 
   @Field(() => Boolean)
   @Column()
@@ -69,7 +86,8 @@ export class UserContentScore {
   public async addAnswer(answer: Answer): Promise<void> {
     let answers = await this.answers
     if (!answers) {
-      this.answers = answers = []
+      answers = []
+      this.answers = Promise.resolve(answers)
     }
     answers.push(answer)
 
@@ -104,8 +122,8 @@ export class UserContentScore {
   ): UserContentScore {
     const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.room_id
     const userContentScore = new UserContentScore(roomId, studentId, contentId)
-    userContentScore.answers = []
-    userContentScore.teacherScores = teacherScores
+    userContentScore.answers = Promise.resolve([])
+    userContentScore.teacherScores = Promise.resolve(teacherScores)
     userContentScore.seen = seen
     userContentScore.sum = 0
     userContentScore.scoreFrequency = 0
