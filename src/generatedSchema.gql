@@ -16,8 +16,8 @@ directive @requires(fields: String!) on FIELD_DEFINITION
 type Answer {
   answer: String
   date: Timestamp!
-  maximumPossibleScore: Float!
-  minimumPossibleScore: Float!
+  maximumPossibleScore: Float
+  minimumPossibleScore: Float
   score: Float
 }
 

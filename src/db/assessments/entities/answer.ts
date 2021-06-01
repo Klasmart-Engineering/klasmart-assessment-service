@@ -30,20 +30,20 @@ export class Answer {
   ])
   public userContentScore!: Promise<UserContentScore> | UserContentScore
 
-  @Column()
+  @Column({ nullable: true })
   @Field({ nullable: true })
   public answer?: string
 
-  @Column()
+  @Column({ nullable: true })
   @Field({ nullable: true })
   public score?: number
 
-  @Column({ name: 'minimum_possible_score' })
-  @Field()
+  @Column({ name: 'minimum_possible_score', nullable: true })
+  @Field({ nullable: true })
   public minimumPossibleScore?: number
 
-  @Column({ name: 'maximum_possible_score' })
-  @Field()
+  @Column({ name: 'maximum_possible_score', nullable: true })
+  @Field({ nullable: true })
   public maximumPossibleScore?: number
 
   constructor(
