@@ -2,9 +2,7 @@ import path from 'path'
 import { createConnection } from 'typeorm'
 
 export async function connectToAssessmentDatabase(): Promise<void> {
-  const url =
-    process.env.ASSESSMENT_DATABASE_URL ||
-    'postgres://postgres:kidsloop@localhost/assessment'
+  const url = process.env.ASSESSMENT_DATABASE_URL
   if (!url) {
     throw new Error('Please specify a value for ASSESSMENT_DATABASE_URL')
   }
