@@ -43,8 +43,8 @@ enum FileType {
 }
 
 type Mutation {
-  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment @deprecated(reason: "Use comment(room_id, student_id, comment) resolver")
-  comment(comment: String!, room_id: String!, student_id: String!): TeacherComment
+  addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment @deprecated(reason: "Use setComment(room_id, student_id, comment) resolver")
+  setComment(comment: String!, room_id: String!, student_id: String!): TeacherComment
   setScore(content_id: String!, room_id: String!, score: Float!, student_id: String!): TeacherScore!
 }
 
