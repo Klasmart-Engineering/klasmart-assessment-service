@@ -9,6 +9,9 @@ export class Content {
   @PrimaryColumn({ name: 'id' })
   readonly content_id!: string
 
+  @Field({ nullable: true })
+  h5p_id?: string
+
   @Column({ name: 'content_type' })
   readonly content_type!: number
 

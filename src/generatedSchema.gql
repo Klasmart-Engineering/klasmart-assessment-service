@@ -24,6 +24,7 @@ type Answer {
 type Content {
   content_id: String!
   fileType: FileType
+  h5p_id: String
   name: String
   type: String
 }

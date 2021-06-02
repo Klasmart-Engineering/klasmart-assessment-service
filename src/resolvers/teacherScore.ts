@@ -6,6 +6,7 @@ import { TeacherScore } from '../db/assessments/entities/teacherScore'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
 import { Content } from '../db/cms/entities/content'
 import { User } from '../db/users/entities'
+import getContent from '../getContent'
 import { UserID } from './context'
 
 @Service()
@@ -88,14 +89,6 @@ export default class TeacherScoreResolver {
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(@Root() source: TeacherScore): Promise<Content | null> {
-    return (
-      (await this.contentRepository
-        .createQueryBuilder()
-        .where({ content_type: 1 })
-        .andWhere(`data->"$.source" = :contentId`, {
-          contentId: source.content_id,
-        })
-        .getOne()) || null
-    )
+    return await getContent(source.content_id, this.contentRepository)
   }
 }

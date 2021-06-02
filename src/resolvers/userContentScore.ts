@@ -5,6 +5,7 @@ import { Repository } from 'typeorm'
 import { User } from '../db/users/entities'
 import { UserContentScore } from '../db/assessments/entities/userContentScore'
 import { Content } from '../db/cms/entities/content'
+import getContent from '../getContent'
 
 @Service()
 @Resolver(() => UserContentScore)
@@ -24,15 +25,9 @@ export default class UserContentScoreResolver {
   }
 
   @FieldResolver(() => Content, { nullable: true })
-  public async content(@Root() source: UserContentScore) {
-    return (
-      (await this.contentRepository
-        .createQueryBuilder()
-        .where({ content_type: 1 })
-        .andWhere(`data->"$.source" = :contentId`, {
-          contentId: source.content_id,
-        })
-        .getOne()) || null
-    )
+  public async content(
+    @Root() source: UserContentScore,
+  ): Promise<Content | null> {
+    return await getContent(source.content_id, this.contentRepository)
   }
 }
