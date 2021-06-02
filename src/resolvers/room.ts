@@ -44,7 +44,7 @@ export default class RoomResolver {
 
       const scores = await this.calculateRoom(room)
       room.scores = Promise.resolve(scores)
-      room.recalculate = false
+      room.recalculate = scores.length == 0
       await this.assessmentDB.save(room)
       return room
     } catch (e) {
