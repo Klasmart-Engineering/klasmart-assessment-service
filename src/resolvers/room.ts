@@ -111,7 +111,7 @@ export default class RoomResolver {
           let contentType: string | undefined
           if (categoryId) {
             const regex = new RegExp(
-              `^http:\/\/h5p\.org\/libraries\/H5P\.(.+)-\\d+\.\\d+$`,
+              `^http://h5p.org/libraries/H5P.(.+)-\\d.\\d$`,
             )
             const results = regex.exec(categoryId)
             contentType = (results && results[1]) || undefined
