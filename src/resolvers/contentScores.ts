@@ -16,6 +16,10 @@ export default class ContentScoresResolver {
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(@Root() source: ContentScores): Promise<Content | null> {
-    return await getContent(source.content_id, this.contentRepository)
+    return await getContent(
+      source.content_id,
+      source.contentType,
+      this.contentRepository,
+    )
   }
 }

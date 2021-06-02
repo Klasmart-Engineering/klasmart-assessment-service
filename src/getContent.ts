@@ -3,6 +3,7 @@ import { Content } from './db/cms/entities/content'
 
 export default async function getContent(
   contentId: string,
+  contentType: string | undefined,
   contentRepository: Repository<Content>,
 ) {
   const content =
@@ -16,6 +17,7 @@ export default async function getContent(
 
   if (content) {
     content.h5p_id = contentId
+    content.type = contentType
   }
 
   return content

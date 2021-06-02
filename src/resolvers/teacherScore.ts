@@ -89,6 +89,11 @@ export default class TeacherScoreResolver {
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(@Root() source: TeacherScore): Promise<Content | null> {
-    return await getContent(source.content_id, this.contentRepository)
+    const contentType = (await source.userContentScore)?.contentType
+    return await getContent(
+      source.content_id,
+      contentType,
+      this.contentRepository,
+    )
   }
 }

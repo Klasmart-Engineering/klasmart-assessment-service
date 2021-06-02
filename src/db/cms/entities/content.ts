@@ -29,5 +29,5 @@ export class Content {
   readonly createdAt!: number
 
   @Field({ nullable: true })
-  readonly type?: string
+  type?: string
 }

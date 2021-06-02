@@ -28,6 +28,10 @@ export default class UserContentScoreResolver {
   public async content(
     @Root() source: UserContentScore,
   ): Promise<Content | null> {
-    return await getContent(source.content_id, this.contentRepository)
+    return await getContent(
+      source.content_id,
+      source.contentType,
+      this.contentRepository,
+    )
   }
 }

@@ -103,14 +103,29 @@ export default class RoomResolver {
           const contentId = `${localId}` //|${subContentId}`
           const contentTypeCategories =
             statement?.context?.contextActivities?.category
-          const contentType =
+
+          const categoryId =
             contentTypeCategories instanceof Array &&
             contentTypeCategories[0]?.id
+
+          let contentType: string | undefined
+          if (categoryId) {
+            const regex = new RegExp(
+              `^http:\/\/h5p\.org\/libraries\/H5P\.(.+)-\\d\.\\d$`,
+            )
+            const results = regex.exec(categoryId)
+            contentType = (results && results[1]) || undefined
+          }
 
           const id = `${roomId}|${userId}|${contentId}`
           let userContentScore = userContentScores.get(id)
           if (!userContentScore) {
-            userContentScore = UserContentScore.new(room, userId, contentId)
+            userContentScore = UserContentScore.new(
+              room,
+              userId,
+              contentId,
+              contentType,
+            )
             userContentScores.set(id, userContentScore)
           }
 
@@ -179,7 +194,11 @@ export default class RoomResolver {
       } else {
         scoresByContent.set(
           userContentScore.student_id,
-          new ContentScores(userContentScore.content_id, [userContentScore]),
+          new ContentScores(
+            userContentScore.content_id,
+            [userContentScore],
+            userContentScore.contentType,
+          ),
         )
       }
     }

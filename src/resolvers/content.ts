@@ -15,7 +15,7 @@ export default class ContentResolver {
 
   @FieldResolver(() => FileType, { nullable: true })
   type(@Root() content: Content) {
-    if (content.type !== undefined) {
+    if (content.type) {
       return content.type
     }
     const fileType =

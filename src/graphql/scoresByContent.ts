@@ -8,8 +8,15 @@ export class ContentScores {
   @Field(() => [UserContentScore])
   public scores: UserContentScore[]
 
-  constructor(content_id: string, scores: UserContentScore[] = []) {
+  public contentType: string | undefined
+
+  constructor(
+    content_id: string,
+    scores: UserContentScore[] = [],
+    contentType: string | undefined,
+  ) {
     this.content_id = content_id
     this.scores = scores
+    this.contentType = contentType
   }
 }
