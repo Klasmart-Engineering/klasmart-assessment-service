@@ -1,5 +1,7 @@
 import { Field, ObjectType } from 'type-graphql'
-import { Entity, Column, PrimaryColumn } from 'typeorm'
+import { Entity, Column, PrimaryColumn, OneToMany, JoinColumn } from 'typeorm'
+
+import { SchoolMembership } from './schoolMembership'
 
 @ObjectType()
 @Entity()
@@ -15,4 +17,14 @@ export class User {
   @Column({ name: 'family_name', nullable: true })
   @Field({ nullable: true })
   public readonly family_name?: string
+
+  @Column({ nullable: true })
+  public readonly email?: string
+
+  @OneToMany(
+    () => SchoolMembership,
+    (schoolMembership) => schoolMembership.user,
+  )
+  @JoinColumn({ name: 'school_id', referencedColumnName: 'school_id' })
+  public schoolMemberships?: Promise<SchoolMembership[]>
 }
