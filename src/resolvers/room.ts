@@ -73,10 +73,8 @@ export default class RoomResolver {
         continue
       }
 
-      console.log(`joinTimestamp (ms): ${joinTimestamp.getTime()}`)
       const joinTimestampTimezoneOffset =
         joinTimestamp.getTimezoneOffset() * 60000
-      console.log(`joinTimestamp offset (ms): ${joinTimestampTimezoneOffset}`)
       const events = await this.xapiRepository.searchXApiEvents(
         userId,
         joinTimestamp.getTime() - joinTimestampTimezoneOffset,
