@@ -34,10 +34,6 @@ export default class RoomResolver {
 
     try {
       let room = await this.assessmentDB.findOne(Room, room_id, {})
-      if (room && !room.recalculate) {
-        return room
-      }
-
       if (!room) {
         room = new Room(room_id)
       }
