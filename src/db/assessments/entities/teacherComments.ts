@@ -15,18 +15,27 @@ export class TeacherComment {
   @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly room_id: string
 
-  @PrimaryColumn({ name: 'teacher_id' })
+  @PrimaryColumn({ name: 'teacher_id', nullable: false })
   public readonly teacher_id: string
 
-  @PrimaryColumn({ name: 'student_id' })
+  @PrimaryColumn({ name: 'student_id', nullable: false })
   public readonly student_id: string
+
+  // This explicit field for the foreign should not be necessary.
+  // But for some reason this column is null without it.
+  @Column({ name: 'roomRoomId' })
+  public readonly roomRoomId?: string
 
   @ManyToOne(
     () => Room, // Linter bug
     (room) => room.teacherComments,
-    { lazy: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
+    {
+      lazy: true,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
   )
-  public readonly room!: Promise<Room>
+  public room!: Promise<Room>
 
   @Field()
   @CreateDateColumn()
@@ -42,6 +51,7 @@ export class TeacherComment {
 
   constructor(roomId: string, teacherId: string, studentId: string) {
     this.room_id = roomId
+    this.roomRoomId = roomId
     this.teacher_id = teacherId
     this.student_id = studentId
   }

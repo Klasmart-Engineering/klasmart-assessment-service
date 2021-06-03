@@ -47,7 +47,7 @@ export class UserContentScore {
   @OneToMany(
     () => TeacherScore,
     (teacherScore) => teacherScore.userContentScore,
-    { lazy: true, cascade: true },
+    { lazy: true },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
@@ -127,7 +127,6 @@ export class UserContentScore {
     const userContentScore = new UserContentScore(roomId, studentId, contentId)
     userContentScore.contentType = contentType
     userContentScore.answers = Promise.resolve([])
-    userContentScore.teacherScores = Promise.resolve(teacherScores)
     userContentScore.seen = seen
     userContentScore.sum = 0
     userContentScore.scoreFrequency = 0

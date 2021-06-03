@@ -27,7 +27,11 @@ export class TeacherScore {
   @ManyToOne(
     () => UserContentScore,
     (userContentScore) => userContentScore.teacherScores,
-    { lazy: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
+    {
+      lazy: true,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
   )
   public userContentScore?: Promise<UserContentScore>
 
