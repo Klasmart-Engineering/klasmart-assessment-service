@@ -14,10 +14,21 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "internalConsoleOptions": "openOnSessionStart",
       "envFile": "${workspaceFolder}/.env"
-      //   "env": {
-      //     {"name":"AWS_REGION", "value":"us-east-1"},
-      //     {"name":"SLS_DEBUG", "value":"*"}
-      //   },
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Mocha Current File",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--no-timeouts",
+        "--colors",
+        "${file}",
+        "--require",
+        "ts-node/register"
+      ],
+      "sourceMaps": true,
+      "smartStep": true
     }
   ]
 }
