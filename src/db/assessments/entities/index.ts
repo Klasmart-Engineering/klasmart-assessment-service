@@ -1,0 +1,5 @@
+export { Answer } from './answer'
+export { Room } from './room'
+export { TeacherComment } from './teacherComments'
+export { TeacherScore } from './teacherScore'
+export { UserContentScore } from './userContentScore'
