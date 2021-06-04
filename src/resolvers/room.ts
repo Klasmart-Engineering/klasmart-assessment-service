@@ -157,6 +157,17 @@ export default class RoomResolver {
         }
       }
     }
+
+    for (const x of userContentScores.values()) {
+      let answers = (await x.answers) || []
+      answers = answers?.sort((left, right): number => {
+        if (left.date < right.date) return -1
+        if (left.date > right.date) return 1
+        return 0
+      })
+      x.answers = Promise.resolve(answers)
+    }
+
     return [...userContentScores.values()]
   }
 
