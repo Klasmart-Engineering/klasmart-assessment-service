@@ -1,15 +1,13 @@
+import { AuthenticationError, UserInputError } from 'apollo-server-express'
 import { Arg, FieldResolver, Query, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
-import { Answer } from '../db/assessments/entities/answer'
-import { Room } from '../db/assessments/entities/room'
-import { UserContentScore } from '../db/assessments/entities/userContentScore'
+
+import { Answer, Room, UserContentScore } from '../db/assessments/entities'
 import { Attendance } from '../db/users/entities'
 import { XAPIRepository, xapiRepository } from '../db/xapi/repo'
-import { ContentScores } from '../graphql/scoresByContent'
-import { UserScores } from '../graphql/scoresByUser'
-import { TeacherCommentsByStudent } from '../graphql/teacherCommentsByUser'
+import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { UserID } from './context'
 
 @Service()
@@ -29,7 +27,7 @@ export default class RoomResolver {
     @UserID() user_id?: string,
   ): Promise<Room> {
     if (!user_id) {
-      throw new Error('Please authenticate')
+      throw new AuthenticationError('Please authenticate')
     }
 
     try {
@@ -46,15 +44,19 @@ export default class RoomResolver {
     } catch (e) {
       console.error(e)
     }
-    throw new Error(`Unable to fetch Room(${room_id})`)
+    throw new UserInputError(`Unable to fetch Room(${room_id})`)
   }
 
-  private async calculateRoom(room: Room) {
+  private async calculateRoom(room: Room): Promise<UserContentScore[]> {
     const roomId = room.room_id
     const userContentScores = new Map<string, UserContentScore>()
     const attendances = await this.userDB.find(Attendance, {
       where: { roomId },
     })
+
+    if (attendances.length <= 0) {
+      throw new UserInputError(`Unable to fetch Room(${roomId})`)
+    }
 
     const sessionHandled: { [indexer: string]: string } = {}
     for (const {

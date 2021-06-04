@@ -1,10 +1,11 @@
-import { Mutation, Arg, Resolver, FieldResolver, Root, Ctx } from 'type-graphql'
+import { AuthenticationError, UserInputError } from 'apollo-server-express'
+import { Mutation, Arg, Resolver, FieldResolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
-import { TeacherScore } from '../db/assessments/entities/teacherScore'
-import { UserContentScore } from '../db/assessments/entities/userContentScore'
-import { Content } from '../db/cms/entities/content'
+
+import { TeacherScore, UserContentScore } from '../db/assessments/entities'
+import { Content } from '../db/cms/entities'
 import { User } from '../db/users/entities'
 import getContent from '../getContent'
 import { UserID } from './context'
@@ -31,7 +32,7 @@ export default class TeacherScoreResolver {
   ): Promise<TeacherScore> {
     try {
       if (!teacher_id) {
-        throw new Error('Please authenticate')
+        throw new AuthenticationError('Please authenticate')
       }
 
       const userContentScore = await this.assesmentDB.findOne(
@@ -44,7 +45,7 @@ export default class TeacherScoreResolver {
       )
 
       if (!userContentScore) {
-        throw new Error(
+        throw new UserInputError(
           `Unknown UserContentScore(room_id(${room_id}), student_id(${student_id}), content_id(${content_id}))`,
         )
       }
@@ -66,7 +67,6 @@ export default class TeacherScoreResolver {
       console.error(e)
       throw e
     }
-    throw new Error('Unable to save teacher score')
   }
 
   @FieldResolver(() => User, { nullable: true })

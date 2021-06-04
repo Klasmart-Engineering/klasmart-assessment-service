@@ -1,8 +1,10 @@
+import { AuthenticationError } from 'apollo-server-express'
 import { Arg, FieldResolver, Mutation, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { TeacherComment } from '../db/assessments/entities/teacherComments'
-import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { EntityManager, Repository } from 'typeorm'
+import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
+
+import { TeacherComment } from '../db/assessments/entities'
 import { User } from '../db/users/entities'
 import { UserID } from './context'
 
@@ -22,7 +24,7 @@ export default class TeacherCommentResolver {
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
     @UserID() teacher_id?: string,
-  ) {
+  ): Promise<TeacherComment | undefined> {
     return await this.addComment(room_id, student_id, comment, teacher_id)
   }
 
@@ -38,7 +40,7 @@ export default class TeacherCommentResolver {
   ): Promise<TeacherComment | undefined> {
     try {
       if (!teacher_id) {
-        throw new Error('Please authenticate')
+        throw new AuthenticationError('Please authenticate')
       }
 
       const teacherComment =
@@ -56,7 +58,6 @@ export default class TeacherCommentResolver {
       console.error(e)
       throw e
     }
-    throw new Error('Unable to save teacher comment')
   }
 
   @FieldResolver(() => User, { nullable: true })
