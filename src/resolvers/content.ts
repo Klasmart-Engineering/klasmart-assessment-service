@@ -1,7 +1,7 @@
 import { Resolver, FieldResolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { Content } from '../db/cms/entities/content'
-import { FileType } from '../db/cms/enums/fileType'
+import { Content } from '../db/cms/entities'
+import { FileType } from '../db/cms/enums'
 
 @Service()
 @Resolver(() => Content)
@@ -14,7 +14,7 @@ export default class ContentResolver {
   }
 
   @FieldResolver(() => FileType, { nullable: true })
-  type(@Root() content: Content) {
+  type(@Root() content: Content): string | undefined {
     if (content.type) {
       return content.type
     }

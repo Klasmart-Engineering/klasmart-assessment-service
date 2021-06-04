@@ -2,7 +2,7 @@ import { Resolver, FieldResolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
-import { Content } from '../db/cms/entities/content'
+import { Content } from '../db/cms/entities'
 import getContent from '../getContent'
 import { ContentScores } from '../graphql/scoresByContent'
 

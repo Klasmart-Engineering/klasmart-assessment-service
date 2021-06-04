@@ -1,10 +1,11 @@
-import { FieldResolver, Mutation, Resolver, Root } from 'type-graphql'
+import { FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { Repository } from 'typeorm'
+
 import { User } from '../db/users/entities'
-import { UserContentScore } from '../db/assessments/entities/userContentScore'
-import { Content } from '../db/cms/entities/content'
+import { UserContentScore } from '../db/assessments/entities'
+import { Content } from '../db/cms/entities'
 import getContent from '../getContent'
 
 @Service()
@@ -18,7 +19,9 @@ export default class UserContentScoreResolver {
   ) {}
 
   @FieldResolver(() => User, { nullable: true })
-  public async user(@Root() source: UserContentScore) {
+  public async user(
+    @Root() source: UserContentScore,
+  ): Promise<User | undefined> {
     return await this.userRepository.findOne({
       where: { user_id: source.student_id },
     })

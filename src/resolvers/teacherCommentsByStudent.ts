@@ -3,7 +3,7 @@ import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { User } from '../db/users/entities'
-import { TeacherCommentsByStudent } from '../graphql/teacherCommentsByUser'
+import { TeacherCommentsByStudent } from '../graphql'
 
 @Service()
 @Resolver(() => TeacherCommentsByStudent)
@@ -14,7 +14,9 @@ export default class TeacherCommentsByStudentResolver {
   ) {}
 
   @FieldResolver(() => User, { nullable: true })
-  public async student(@Root() source: TeacherCommentsByStudent) {
+  public async student(
+    @Root() source: TeacherCommentsByStudent,
+  ): Promise<User | undefined> {
     return await this.userRepository.findOne({
       where: { user_id: source.student_id },
     })

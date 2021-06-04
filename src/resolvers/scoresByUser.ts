@@ -3,7 +3,7 @@ import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { User } from '../db/users/entities'
-import { UserScores } from '../graphql/scoresByUser'
+import { UserScores } from '../graphql'
 
 @Service()
 @Resolver(() => UserScores)
@@ -14,7 +14,7 @@ export default class UserScoresResolver {
   ) {}
 
   @FieldResolver(() => User, { nullable: true })
-  public async user(@Root() source: UserScores) {
+  public async user(@Root() source: UserScores): Promise<User | undefined> {
     return await this.userRepository.findOne({
       where: { user_id: source.user_id },
     })

@@ -6,7 +6,6 @@ export interface Context {
   userId?: string
 }
 
-
-export function UserID() {
+export function UserID(): ParameterDecorator {
   return createParamDecorator<Context>(({ context }) => context.userId)
 }
