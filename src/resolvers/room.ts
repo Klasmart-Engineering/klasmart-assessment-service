@@ -55,7 +55,9 @@ export default class RoomResolver {
     })
 
     if (attendances.length <= 0) {
-      throw new UserInputError(`Unable to fetch Room(${roomId})`)
+      throw new UserInputError(
+        `Unable to find Room(${roomId}) in the Attendance table`,
+      )
     }
 
     const sessionHandled: { [indexer: string]: string } = {}
