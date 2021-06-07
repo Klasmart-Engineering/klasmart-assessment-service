@@ -115,7 +115,7 @@ export default class RoomResolver {
             contentType = (results && results[1]) || undefined
           }
 
-          const id = `${roomId}|${userId}|${contentId}`
+          const id = `${roomId}|${userId}|${contentId}|${subContentId}`
           let userContentScore = userContentScores.get(id)
           if (!userContentScore) {
             userContentScore = UserContentScore.new(
