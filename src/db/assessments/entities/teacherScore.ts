@@ -44,7 +44,7 @@ export class TeacherScore {
   public lastUpdated!: Date
 
   @Field()
-  @Column({ nullable: false })
+  @Column('float4', { nullable: false, default: 0.0 })
   public score!: number
 
   constructor(
