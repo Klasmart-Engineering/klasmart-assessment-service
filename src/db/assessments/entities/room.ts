@@ -9,7 +9,7 @@ import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm'
 export class Room {
   @PrimaryColumn({ name: 'room_id' })
   @Field()
-  public room_id: string
+  public readonly room_id: string
 
   @Field(() => [UserContentScore])
   @OneToMany(
