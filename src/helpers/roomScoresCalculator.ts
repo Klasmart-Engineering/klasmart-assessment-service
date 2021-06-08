@@ -12,19 +12,28 @@ export class RoomScoresCalculator {
     attendances: Attendance[],
   ): Promise<UserContentScore[]> {
     const userContentScores = new Map<string, UserContentScore>()
-    const sessionHandled: { [indexer: string]: string } = {}
+    const attendanceMap = new Map<string, Attendance>()
+
+    // Handle duplicate session ids with different timestamps.
+    for (const attendance of attendances) {
+      let entry = attendanceMap.get(attendance.sessionId)
+      if (!entry) {
+        attendanceMap.set(attendance.sessionId, attendance)
+      } else {
+        if (attendance.joinTimestamp < entry.joinTimestamp) {
+          entry.joinTimestamp = attendance.joinTimestamp
+        }
+        if (attendance.leaveTimestamp > entry.leaveTimestamp) {
+          entry.leaveTimestamp = attendance.leaveTimestamp
+        }
+      }
+    }
+
     for (const {
-      sessionId,
       userId,
       joinTimestamp,
       leaveTimestamp,
-    } of attendances) {
-      if (!sessionHandled[sessionId]) {
-        sessionHandled[sessionId] = sessionId
-      } else {
-        continue
-      }
-
+    } of attendanceMap.values()) {
       const timezoneOffset = joinTimestamp.getTimezoneOffset() * 60000
       const xapiEvents = await this.xapiRepository.searchXApiEvents(
         userId,
@@ -55,7 +64,6 @@ export class RoomScoresCalculator {
       if (!event) {
         continue
       }
-      //console.log(JSON.stringify(event))
       try {
         const clientTimestamp = event?.xapi?.clientTimestamp
         const statement = event?.xapi?.data?.statement
