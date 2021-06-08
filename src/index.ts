@@ -11,6 +11,7 @@ import { connectToUserDatabase } from './db/users/connectToUserDatabase'
 import { buildSchema } from 'type-graphql'
 import { createApolloServer } from './createApolloServer'
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
+import { authChecker } from './authChecker'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
@@ -26,6 +27,7 @@ async function main() {
       path.join(__dirname, './resolvers/**/*.ts'),
       path.join(__dirname, './resolvers/**/*.js'),
     ],
+    authChecker,
     container: Container,
     dateScalarMode: 'timestamp',
     emitSchemaFile: {

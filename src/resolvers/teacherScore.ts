@@ -1,5 +1,12 @@
-import { AuthenticationError, UserInputError } from 'apollo-server-express'
-import { Mutation, Arg, Resolver, FieldResolver, Root } from 'type-graphql'
+import { UserInputError } from 'apollo-server-express'
+import {
+  Mutation,
+  Arg,
+  Resolver,
+  FieldResolver,
+  Root,
+  Authorized,
+} from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
@@ -22,19 +29,16 @@ export default class TeacherScoreResolver {
     private readonly contentRepository: Repository<Content>,
   ) {}
 
+  @Authorized()
   @Mutation(() => TeacherScore)
   public async setScore(
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('content_id') content_id: string,
     @Arg('score') score: number,
-    @UserID() teacher_id?: string,
+    @UserID() teacher_id: string,
   ): Promise<TeacherScore> {
     try {
-      if (!teacher_id) {
-        throw new AuthenticationError('Please authenticate')
-      }
-
       const userContentScore = await this.assesmentDB.findOne(
         UserContentScore,
         {

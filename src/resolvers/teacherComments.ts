@@ -1,5 +1,11 @@
-import { AuthenticationError } from 'apollo-server-express'
-import { Arg, FieldResolver, Mutation, Resolver, Root } from 'type-graphql'
+import {
+  Arg,
+  Authorized,
+  FieldResolver,
+  Mutation,
+  Resolver,
+  Root,
+} from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
@@ -18,16 +24,18 @@ export default class TeacherCommentResolver {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  @Authorized()
   @Mutation(() => TeacherComment, { nullable: true })
   public async setComment(
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
-    @UserID() teacher_id?: string,
+    @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
     return await this.addComment(room_id, student_id, comment, teacher_id)
   }
 
+  @Authorized()
   @Mutation(() => TeacherComment, {
     nullable: true,
     deprecationReason: 'Use setComment(room_id, student_id, comment) resolver',
@@ -36,13 +44,9 @@ export default class TeacherCommentResolver {
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
-    @UserID() teacher_id?: string,
+    @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
     try {
-      if (!teacher_id) {
-        throw new AuthenticationError('Please authenticate')
-      }
-
       const teacherComment =
         (await this.assesmentDB.findOne(TeacherComment, {
           room_id,

@@ -1,4 +1,8 @@
-import { ApolloServer, ExpressContext } from 'apollo-server-express'
+import {
+  ApolloServer,
+  AuthenticationError,
+  ExpressContext,
+} from 'apollo-server-express'
 import { GraphQLSchema } from 'graphql'
 import { checkToken } from './auth'
 import { Context } from './resolvers/context'
@@ -6,6 +10,13 @@ import { Context } from './resolvers/context'
 export const createApolloServer = (schema?: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
+    formatError: (err) => {
+      // Override the @Authorized error by TypeGraphQL.
+      if (err.message.startsWith('Access denied!')) {
+        return new AuthenticationError('Please authenticate')
+      }
+      return err
+    },
     context: async ({
       req,
       connection,

@@ -1,5 +1,12 @@
-import { AuthenticationError, UserInputError } from 'apollo-server-express'
-import { Arg, FieldResolver, Query, Resolver, Root } from 'type-graphql'
+import { UserInputError } from 'apollo-server-express'
+import {
+  Arg,
+  Authorized,
+  FieldResolver,
+  Query,
+  Resolver,
+  Root,
+} from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
@@ -21,15 +28,12 @@ export default class RoomResolver {
     private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
+  @Authorized()
   @Query(() => Room)
   public async Room(
     @Arg('room_id', { nullable: true }) room_id: string,
     @UserID() user_id?: string,
   ): Promise<Room> {
-    if (!user_id) {
-      throw new AuthenticationError('Please authenticate')
-    }
-
     try {
       let room = await this.assessmentDB.findOne(Room, room_id, {})
       if (!room) {
