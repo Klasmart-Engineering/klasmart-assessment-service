@@ -3,7 +3,7 @@ import { BaseEntity, Column, Entity, PrimaryColumn, Index } from 'typeorm'
 //Shared by kidsloop-live-server
 // TODO: Create a shared repository
 @Entity()
-export class Attendance extends BaseEntity {
+export class Attendance {
   @PrimaryColumn({ name: 'session_id' })
   public sessionId!: string
 
