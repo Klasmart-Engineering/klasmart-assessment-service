@@ -7,6 +7,7 @@ definitions:
         image: node:lts
         script:
           - npm i
+          - npm test
         caches:
           - nodemodules
         artifacts:
