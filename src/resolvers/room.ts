@@ -1,4 +1,5 @@
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
+import { deprecate } from 'node:util'
 import { Arg, FieldResolver, Query, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
@@ -53,12 +54,6 @@ export default class RoomResolver {
     const attendances = await this.userDB.find(Attendance, {
       where: { roomId },
     })
-
-    if (attendances.length <= 0) {
-      throw new UserInputError(
-        `Unable to find Room(${roomId}) in the Attendance table`,
-      )
-    }
 
     const sessionHandled: { [indexer: string]: string } = {}
     for (const {
