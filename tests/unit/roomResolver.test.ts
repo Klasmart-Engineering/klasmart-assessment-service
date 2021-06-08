@@ -54,7 +54,7 @@ describe('roomResolver', () => {
       roomScoresCalculator.received(1).calculate(roomId, [attendance])
       assessmentDB.received(1).save(room)
       const resultScores = await resultRoom.scores
-      //console.log(resultScores)
+
       expect(resultScores).to.have.lengthOf(1)
       expect(resultRoom.recalculate).to.be.false
       expect(resultRoom.room_id).to.equal(roomId)
@@ -101,37 +101,10 @@ describe('roomResolver', () => {
       roomScoresCalculator.received(1).calculate(roomId, [attendance])
       assessmentDB.received(1).save(resultRoom)
       const resultScores = await resultRoom.scores
-      //console.log(resultScores)
+
       expect(resultScores).to.have.lengthOf(1)
       expect(resultRoom.recalculate).to.be.false
       expect(resultRoom.room_id).to.equal(roomId)
-    })
-  })
-
-  context(TestTitle.Authentication.context, () => {
-    it(TestTitle.Authentication.it, async () => {
-      // Arrange
-      const roomId = 'room1'
-      const teacherId: string | undefined = undefined
-
-      const userDB = Substitute.for<EntityManager>()
-      const assessmentDB = Substitute.for<EntityManager>()
-      const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-
-      const resolver = new RoomResolver(
-        assessmentDB,
-        userDB,
-        roomScoresCalculator,
-      )
-
-      // Act
-      expect(resolver.Room(roomId, teacherId)).to.be.rejected
-
-      // Assert
-      assessmentDB.didNotReceive().findOne(Room, Arg.any(), Arg.any())
-      userDB.didNotReceive().find(Attendance, Arg.any())
-      roomScoresCalculator.didNotReceive().calculate(Arg.any(), Arg.any())
-      assessmentDB.didNotReceive().save(Arg.any())
     })
   })
 })
