@@ -1,6 +1,7 @@
 import { DocumentClient, QueryOutput } from 'aws-sdk/clients/dynamodb'
+import { Service } from 'typedi'
 
-interface XAPIRecord {
+export interface XAPIRecord {
   userId?: string
   serverTimestamp?: number
   xapi?: {
@@ -36,6 +37,7 @@ const docClient = new DocumentClient({
   apiVersion: '2012-08-10',
 })
 
+@Service()
 export class XAPIRepository {
   private TableName: string
 
@@ -69,5 +71,3 @@ export class XAPIRepository {
     return xapiRecords.Items || []
   }
 }
-
-export const xapiRepository = new XAPIRepository()

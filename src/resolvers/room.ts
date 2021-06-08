@@ -1,25 +1,24 @@
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
-import { deprecate } from 'node:util'
 import { Arg, FieldResolver, Query, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 
-import { Answer, Room, UserContentScore } from '../db/assessments/entities'
+import { Room, UserContentScore } from '../db/assessments/entities'
 import { Attendance } from '../db/users/entities'
-import { XAPIRepository, xapiRepository } from '../db/xapi/repo'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
+import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
 import { UserID } from './context'
 
 @Service()
 @Resolver(() => Room)
 export default class RoomResolver {
-  private readonly xapiRepository: XAPIRepository = xapiRepository
   constructor(
     @InjectManager('assessments')
     private readonly assessmentDB: EntityManager,
     @InjectManager('users')
     private readonly userDB: EntityManager,
+    private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
   @Query(() => Room)
@@ -50,112 +49,16 @@ export default class RoomResolver {
 
   private async calculateRoom(room: Room): Promise<UserContentScore[]> {
     const roomId = room.room_id
-    const userContentScores = new Map<string, UserContentScore>()
     const attendances = await this.userDB.find(Attendance, {
       where: { roomId },
     })
 
-    const sessionHandled: { [indexer: string]: string } = {}
-    for (const {
-      sessionId,
-      userId,
-      joinTimestamp,
-      leaveTimestamp,
-    } of attendances) {
-      if (!sessionHandled[sessionId]) {
-        sessionHandled[sessionId] = sessionId
-      } else {
-        continue
-      }
+    const userContentScores = await this.roomScoresCalculator.calculate(
+      roomId,
+      attendances,
+    )
 
-      const joinTimestampTimezoneOffset =
-        joinTimestamp.getTimezoneOffset() * 60000
-      const events = await this.xapiRepository.searchXApiEvents(
-        userId,
-        joinTimestamp.getTime() - joinTimestampTimezoneOffset,
-        leaveTimestamp.getTime() - joinTimestampTimezoneOffset,
-      )
-      console.log(`events: ${events?.length ?? 0}`)
-      if (!events) {
-        continue
-      }
-      for (const event of events) {
-        if (!event) {
-          continue
-        }
-        try {
-          const clientTimestamp = event?.xapi?.clientTimestamp
-          const statement = event?.xapi?.data?.statement
-          const extensions = statement?.object?.definition?.extensions
-          const localId =
-            extensions &&
-            extensions['http://h5p.org/x-api/h5p-local-content-id']
-          const subContentId =
-            extensions && extensions['http://h5p.org/x-api/h5p-subContentId']
-
-          const contentId = `${localId}` //|${subContentId}`
-          const contentTypeCategories =
-            statement?.context?.contextActivities?.category
-
-          const categoryId =
-            contentTypeCategories instanceof Array &&
-            contentTypeCategories[0]?.id
-
-          let contentType: string | undefined
-          if (categoryId) {
-            const regex = new RegExp(
-              `^http://h5p.org/libraries/H5P.(.+)-\\d+.\\d+$`,
-            )
-            const results = regex.exec(categoryId)
-            contentType = (results && results[1]) || undefined
-          }
-
-          const id = `${roomId}|${userId}|${contentId}|${subContentId}`
-          let userContentScore = userContentScores.get(id)
-          if (!userContentScore) {
-            userContentScore = UserContentScore.new(
-              room,
-              userId,
-              contentId,
-              contentType,
-            )
-            userContentScores.set(id, userContentScore)
-          }
-
-          userContentScore.seen = true
-          const min = statement?.result?.score?.min
-          if (min !== undefined) {
-            userContentScore.min = min
-          }
-          const max = statement?.result?.score?.max
-          if (max !== undefined) {
-            userContentScore.max = max
-          }
-
-          const response = statement?.result?.response
-          const score = statement?.result?.score?.raw
-          if (
-            (score !== undefined || response !== undefined) &&
-            clientTimestamp !== undefined
-          ) {
-            console.log(JSON.stringify({ id, response, score }))
-            const answer = Answer.new(
-              userContentScore,
-              new Date(clientTimestamp),
-              response,
-              score,
-              min,
-              max,
-            )
-            userContentScore.addAnswer(answer)
-          }
-        } catch (e) {
-          console.error(`Unable to process event: ${e}`)
-        }
-      }
-    }
-
-    for (const x of userContentScores.values()) {
+    for (const x of userContentScores) {
       let answers = (await x.answers) || []
       answers = answers?.sort((left, right): number => {
         if (left.date < right.date) return -1
@@ -165,7 +68,7 @@ export default class RoomResolver {
       x.answers = Promise.resolve(answers)
     }
 
-    return [...userContentScores.values()]
+    return userContentScores
   }
 
   @FieldResolver(() => [UserScores])
