@@ -5,26 +5,26 @@ export interface XAPIRecord {
   userId?: string
   serverTimestamp?: number
   xapi?: {
-    clientTimestamp?: string
+    clientTimestamp?: number
     data?: {
       statement?: {
-        object?: any
-        definition?: any
-        extensions?: [key: string]
+        object?: {
+          definition?: {
+            extensions?: { [indexer: string]: string | undefined }
+          }
+        }
         context?: {
           contextActivities?: {
-            category?: [
-              {
-                id?: string
-              },
-            ]
+            category?: [{ id?: string }]
+            parent?: [{ id?: string }]
           }
         }
         result?: {
           score?: {
             min?: number
             max?: number
-            raw?: any
+            raw?: number
+            scaled?: number
           }
           response?: string
         }
