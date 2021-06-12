@@ -25,7 +25,7 @@ export class Content {
   @Column({ type: 'json', name: 'data' })
   readonly data?: JSON
 
-  @Column({ name: 'create_at' })
+  @Column({ type: 'bigint', name: 'create_at' })
   readonly createdAt!: number
 
   @Field({ nullable: true })
