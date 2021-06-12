@@ -16,7 +16,7 @@ export class RoomScoresCalculator {
 
     // Handle duplicate session ids with different timestamps.
     for (const attendance of attendances) {
-      let entry = attendanceMap.get(attendance.sessionId)
+      const entry = attendanceMap.get(attendance.sessionId)
       if (!entry) {
         attendanceMap.set(attendance.sessionId, attendance)
       } else {

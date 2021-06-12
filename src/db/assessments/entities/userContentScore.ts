@@ -120,7 +120,6 @@ export class UserContentScore {
     contentId: string,
     contentType: string | undefined,
     answers: Answer[] = [],
-    teacherScores: TeacherScore[] = [],
     seen: boolean = answers.length > 0,
   ): UserContentScore {
     const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.room_id
