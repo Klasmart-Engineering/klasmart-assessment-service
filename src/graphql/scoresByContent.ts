@@ -6,9 +6,9 @@ export class ContentScores {
   public readonly content_id: string
 
   @Field(() => [UserContentScore])
-  public scores: UserContentScore[]
+  public readonly scores: UserContentScore[]
 
-  public contentType: string | undefined
+  public readonly contentType: string | undefined
 
   constructor(
     content_id: string,

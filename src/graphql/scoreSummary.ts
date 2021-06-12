@@ -5,17 +5,30 @@ type Medians<T> = [] | [T] | [T, T]
 
 @ObjectType()
 export class ScoreSummary {
-  @Field({ nullable: true })
-  public min?: number
+  private _min?: number
+  private _max?: number
+  private _sum = 0
+  private _scoreFrequency = 0
 
-  @Field({ nullable: true })
-  public max?: number
+  @Field(() => Float, { nullable: true })
+  public get min(): number | undefined {
+    return this._min
+  }
+
+  @Field(() => Float, { nullable: true })
+  public get max(): number | undefined {
+    return this._max
+  }
 
   @Field(() => Int)
-  public sum = 0
+  public get sum(): number {
+    return this._sum
+  }
 
   @Field(() => Int)
-  public scoreFrequency = 0
+  public get scoreFrequency(): number {
+    return this._scoreFrequency
+  }
 
   @Field(() => Float, { nullable: true })
   public mean(): number | undefined {
@@ -73,13 +86,13 @@ export class ScoreSummary {
     }
 
     if (this.min === undefined || score < this.min) {
-      this.min = score
+      this._min = score
     }
     if (this.max === undefined || score > this.max) {
-      this.max = score
+      this._max = score
     }
-    this.sum += score
-    this.scoreFrequency += 1
+    this._sum += score
+    this._scoreFrequency += 1
     this.scores.push(score)
   }
 }

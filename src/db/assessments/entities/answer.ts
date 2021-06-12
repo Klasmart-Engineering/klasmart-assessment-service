@@ -16,7 +16,7 @@ export class Answer {
 
   @PrimaryColumn({ name: 'timestamp' })
   @Field(() => Date)
-  public date!: Date
+  public readonly date: Date
 
   @ManyToOne(
     () => UserContentScore,
