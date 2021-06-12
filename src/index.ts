@@ -1,5 +1,4 @@
 import 'reflect-metadata'
-import path from 'path'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import compression from 'compression'
@@ -8,10 +7,9 @@ import { Container } from 'typeorm-typedi-extensions'
 
 import { connectToCmsDatabase } from './db/cms/connectToCmsDatabase'
 import { connectToUserDatabase } from './db/users/connectToUserDatabase'
-import { buildSchema } from 'type-graphql'
 import { createApolloServer } from './createApolloServer'
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
-import { authChecker } from './authChecker'
+import { buildDefaultSchema } from './helpers/buildDefaultSchema'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
@@ -22,19 +20,7 @@ async function main() {
   await connectToUserDatabase()
   await connectToAssessmentDatabase()
 
-  const schema = await buildSchema({
-    resolvers: [
-      path.join(__dirname, './resolvers/**/*.ts'),
-      path.join(__dirname, './resolvers/**/*.js'),
-    ],
-    authChecker,
-    container: Container,
-    dateScalarMode: 'timestamp',
-    emitSchemaFile: {
-      path: __dirname + '/generatedSchema.gql',
-    },
-  })
-
+  const schema = await buildDefaultSchema()
   const server = createApolloServer(schema)
 
   const app = express()
