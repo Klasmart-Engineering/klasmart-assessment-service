@@ -1,18 +1,19 @@
-import {
-  verify,
-  decode,
-  VerifyOptions,
-  Secret,
-  TokenExpiredError,
-} from 'jsonwebtoken'
+import { verify, decode, VerifyOptions, Secret } from 'jsonwebtoken'
 
-const issuers = new Map<
-  string,
-  {
-    options: VerifyOptions
-    secretOrPublicKey: Secret
-  }
->([
+type Issuer = {
+  options: VerifyOptions
+  secretOrPublicKey: Secret
+}
+
+export const debugJwtIssuer: Issuer = {
+  options: {
+    issuer: 'calmid-debug',
+    algorithms: ['HS512', 'HS384', 'HS256'],
+  },
+  secretOrPublicKey: 'iXtZx1D5AqEB0B9pfn+hRQ==',
+}
+
+const issuers = new Map<string, Issuer>([
   [
     'kidsloop',
     {
@@ -31,16 +32,7 @@ FwIDAQAB
 -----END PUBLIC KEY-----`,
     },
   ],
-  [
-    'calmid-debug',
-    {
-      options: {
-        issuer: 'calmid-debug',
-        algorithms: ['HS512', 'HS384', 'HS256'],
-      },
-      secretOrPublicKey: 'iXtZx1D5AqEB0B9pfn+hRQ==',
-    },
-  ],
+  ['calmid-debug', debugJwtIssuer],
   [
     'KidsLoopChinaUser-live',
     {
