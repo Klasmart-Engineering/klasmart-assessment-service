@@ -1,6 +1,8 @@
 import path from 'path'
 import { createConnection } from 'typeorm'
 
+export const CMS_CONNECTION_NAME = 'cms'
+
 export async function connectToCmsDatabase(): Promise<void> {
   const url = process.env.CMS_DATABASE_URL
   if (!url) {
@@ -9,7 +11,7 @@ export async function connectToCmsDatabase(): Promise<void> {
 
   try {
     await createConnection({
-      name: 'cms',
+      name: CMS_CONNECTION_NAME,
       type: 'mysql',
       url,
       synchronize: false,

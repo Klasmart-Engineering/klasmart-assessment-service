@@ -2,6 +2,7 @@ import { Resolver, FieldResolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Content } from '../db/cms/entities'
 import getContent from '../getContent'
 import { ContentScores } from '../graphql/scoresByContent'
@@ -10,7 +11,7 @@ import { ContentScores } from '../graphql/scoresByContent'
 @Resolver(() => ContentScores)
 export default class ContentScoresResolver {
   constructor(
-    @InjectRepository(Content, 'cms')
+    @InjectRepository(Content, CMS_CONNECTION_NAME)
     private readonly contentRepository: Repository<Content>,
   ) {}
 

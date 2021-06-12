@@ -7,14 +7,16 @@ import { User } from '../db/users/entities'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import getContent from '../getContent'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
+import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
   constructor(
-    @InjectRepository(User, 'users')
+    @InjectRepository(User, USERS_CONNECTION_NAME)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Content, 'cms')
+    @InjectRepository(Content, CMS_CONNECTION_NAME)
     private readonly contentRepository: Repository<Content>,
   ) {}
 

@@ -16,16 +16,19 @@ import { Content } from '../db/cms/entities'
 import { User } from '../db/users/entities'
 import getContent from '../getContent'
 import { UserID } from './context'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
+import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 
 @Service()
 @Resolver(() => TeacherScore)
 export default class TeacherScoreResolver {
   constructor(
-    @InjectManager('assessments')
+    @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
-    @InjectRepository(User, 'users')
+    @InjectRepository(User, USERS_CONNECTION_NAME)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Content, 'cms')
+    @InjectRepository(Content, CMS_CONNECTION_NAME)
     private readonly contentRepository: Repository<Content>,
   ) {}
 

@@ -12,6 +12,8 @@ import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 
 import { Room, UserContentScore } from '../db/assessments/entities'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
@@ -21,9 +23,9 @@ import { UserID } from './context'
 @Resolver(() => Room)
 export default class RoomResolver {
   constructor(
-    @InjectManager('assessments')
+    @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
-    @InjectManager('users')
+    @InjectManager(USERS_CONNECTION_NAME)
     private readonly userDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}

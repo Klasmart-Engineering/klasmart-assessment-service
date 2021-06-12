@@ -1,6 +1,8 @@
 import path from 'path'
 import { createConnection } from 'typeorm'
 
+export const USERS_CONNECTION_NAME = 'users'
+
 export async function connectToUserDatabase(): Promise<void> {
   const url = process.env.USER_DATABASE_URL
   if (!url) {
@@ -9,7 +11,7 @@ export async function connectToUserDatabase(): Promise<void> {
 
   try {
     await createConnection({
-      name: 'users',
+      name: USERS_CONNECTION_NAME,
       type: 'postgres',
       url,
       synchronize: false,

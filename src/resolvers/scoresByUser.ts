@@ -2,6 +2,7 @@ import { Resolver, FieldResolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
+import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
 import { UserScores } from '../graphql'
 
@@ -9,7 +10,7 @@ import { UserScores } from '../graphql'
 @Resolver(() => UserScores)
 export default class UserScoresResolver {
   constructor(
-    @InjectRepository(User, 'users')
+    @InjectRepository(User, USERS_CONNECTION_NAME)
     private readonly userRepository: Repository<User>,
   ) {}
 

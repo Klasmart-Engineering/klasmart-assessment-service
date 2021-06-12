@@ -11,6 +11,8 @@ import { EntityManager, Repository } from 'typeorm'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 
 import { TeacherComment } from '../db/assessments/entities'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
 import { UserID } from './context'
 
@@ -18,9 +20,9 @@ import { UserID } from './context'
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {
   constructor(
-    @InjectManager('assessments')
+    @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
-    @InjectRepository(User, 'users')
+    @InjectRepository(User, USERS_CONNECTION_NAME)
     private readonly userRepository: Repository<User>,
   ) {}
 
