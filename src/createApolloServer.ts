@@ -7,7 +7,7 @@ import { GraphQLSchema } from 'graphql'
 import { checkToken } from './auth'
 import { Context } from './resolvers/context'
 
-export const createApolloServer = (schema?: GraphQLSchema): ApolloServer => {
+export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
     formatError: (err) => {
