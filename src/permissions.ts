@@ -101,7 +101,10 @@ export class UserPermissions {
     )
 
     // query the permission service (promise)
-    const fetchPromise = fetch('https://api.alpha.kidsloop.net/user/graphql', {
+    const userServiceUrl =
+      process.env.USER_SERVICE_API_URL ||
+      'https://api.alpha.kidsloop.net/user/graphql'
+    const fetchPromise = fetch(userServiceUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
