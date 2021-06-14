@@ -13,6 +13,12 @@ import { Attendance, User } from './db/users/entities'
 // - edit: edit_in_progress_assessment_439
 // - unclear: edit_attendance_for_in_progress_assessment_438
 
+export enum Permission {
+  assessments_page_406 = 'assessments_page_406',
+  edit_in_progress_assessment_439 = 'edit_in_progress_assessment_439',
+  edit_attendance_for_in_progress_assessment_438 = 'edit_attendance_for_in_progress_assessment_438',
+}
+
 export type PermissionName =
   | 'assessments_page_406'
   | 'edit_in_progress_assessment_439'
@@ -71,21 +77,21 @@ export class UserPermissions {
 
   public async rejectIfNotAllowed(
     permissionContext: PermissionContext,
-    permissionName: PermissionName,
+    permission: Permission,
   ): Promise<void> {
     this.rejectIfNotAuthenticated()
-    const isAllowed = await this.isAllowed(permissionContext, permissionName)
+    const isAllowed = await this.isAllowed(permissionContext, permission)
 
     if (!isAllowed) {
       throw new Error(
-        `User(${this.currentUserId}) does not have Permission(${permissionName})`,
+        `User(${this.currentUserId}) does not have Permission(${permission})`,
       )
     }
   }
 
   public async isAllowed(
     { roomId }: PermissionContext,
-    permissionName: PermissionName,
+    permission: Permission,
   ): Promise<boolean> {
     const hrstart = process.hrtime()
     console.debug('isAllowed start')
@@ -108,7 +114,7 @@ export class UserPermissions {
     const query = generatePermissionQuery(
       this.currentUserId,
       organizationId,
-      permissionName,
+      permission,
     )
     console.debug('isAllowed permission Query', { query })
 
