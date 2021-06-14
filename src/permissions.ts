@@ -5,21 +5,11 @@ import fetch from 'node-fetch'
 import { Schedule } from './db/cms/entities'
 import { Attendance } from './db/users/entities'
 
-// Permissions to member
-// - view: assessments_page_406
-// - edit: edit_in_progress_assessment_439
-// - unclear: edit_attendance_for_in_progress_assessment_438
-
 export enum Permission {
   assessments_page_406 = 'assessments_page_406',
   edit_in_progress_assessment_439 = 'edit_in_progress_assessment_439',
   edit_attendance_for_in_progress_assessment_438 = 'edit_attendance_for_in_progress_assessment_438',
 }
-
-export type PermissionName =
-  | 'assessments_page_406'
-  | 'edit_in_progress_assessment_439'
-  | 'edit_attendance_for_in_progress_assessment_438'
 
 interface PermissionContext {
   roomId: string
@@ -104,7 +94,6 @@ export class UserPermissions {
     const organizationId = schedule.orgId
 
     // send a request to the user-service to check permissions
-    // (organizationId, this.currentUserId, permissionName)
     const query = generatePermissionQuery(
       this.currentUserId,
       organizationId,
@@ -121,7 +110,7 @@ export class UserPermissions {
       body: JSON.stringify({ query }),
     })
 
-    // check memeberships (promise)
+    // check memberships (promise)
     const isRoomMemberQuery = async () => {
       if (studentId) {
         const users = await getRepository(Attendance, 'users')
@@ -159,11 +148,3 @@ export class UserPermissions {
     return isRoomMember
   }
 }
-
-// Execution time (hr): 1s 868.021462ms
-// Execution time (hr): 1s 864.53226ms
-//Execution time (hr): 1s 824.027429ms
-
-// Execution time (hr): 3s 68.822625ms
-// Execution time (hr): 2s 745.478719ms
-// Execution time (hr): 2s 486.919644ms
