@@ -59,7 +59,7 @@ export default class TeacherCommentResolver {
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
     await context.permissions?.rejectIfNotAllowed(
-      { roomId: room_id },
+      { roomId: room_id, studentId: student_id },
       Permission.edit_in_progress_assessment_439,
     )
 

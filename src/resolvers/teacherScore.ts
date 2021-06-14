@@ -45,7 +45,7 @@ export default class TeacherScoreResolver {
     @UserID() teacher_id: string,
   ): Promise<TeacherScore> {
     await context.permissions?.rejectIfNotAllowed(
-      { roomId: room_id },
+      { roomId: room_id, studentId: student_id },
       Permission.edit_in_progress_assessment_439,
     )
 

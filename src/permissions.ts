@@ -26,6 +26,7 @@ export type PermissionName =
 
 interface PermissionContext {
   roomId: string
+  studentId?: string
 }
 
 const generatePermissionQuery = (
@@ -90,7 +91,7 @@ export class UserPermissions {
   }
 
   public async isAllowed(
-    { roomId }: PermissionContext,
+    { roomId, studentId }: PermissionContext,
     permission: Permission,
   ): Promise<boolean> {
     const hrstart = process.hrtime()
@@ -131,11 +132,24 @@ export class UserPermissions {
 
     // check memeberships (promise)
     const isRoomMemberQuery = async () => {
-      const rooms = await getRepository(Attendance, 'users').find({
-        roomId,
-        userId: this.currentUserId,
-      })
-      return rooms.length > 0
+      if (studentId) {
+        const users = await getRepository(Attendance, 'users')
+          .createQueryBuilder('a')
+          .select('a.user_id')
+          .where('a.room_id = :id', { id: roomId })
+          .andWhere('a.user_id IN(:...ids)', {
+            ids: [studentId, this.currentUserId],
+          })
+          .groupBy('a.user_id')
+          .getRawMany()
+        return users.length == 2
+      } else {
+        const rooms = await getRepository(Attendance, 'users').find({
+          roomId,
+          userId: this.currentUserId,
+        })
+        return rooms.length > 0
+      }
     }
     const isRoomMemberPromise = isRoomMemberQuery()
     console.debug('isAllowed isRoomMemberPromise started', isRoomMemberPromise)
@@ -166,6 +180,14 @@ export class UserPermissions {
     return isRoomMember
   }
 }
+
+// Execution time (hr): 1s 868.021462ms
+// Execution time (hr): 1s 864.53226ms
+//Execution time (hr): 1s 824.027429ms
+
+// Execution time (hr): 3s 68.822625ms
+// Execution time (hr): 2s 745.478719ms
+// Execution time (hr): 2s 486.919644ms
 
 // ===============================
 // ===============================
