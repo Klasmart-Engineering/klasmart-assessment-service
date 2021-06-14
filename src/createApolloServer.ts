@@ -6,6 +6,7 @@ import {
 import { GraphQLSchema } from 'graphql'
 import { checkToken } from './auth'
 import { Context } from './resolvers/context'
+import { UserPermissions } from './userPermissions'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
@@ -28,7 +29,8 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
         const encodedToken = req.headers.authorization || req.cookies?.access
         const token = await checkToken(encodedToken)
-        return { token, ip, userId: token?.id }
+        const permissions = new UserPermissions(token)
+        return { token, ip, userId: token?.id, permissions }
       } catch (e) {
         console.error(e)
       }

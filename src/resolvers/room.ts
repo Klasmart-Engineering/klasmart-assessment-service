@@ -6,6 +6,7 @@ import {
   Query,
   Resolver,
   Root,
+  Ctx,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
@@ -17,7 +18,7 @@ import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
-import { UserID } from './context'
+import { UserID, Context } from './context'
 
 @Service()
 @Resolver(() => Room)
@@ -34,8 +35,14 @@ export default class RoomResolver {
   @Query(() => Room)
   public async Room(
     @Arg('room_id', { nullable: true }) room_id: string,
+    @Ctx() context: Context,
     @UserID() user_id?: string,
   ): Promise<Room> {
+    await context.permissions?.rejectIfNotAllowed(
+      { roomId: room_id },
+      'assessments_page_406',
+    )
+
     try {
       let room = await this.assessmentDB.findOne(Room, room_id, {})
       if (!room) {
