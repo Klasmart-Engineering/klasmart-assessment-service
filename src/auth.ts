@@ -76,11 +76,8 @@ export async function checkToken(token?: string): Promise<any> {
           process.env.NODE_ENV === 'development' &&
           err instanceof TokenExpiredError
         ) {
-          const teacherId = '7f557bce-9840-51c1-84bd-2d53a98f7dda'
-          const otherTeacherId = 'fbbdfcc8-6dda-5c1e-a7a5-34d359213651'
-          const studentId = '11bb492e-ff80-5928-ac86-8b639a0c1a44'
           resolve({
-            id: teacherId,
+            id: process.env.USER_ID,
           })
         }
         reject(err)
