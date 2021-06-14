@@ -46,7 +46,7 @@ describe('roomResolver', () => {
       )
 
       // Act
-      const resultRoom = await resolver.Room(roomId, teacherId)
+      const resultRoom = await resolver.Room(roomId, { ip: '' }, teacherId)
 
       // Assert
       assessmentDB.received(1).findOne(Room, roomId, {})
@@ -93,7 +93,7 @@ describe('roomResolver', () => {
       )
 
       // Act
-      const resultRoom = await resolver.Room(roomId, teacherId)
+      const resultRoom = await resolver.Room(roomId, { ip: '' }, teacherId)
 
       // Assert
       assessmentDB.received(1).findOne(Room, roomId, {})
