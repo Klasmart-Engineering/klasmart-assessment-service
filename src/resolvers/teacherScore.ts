@@ -6,6 +6,7 @@ import {
   FieldResolver,
   Root,
   Authorized,
+  Ctx,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
@@ -15,10 +16,11 @@ import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { User } from '../db/users/entities'
 import getContent from '../getContent'
-import { UserID } from './context'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
+import { Context, UserID } from './context'
+import { Permission } from '../permissions'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -35,12 +37,18 @@ export default class TeacherScoreResolver {
   @Authorized()
   @Mutation(() => TeacherScore)
   public async setScore(
+    @Ctx() context: Context,
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('content_id') content_id: string,
     @Arg('score') score: number,
     @UserID() teacher_id: string,
   ): Promise<TeacherScore> {
+    await context.permissions?.rejectIfNotAllowed(
+      { roomId: room_id },
+      Permission.edit_in_progress_assessment_439,
+    )
+
     try {
       const userContentScore = await this.assesmentDB.findOne(
         UserContentScore,

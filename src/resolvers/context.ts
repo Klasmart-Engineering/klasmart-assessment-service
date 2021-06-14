@@ -1,5 +1,5 @@
 import { createParamDecorator } from 'type-graphql'
-import { UserPermissions } from '../userPermissions'
+import { UserPermissions } from '../permissions'
 
 export interface Context {
   token?: Record<string, unknown>

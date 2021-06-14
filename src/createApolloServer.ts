@@ -6,7 +6,7 @@ import {
 import { GraphQLSchema } from 'graphql'
 import { checkToken } from './auth'
 import { Context } from './resolvers/context'
-import { UserPermissions } from './userPermissions'
+import { UserPermissions } from './permissions'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({

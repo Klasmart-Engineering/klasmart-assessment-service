@@ -5,6 +5,7 @@ import {
   Mutation,
   Resolver,
   Root,
+  Ctx,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
@@ -14,7 +15,8 @@ import { TeacherComment } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
-import { UserID } from './context'
+import { Context, UserID } from './context'
+import { Permission } from '../permissions'
 
 @Service()
 @Resolver(() => TeacherComment)
@@ -29,12 +31,19 @@ export default class TeacherCommentResolver {
   @Authorized()
   @Mutation(() => TeacherComment, { nullable: true })
   public async setComment(
+    @Ctx() context: Context,
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
-    return await this.addComment(room_id, student_id, comment, teacher_id)
+    return await this.addComment(
+      context,
+      room_id,
+      student_id,
+      comment,
+      teacher_id,
+    )
   }
 
   @Authorized()
@@ -43,11 +52,17 @@ export default class TeacherCommentResolver {
     deprecationReason: 'Use setComment(room_id, student_id, comment) resolver',
   })
   public async addComment(
+    @Ctx() context: Context,
     @Arg('room_id') room_id: string,
     @Arg('student_id') student_id: string,
     @Arg('comment') comment: string,
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
+    await context.permissions?.rejectIfNotAllowed(
+      { roomId: room_id },
+      Permission.edit_in_progress_assessment_439,
+    )
+
     try {
       const teacherComment =
         (await this.assesmentDB.findOne(TeacherComment, {

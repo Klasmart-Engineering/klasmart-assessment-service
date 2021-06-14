@@ -19,6 +19,7 @@ import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
 import { UserID, Context } from './context'
+import { Permission } from '../permissions'
 
 @Service()
 @Resolver(() => Room)
@@ -40,7 +41,7 @@ export default class RoomResolver {
   ): Promise<Room> {
     await context.permissions?.rejectIfNotAllowed(
       { roomId: room_id },
-      'assessments_page_406',
+      Permission.assessments_page_406,
     )
 
     try {
