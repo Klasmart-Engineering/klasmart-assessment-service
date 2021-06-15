@@ -1,13 +1,35 @@
-import { AuthenticationError } from 'apollo-server-express'
-import { AuthChecker } from 'type-graphql'
+// import { AuthenticationError } from 'apollo-server-express'
+import { AuthChecker, MiddlewareFn, ResolverData } from 'type-graphql'
 import { Context } from './resolvers/context'
+import { Permission } from './permissions'
 
-export const authChecker: AuthChecker<Context> = (
+export const authChecker: AuthChecker<Context> = async (
   { context: { userId } },
   roles,
 ) => {
   return userId !== undefined
+}
 
-  // No roles matched. Restrict access.
-  return false
+export const roomAuth: MiddlewareFn<Context> = async (
+  { args, context }: ResolverData<Context>,
+  next,
+) => {
+  const { room_id } = args
+  await context.permissions?.rejectIfNotAllowed(
+    { roomId: room_id },
+    Permission.assessments_page_406,
+  )
+  return next()
+}
+
+export const mutationAuth: MiddlewareFn<Context> = async (
+  { args, context }: ResolverData<Context>,
+  next,
+) => {
+  const { room_id, student_id } = args
+  await context.permissions?.rejectIfNotAllowed(
+    { roomId: room_id, studentId: student_id },
+    Permission.edit_in_progress_assessment_439,
+  )
+  return next()
 }

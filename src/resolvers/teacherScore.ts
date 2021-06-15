@@ -5,8 +5,8 @@ import {
   Resolver,
   FieldResolver,
   Root,
-  Authorized,
   Ctx,
+  UseMiddleware,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
@@ -20,7 +20,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Context, UserID } from './context'
-import { Permission } from '../permissions'
+import { mutationAuth } from '../authChecker'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -34,7 +34,7 @@ export default class TeacherScoreResolver {
     private readonly contentRepository: Repository<Content>,
   ) {}
 
-  @Authorized()
+  @UseMiddleware(mutationAuth)
   @Mutation(() => TeacherScore)
   public async setScore(
     @Ctx() context: Context,
@@ -44,11 +44,6 @@ export default class TeacherScoreResolver {
     @Arg('score') score: number,
     @UserID() teacher_id: string,
   ): Promise<TeacherScore> {
-    await context.permissions?.rejectIfNotAllowed(
-      { roomId: room_id, studentId: student_id },
-      Permission.edit_in_progress_assessment_439,
-    )
-
     try {
       const userContentScore = await this.assesmentDB.findOne(
         UserContentScore,

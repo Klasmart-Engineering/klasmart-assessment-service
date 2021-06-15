@@ -1,12 +1,12 @@
 import { UserInputError } from 'apollo-server-express'
 import {
   Arg,
-  Authorized,
   FieldResolver,
   Query,
   Resolver,
   Root,
   Ctx,
+  UseMiddleware,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
@@ -19,7 +19,7 @@ import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
 import { UserID, Context } from './context'
-import { Permission } from '../permissions'
+import { roomAuth } from '../authChecker'
 
 @Service()
 @Resolver(() => Room)
@@ -32,18 +32,13 @@ export default class RoomResolver {
     private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
-  @Authorized()
+  @UseMiddleware(roomAuth)
   @Query(() => Room)
   public async Room(
     @Arg('room_id', { nullable: true }) room_id: string,
     @Ctx() context: Context,
     @UserID() user_id?: string,
   ): Promise<Room> {
-    await context.permissions?.rejectIfNotAllowed(
-      { roomId: room_id },
-      Permission.assessments_page_406,
-    )
-
     try {
       let room = await this.assessmentDB.findOne(Room, room_id, {})
       if (!room) {

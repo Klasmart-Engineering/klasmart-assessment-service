@@ -1,11 +1,11 @@
 import {
   Arg,
-  Authorized,
   FieldResolver,
   Mutation,
   Resolver,
   Root,
   Ctx,
+  UseMiddleware,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
@@ -16,7 +16,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
 import { Context, UserID } from './context'
-import { Permission } from '../permissions'
+import { mutationAuth } from '../authChecker'
 
 @Service()
 @Resolver(() => TeacherComment)
@@ -28,7 +28,7 @@ export default class TeacherCommentResolver {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  @Authorized()
+  @UseMiddleware(mutationAuth)
   @Mutation(() => TeacherComment, { nullable: true })
   public async setComment(
     @Ctx() context: Context,
@@ -46,7 +46,7 @@ export default class TeacherCommentResolver {
     )
   }
 
-  @Authorized()
+  @UseMiddleware(mutationAuth)
   @Mutation(() => TeacherComment, {
     nullable: true,
     deprecationReason: 'Use setComment(room_id, student_id, comment) resolver',
@@ -58,11 +58,6 @@ export default class TeacherCommentResolver {
     @Arg('comment') comment: string,
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
-    await context.permissions?.rejectIfNotAllowed(
-      { roomId: room_id, studentId: student_id },
-      Permission.edit_in_progress_assessment_439,
-    )
-
     try {
       const teacherComment =
         (await this.assesmentDB.findOne(TeacherComment, {
