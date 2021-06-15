@@ -3,7 +3,7 @@ import { UserPermissions } from '../permissions'
 
 export interface Context {
   token?: Record<string, unknown>
-  ip: string | string[]
+  ip?: string | string[]
   userId?: string
   permissions?: UserPermissions
 }
