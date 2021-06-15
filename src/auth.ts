@@ -72,14 +72,6 @@ export async function checkToken(token?: string): Promise<any> {
   const verifiedToken = await new Promise<any>((resolve, reject) => {
     verify(token, secretOrPublicKey, options, (err, decoded) => {
       if (err) {
-        if (
-          process.env.NODE_ENV === 'development' &&
-          err instanceof TokenExpiredError
-        ) {
-          resolve({
-            id: process.env.USER_ID,
-          })
-        }
         reject(err)
       }
       if (decoded) {
