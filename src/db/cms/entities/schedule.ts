@@ -1,15 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { ObjectType, Field, Directive, ID } from 'type-graphql'
+import { Column, Entity, PrimaryColumn } from 'typeorm'
 
-@Directive(`@key(fields: "id")`)
-@ObjectType()
 @Entity({ name: 'schedules' })
 export class Schedule {
-  @Field(() => ID)
-  @PrimaryGeneratedColumn('uuid')
-  readonly id!: string
+  @PrimaryColumn()
+  public readonly id!: string
 
-  @Field(() => ID)
+  @Column({ name: 'lesson_plan_id' })
+  public readonly lessonPlanId!: string
+
   @Column({ name: 'org_id' })
-  readonly orgId!: string
+  public readonly orgId!: string
 }

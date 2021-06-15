@@ -53,11 +53,6 @@ type Room {
   teacherCommentsByStudent: [TeacherCommentsByStudent!]!
 }
 
-type Schedule {
-  id: ID!
-  orgId: ID!
-}
-
 type ScoreSummary {
   answers: [Answer!]!
   max: Float
