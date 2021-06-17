@@ -1,9 +1,10 @@
 import { getRepository } from 'typeorm'
-import { UserInputError } from 'apollo-server-express'
 import fetch from 'node-fetch'
 
 import { Schedule } from './db/cms/entities'
 import { Attendance } from './db/users/entities'
+import { ErrorMessage } from './errorMessages'
+import { UserInputError } from 'apollo-server-express'
 
 export enum Permission {
   assessments_page_406 = 'assessments_page_406',
@@ -59,7 +60,7 @@ export class UserPermissions {
 
   public rejectIfNotAuthenticated(): void {
     if (!this.currentUserId) {
-      throw new Error(`User not authenticated. Please authenticate to proceed`)
+      throw new Error(ErrorMessage.notAuthenticated)
     }
   }
 
@@ -71,9 +72,7 @@ export class UserPermissions {
     const isAllowed = await this.isAllowed(permissionContext, permission)
 
     if (!isAllowed) {
-      throw new Error(
-        `User(${this.currentUserId}) does not have Permission(${permission})`,
-      )
+      throw new Error(ErrorMessage.permission(this.currentUserId, permission))
     }
   }
 
@@ -87,9 +86,7 @@ export class UserPermissions {
 
     const schedule = await getRepository(Schedule, 'cms').findOne(roomId)
     if (!schedule) {
-      throw new UserInputError(
-        `Room(${roomId}) cannot be found in the Schedule`,
-      )
+      throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
     }
     const organizationId = schedule.orgId
 
