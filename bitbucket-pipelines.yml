@@ -1,13 +1,28 @@
 definitions:
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_DB: test_assessment_db
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: assessments
+    mysql:
+      image: mysql
+      variables:
+        MYSQL_DATABASE: test_cms_db
+        MYSQL_ROOT_PASSWORD: assessments
   caches:
     nodemodules: ./node_modules
   steps:
     - step: &npm-install
         name: "Build NPM"
         image: node:lts
+        services:
+          - postgres
+          - mysql
         script:
           - npm i
-          - npm test
+          - npm run test:bitbucket
         caches:
           - nodemodules
         artifacts:

@@ -13,6 +13,7 @@
     "build": "tsc -p . --outDir ./dist",
     "dev": "nodemon --config nodemon.json src/index.ts",
     "test": "npm run test:unit && npm run test:integration",
+    "test:bitbucket": "npm run test:unit && TEST_POSTGRES_PORT=5432 TEST_MYSQL_PORT=3306 npm run test:integration",
     "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
     "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
     "test:single": "mocha --require ts-node/register --grep \"tests.unit.stub\" tests/**/*.test.ts",

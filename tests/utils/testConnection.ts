@@ -7,8 +7,9 @@ export const createBootstrapPostgresConnection = (): Promise<Connection> => {
   return createConnection({
     type: 'postgres',
     host: 'localhost',
-    port: 5434,
+    port: Number(process.env.TEST_POSTGRES_PORT) || 5434,
     username: 'postgres',
+    password: 'assessments',
   })
 }
 
@@ -25,8 +26,9 @@ export const createAssessmentDbConnection = (): Promise<Connection> => {
     name: ASSESSMENTS_CONNECTION_NAME,
     type: 'postgres',
     host: 'localhost',
-    port: 5434,
+    port: Number(process.env.TEST_POSTGRES_PORT) || 5434,
     username: 'postgres',
+    password: 'assessments',
     database: 'test_assessment_db',
     synchronize: true,
     dropSchema: true,
@@ -39,8 +41,9 @@ export const createUserDbConnection = (): Promise<Connection> => {
     name: USERS_CONNECTION_NAME,
     type: 'postgres',
     host: 'localhost',
-    port: 5434,
+    port: Number(process.env.TEST_POSTGRES_PORT) || 5434,
     username: 'postgres',
+    password: 'assessments',
     database: 'test_user_db',
     synchronize: true,
     dropSchema: true,
@@ -53,8 +56,9 @@ export const createCmsDbConnection = (): Promise<Connection> => {
     name: CMS_CONNECTION_NAME,
     type: 'mysql',
     host: 'localhost',
-    port: 3308,
+    port: Number(process.env.TEST_MYSQL_PORT) || 3308,
     username: 'root',
+    password: 'assessments',
     database: 'test_cms_db',
     synchronize: true,
     dropSchema: true,
