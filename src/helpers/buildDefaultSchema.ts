@@ -2,7 +2,7 @@ import { GraphQLSchema } from 'graphql'
 import path from 'path'
 import { buildSchema } from 'type-graphql'
 import { Container } from 'typeorm-typedi-extensions'
-import { authChecker } from '../authChecker'
+import { authChecker } from '../auth/authChecker'
 
 export function buildDefaultSchema(): Promise<GraphQLSchema> {
   return buildSchema({

@@ -4,9 +4,9 @@ import {
   ExpressContext,
 } from 'apollo-server-express'
 import { GraphQLSchema } from 'graphql'
-import { checkToken } from './auth'
-import { Context } from './resolvers/context'
-import { UserPermissions } from './permissions'
+import { checkToken } from '../auth/auth'
+import { Context } from '../auth/context'
+import { UserPermissions } from '../auth/permissions'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({

@@ -18,8 +18,8 @@ import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
-import { UserID, Context } from './context'
-import { roomAuth } from '../authChecker'
+import { UserID, Context } from '../auth/context'
+import { roomAuth } from '../auth/authChecker'
 
 @Service()
 @Resolver(() => Room)

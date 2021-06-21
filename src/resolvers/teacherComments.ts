@@ -15,8 +15,8 @@ import { TeacherComment } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
-import { Context, UserID } from './context'
-import { mutationAuth } from '../authChecker'
+import { Context, UserID } from '../auth/context'
+import { mutationAuth } from '../auth/authChecker'
 
 @Service()
 @Resolver(() => TeacherComment)

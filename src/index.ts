@@ -7,7 +7,7 @@ import { Container } from 'typeorm-typedi-extensions'
 
 import { connectToCmsDatabase } from './db/cms/connectToCmsDatabase'
 import { connectToUserDatabase } from './db/users/connectToUserDatabase'
-import { createApolloServer } from './createApolloServer'
+import { createApolloServer } from './helpers/createApolloServer'
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
 import { buildDefaultSchema } from './helpers/buildDefaultSchema'
 

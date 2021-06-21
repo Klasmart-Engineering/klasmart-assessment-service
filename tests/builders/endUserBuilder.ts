@@ -3,7 +3,7 @@ import { User } from '../../src/db/users/entities'
 import { sign } from 'jsonwebtoken'
 import UserBuilder from './userBuilder'
 import EndUser from '../entities/endUser'
-import { debugJwtIssuer } from '../../src/auth'
+import { debugJwtIssuer } from '../../src/auth/auth'
 import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
 
 export default class EndUserBuilder extends UserBuilder {

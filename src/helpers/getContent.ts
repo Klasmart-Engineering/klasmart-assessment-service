@@ -1,11 +1,11 @@
 import { Repository } from 'typeorm'
-import { Content } from './db/cms/entities/content'
+import { Content } from '../db/cms/entities/content'
 
 export default async function getContent(
   contentId: string,
   contentType: string | undefined,
   contentRepository: Repository<Content>,
-) {
+): Promise<Content | null> {
   const content =
     (await contentRepository
       .createQueryBuilder()

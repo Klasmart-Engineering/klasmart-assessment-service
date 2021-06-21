@@ -6,7 +6,7 @@ import { Repository } from 'typeorm'
 import { User } from '../db/users/entities'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import getContent from '../getContent'
+import getContent from '../helpers/getContent'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 

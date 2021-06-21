@@ -15,12 +15,12 @@ import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { User } from '../db/users/entities'
-import getContent from '../getContent'
+import getContent from '../helpers/getContent'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
-import { Context, UserID } from './context'
-import { mutationAuth } from '../authChecker'
+import { Context, UserID } from '../auth/context'
+import { mutationAuth } from '../auth/authChecker'
 
 @Service()
 @Resolver(() => TeacherScore)

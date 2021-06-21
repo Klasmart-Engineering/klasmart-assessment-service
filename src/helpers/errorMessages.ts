@@ -1,4 +1,4 @@
-import { Permission } from './permissions'
+import { Permission } from '../auth/permissions'
 
 export class ErrorMessage {
   static readonly notAuthenticated = `User not authenticated. Please authenticate to proceed`

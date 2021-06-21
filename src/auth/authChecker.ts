@@ -1,6 +1,6 @@
 // import { AuthenticationError } from 'apollo-server-express'
 import { AuthChecker, MiddlewareFn, ResolverData } from 'type-graphql'
-import { Context } from './resolvers/context'
+import { Context } from './context'
 import { Permission } from './permissions'
 
 export const authChecker: AuthChecker<Context> = async (

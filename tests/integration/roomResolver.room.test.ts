@@ -3,7 +3,7 @@ import * as gql from 'gql-query-builder'
 import { gqlTryQuery } from '../utils/gqlTry'
 import EndUserBuilder from '../builders/endUserBuilder'
 import { testClient } from '../utils/globalIntegrationTestHooks'
-import { ErrorMessage } from '../../src/errorMessages'
+import { ErrorMessage } from '../../src/helpers/errorMessages'
 import { TestTitle } from '../utils/testTitles'
 
 describe('roomResolver.Room', () => {

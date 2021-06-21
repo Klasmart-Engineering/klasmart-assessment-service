@@ -1,7 +1,7 @@
 import Substitute, { SubstituteOf } from '@fluffy-spoon/substitute'
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
-import { createApolloServer } from '../../src/createApolloServer'
+import { createApolloServer } from '../../src/helpers/createApolloServer'
 import { XAPIRepository } from '../../src/db/xapi/repo'
 import { buildDefaultSchema } from '../../src/helpers/buildDefaultSchema'
 import { ApolloServerTestClient, createTestClient } from './createTestClient'

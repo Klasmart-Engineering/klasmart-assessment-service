@@ -1,9 +1,9 @@
 import { getRepository } from 'typeorm'
 import fetch from 'node-fetch'
 
-import { Schedule } from './db/cms/entities'
-import { Attendance } from './db/users/entities'
-import { ErrorMessage } from './errorMessages'
+import { Schedule } from '../db/cms/entities'
+import { Attendance } from '../db/users/entities'
+import { ErrorMessage } from '../helpers/errorMessages'
 import { UserInputError } from 'apollo-server-express'
 
 export enum Permission {
