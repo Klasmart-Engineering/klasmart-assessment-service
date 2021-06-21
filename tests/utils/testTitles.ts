@@ -1,6 +1,12 @@
 export class TestTitle {
   static Authentication = class {
-    static readonly context = 'teacherId is undefined (unauthenticated)'
-    static readonly it = 'throws AuthenticationError'
+    static readonly context = 'end user is unauthenticated'
+    static readonly throwsError = 'throws authentication error'
+  }
+
+  static ScheduleNotFound = class {
+    static readonly context =
+      'no schedule in the cms database corresponding to the provided room id'
+    static readonly throwsError = 'throws "schedule not found" error'
   }
 }

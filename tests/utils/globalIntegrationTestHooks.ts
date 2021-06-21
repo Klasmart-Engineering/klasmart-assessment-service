@@ -42,11 +42,11 @@ async function createUserDbIfItDoesntExist(): Promise<void> {
   if (
     (
       await connection.query(
-        "SELECT datname FROM pg_catalog.pg_database WHERE datname = 'test_user_db';",
+        "SELECT datname FROM pg_catalog.pg_database WHERE datname = 'test_assessment_db';",
       )
     ).length == 0
   ) {
-    await connection.query('CREATE DATABASE test_user_db;')
+    await connection.query('CREATE DATABASE test_assessment_db;')
   }
 
   await queryRunner.release()

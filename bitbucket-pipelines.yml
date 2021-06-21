@@ -3,7 +3,7 @@ definitions:
     postgres:
       image: postgres
       environment:
-        POSTGRES_DB: test_assessment_db
+        POSTGRES_DB: test_user_db
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: assessments
     mysql:

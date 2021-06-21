@@ -4,10 +4,11 @@ import { gqlTryQuery } from '../utils/gqlTry'
 import EndUserBuilder from '../builders/endUserBuilder'
 import { testClient } from '../utils/globalIntegrationTestHooks'
 import { ErrorMessage } from '../../src/errorMessages'
+import { TestTitle } from '../utils/testTitles'
 
-describe('roomResolver', () => {
-  context('queried room exists in database', () => {
-    it('returns room with calculated scores', async () => {
+describe('roomResolver.Room', () => {
+  context(TestTitle.Authentication.context, () => {
+    it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       const roomId = 'room1'
 
@@ -28,8 +29,10 @@ describe('roomResolver', () => {
       // Assert
       await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
     })
+  })
 
-    it('test 2', async () => {
+  context(TestTitle.ScheduleNotFound.context, () => {
+    it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
       const roomId = 'room1'
 
