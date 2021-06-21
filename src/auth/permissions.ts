@@ -1,10 +1,11 @@
 import { getRepository } from 'typeorm'
-import fetch from 'node-fetch'
 
 import { Schedule } from '../db/cms/entities'
 import { Attendance } from '../db/users/entities'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { UserInputError } from 'apollo-server-express'
+import { PermissionChecker } from './permissionChecker'
+import { IToken } from './auth'
 
 export enum Permission {
   assessments_page_406 = 'assessments_page_406',
@@ -44,14 +45,19 @@ export class UserPermissions {
     'evgeny.roskach@calmid.com',
   ]
 
-  private readonly currentUserId: string
+  private readonly permissionChecker: PermissionChecker
+  private readonly currentUserId?: string
   private readonly email: string
   public readonly isAdmin?: boolean
 
-  public constructor(token?: any) {
+  public constructor(
+    token: IToken | undefined,
+    permissionChecker: PermissionChecker,
+  ) {
     this.currentUserId = token?.id
     this.email = token?.email || ''
     this.isAdmin = this.isAdminEmail(this.email)
+    this.permissionChecker = permissionChecker
   }
 
   private isAdminEmail(email: string) {
@@ -83,32 +89,15 @@ export class UserPermissions {
     if (this.isAdmin) {
       return true
     }
+    if (!this.currentUserId) {
+      return false
+    }
 
     const schedule = await getRepository(Schedule, 'cms').findOne(roomId)
     if (!schedule) {
       throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
     }
     const organizationId = schedule.orgId
-
-    // send a request to the user-service to check permissions
-    const query = generatePermissionQuery(
-      this.currentUserId,
-      organizationId,
-      permission,
-    )
-
-    // query the permission service (promise)
-    const userServiceUrl =
-      process.env.USER_SERVICE_API_URL ||
-      'https://api.alpha.kidsloop.net/user/graphql'
-    const fetchPromise = fetch(userServiceUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ query }),
-    })
 
     // check memberships (promise)
     const isRoomMemberQuery = async () => {
@@ -133,14 +122,14 @@ export class UserPermissions {
     }
     const isRoomMemberPromise = isRoomMemberQuery()
 
-    // process
-    const response = await fetchPromise
-    if (
-      !(
-        response.ok &&
-        (await response.json())?.data?.user?.membership?.checkAllowed
-      )
-    ) {
+    const query = generatePermissionQuery(
+      this.currentUserId,
+      organizationId,
+      permission,
+    )
+
+    const hasPermission = await this.permissionChecker.hasPermission(query)
+    if (!hasPermission) {
       return false
     }
 

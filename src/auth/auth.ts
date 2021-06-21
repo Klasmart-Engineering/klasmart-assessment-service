@@ -1,5 +1,10 @@
 import { verify, decode, VerifyOptions, Secret } from 'jsonwebtoken'
 
+export interface IToken {
+  id?: string
+  email?: string
+}
+
 type Issuer = {
   options: VerifyOptions
   secretOrPublicKey: Secret
@@ -52,7 +57,7 @@ FwIDAQAB
   ],
 ])
 
-export async function checkToken(token?: string): Promise<any> {
+export async function checkToken(token?: string): Promise<IToken | undefined> {
   if (!token) {
     return
   }
@@ -69,7 +74,7 @@ export async function checkToken(token?: string): Promise<any> {
     return
   }
   const { options, secretOrPublicKey } = issuerOptions
-  const verifiedToken = await new Promise<any>((resolve, reject) => {
+  const verifiedToken = await new Promise<IToken>((resolve, reject) => {
     verify(token, secretOrPublicKey, options, (err, decoded) => {
       if (err) {
         reject(err)

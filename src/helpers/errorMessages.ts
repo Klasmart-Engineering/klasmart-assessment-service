@@ -3,7 +3,10 @@ import { Permission } from '../auth/permissions'
 export class ErrorMessage {
   static readonly notAuthenticated = `User not authenticated. Please authenticate to proceed`
 
-  static permission(userId: string, permission: Permission): string {
+  static permission(
+    userId: string | undefined,
+    permission: Permission,
+  ): string {
     return `User(${userId}) does not have Permission(${permission})`
   }
 

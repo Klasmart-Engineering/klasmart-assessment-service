@@ -15,7 +15,7 @@ export const roomAuth: MiddlewareFn<Context> = async (
   next,
 ) => {
   const { room_id } = args
-  await context.permissions?.rejectIfNotAllowed(
+  await context.permissions.rejectIfNotAllowed(
     { roomId: room_id },
     Permission.assessments_page_406,
   )
@@ -27,7 +27,7 @@ export const mutationAuth: MiddlewareFn<Context> = async (
   next,
 ) => {
   const { room_id, student_id } = args
-  await context.permissions?.rejectIfNotAllowed(
+  await context.permissions.rejectIfNotAllowed(
     { roomId: room_id, studentId: student_id },
     Permission.edit_in_progress_assessment_439,
   )

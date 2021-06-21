@@ -1,11 +1,12 @@
 import { createParamDecorator } from 'type-graphql'
 import { UserPermissions } from './permissions'
+import { IToken } from './auth'
 
 export interface Context {
-  token?: Record<string, unknown>
+  token?: IToken
   ip?: string | string[]
   userId?: string
-  permissions?: UserPermissions
+  permissions: UserPermissions
 }
 
 export function UserID(): ParameterDecorator {
