@@ -1,12 +1,10 @@
 import fetch from 'node-fetch'
 import { Service } from 'typedi'
 
-@Service()
-export class PermissionChecker {
+@Service({ type: UserPermissionChecker })
+export class UserPermissionChecker {
   public async hasPermission(query: string): Promise<boolean> {
-    const userServiceUrl =
-      process.env.USER_SERVICE_API_URL ||
-      'https://api.alpha.kidsloop.net/user/graphql'
+    const userServiceUrl = process.env.USER_SERVICE_API_URL || ''
 
     const fetchPromise = fetch(userServiceUrl, {
       method: 'POST',

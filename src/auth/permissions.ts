@@ -3,8 +3,8 @@ import { getRepository } from 'typeorm'
 import { Schedule } from '../db/cms/entities'
 import { Attendance } from '../db/users/entities'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { UserInputError } from 'apollo-server-express'
-import { PermissionChecker } from './permissionChecker'
+import { AuthenticationError, UserInputError } from 'apollo-server-express'
+import { UserPermissionChecker } from './userPermissionChecker'
 import { IToken } from './auth'
 
 export enum Permission {
@@ -45,14 +45,14 @@ export class UserPermissions {
     'evgeny.roskach@calmid.com',
   ]
 
-  private readonly permissionChecker: PermissionChecker
+  private readonly permissionChecker: UserPermissionChecker
   private readonly currentUserId?: string
   private readonly email: string
   public readonly isAdmin?: boolean
 
   public constructor(
     token: IToken | undefined,
-    permissionChecker: PermissionChecker,
+    permissionChecker: UserPermissionChecker,
   ) {
     this.currentUserId = token?.id
     this.email = token?.email || ''
@@ -66,7 +66,7 @@ export class UserPermissions {
 
   public rejectIfNotAuthenticated(): void {
     if (!this.currentUserId) {
-      throw new Error(ErrorMessage.notAuthenticated)
+      throw new AuthenticationError(ErrorMessage.notAuthenticated)
     }
   }
 

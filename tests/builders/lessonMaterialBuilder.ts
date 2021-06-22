@@ -4,7 +4,7 @@ import { FileType } from '../../src/db/cms/enums/fileType'
 import { Mutable } from '../utils/mutable'
 import ContentBuilder from './contentBuilder'
 
-export class LessonMaterialBuilder extends ContentBuilder {
+export default class LessonMaterialBuilder extends ContentBuilder {
   private rawSourceId = v4()
   private sourceId? = v4()
   private fileType = FileType.H5P

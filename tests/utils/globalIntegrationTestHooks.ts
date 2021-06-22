@@ -1,6 +1,7 @@
-import Substitute, { SubstituteOf } from '@fluffy-spoon/substitute'
+import { SubstituteOf } from '@fluffy-spoon/substitute'
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
+import { Container as MutableContainer } from 'typedi'
 import { createApolloServer } from '../../src/helpers/createApolloServer'
 import { XAPIRepository } from '../../src/db/xapi/repo'
 import { buildDefaultSchema } from '../../src/helpers/buildDefaultSchema'
@@ -9,32 +10,33 @@ import {
   createBootstrapPostgresConnection,
   createTestConnections,
 } from './testConnection'
-import { Container as MutableContainer } from 'typedi'
+import { UserPermissionChecker } from '../../src/auth/userPermissionChecker'
 
 export let connections: Connection[]
 export let testClient: ApolloServerTestClient
 export let xapiRepository: SubstituteOf<XAPIRepository>
+export let permissionChecker: SubstituteOf<UserPermissionChecker>
 
 before(async () => {
-  xapiRepository = Substitute.for<XAPIRepository>()
-  MutableContainer.set(XAPIRepository, xapiRepository)
-  useContainer(Container)
-
   await createUserDbIfItDoesntExist()
-
-  connections = await Promise.all(createTestConnections())
+  useContainer(Container)
   const schema = await buildDefaultSchema()
   const server = createApolloServer(schema)
   testClient = createTestClient(server)
 })
 
-after(async () => {
-  await Promise.all(connections?.map((x) => x.close()) || [])
+beforeEach(async () => {
+  connections = await Promise.all(createTestConnections())
 })
 
 afterEach(async () => {
-  await Promise.all(connections?.map((x) => x.synchronize(true)) || [])
+  await Promise.all(connections?.map((x) => x.close()) || [])
+  MutableContainer.reset()
 })
+
+// afterEach(async () => {
+//   await Promise.all(connections?.map((x) => x.synchronize(true)) || [])
+// })
 
 async function createUserDbIfItDoesntExist(): Promise<void> {
   const connection = await createBootstrapPostgresConnection()

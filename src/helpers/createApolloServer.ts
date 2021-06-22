@@ -7,7 +7,7 @@ import { GraphQLSchema } from 'graphql'
 import { Container } from 'typedi'
 import { checkToken } from '../auth/auth'
 import { Context } from '../auth/context'
-import { PermissionChecker } from '../auth/permissionChecker'
+import { UserPermissionChecker } from '../auth/userPermissionChecker'
 import { UserPermissions } from '../auth/permissions'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
@@ -33,14 +33,14 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         const token = await checkToken(encodedToken)
         const permissions = new UserPermissions(
           token,
-          Container.get(PermissionChecker),
+          Container.get(UserPermissionChecker),
         )
         return { token, ip, userId: token?.id, permissions }
       } catch (e) {
         console.error(e)
         const permissions = new UserPermissions(
           undefined,
-          Container.get(PermissionChecker),
+          Container.get(UserPermissionChecker),
         )
         return { permissions }
       }
