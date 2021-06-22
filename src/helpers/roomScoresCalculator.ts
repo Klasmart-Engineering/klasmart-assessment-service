@@ -34,11 +34,10 @@ export class RoomScoresCalculator {
       joinTimestamp,
       leaveTimestamp,
     } of attendanceMap.values()) {
-      const timezoneOffset = joinTimestamp.getTimezoneOffset() * 60000
       const xapiEvents = await this.xapiRepository.searchXApiEvents(
         userId,
-        joinTimestamp.getTime() - timezoneOffset,
-        leaveTimestamp.getTime() - timezoneOffset,
+        joinTimestamp.getTime(),
+        leaveTimestamp.getTime(),
       )
       console.log(`events: ${xapiEvents?.length ?? 0}`)
       if (!xapiEvents) {
