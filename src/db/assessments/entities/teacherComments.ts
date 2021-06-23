@@ -13,13 +13,13 @@ import { Room } from './room'
 @ObjectType()
 export class TeacherComment {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly room_id: string
+  public readonly roomId: string
 
   @PrimaryColumn({ name: 'teacher_id', nullable: false })
-  public readonly teacher_id: string
+  public readonly teacherId: string
 
   @PrimaryColumn({ name: 'student_id', nullable: false })
-  public readonly student_id: string
+  public readonly studentId: string
 
   // This explicit field for the foreign should not be necessary.
   // But for some reason this column is null without it.
@@ -50,10 +50,10 @@ export class TeacherComment {
   public comment!: string
 
   constructor(roomId: string, teacherId: string, studentId: string) {
-    this.room_id = roomId
+    this.roomId = roomId
     this.roomRoomId = roomId
-    this.teacher_id = teacherId
-    this.student_id = studentId
+    this.teacherId = teacherId
+    this.studentId = studentId
   }
 
   public static new(

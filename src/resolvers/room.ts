@@ -5,7 +5,6 @@ import {
   Query,
   Resolver,
   Root,
-  Ctx,
   Authorized,
 } from 'type-graphql'
 import { Service } from 'typedi'
@@ -18,7 +17,6 @@ import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
-import { UserID, Context } from '../auth/context'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Schedule } from '../db/cms/entities'
 import { ErrorMessage } from '../helpers/errorMessages'
@@ -41,14 +39,12 @@ export default class RoomResolver {
   @Authorized()
   @Query(() => Room)
   public async Room(
-    @Arg('room_id', { nullable: true }) room_id: string,
-    @Ctx() context: Context,
-    @UserID() user_id?: string,
+    @Arg('room_id', { nullable: true }) roomId: string,
   ): Promise<Room> {
     try {
-      let room = await this.assessmentDB.findOne(Room, room_id, {})
+      let room = await this.assessmentDB.findOne(Room, roomId, {})
       if (!room) {
-        room = new Room(room_id)
+        room = new Room(roomId)
       }
 
       const scores = await this.calculateRoom(room)
@@ -59,11 +55,11 @@ export default class RoomResolver {
     } catch (e) {
       console.error(e)
     }
-    throw new UserInputError(`Unable to fetch Room(${room_id})`)
+    throw new UserInputError(`Unable to fetch Room(${roomId})`)
   }
 
   private async calculateRoom(room: Room): Promise<UserContentScore[]> {
-    const roomId = room.room_id
+    const roomId = room.roomId
     const attendances = await this.userDB.find(Attendance, {
       where: { roomId },
     })
@@ -76,7 +72,7 @@ export default class RoomResolver {
     }
     const lessonPlanId = schedule.lessonPlanId
     const lessonPlan = await this.cmsDB.findOne(LessonPlan, {
-      where: { content_id: lessonPlanId },
+      where: { contentId: lessonPlanId },
     })
 
     if (!lessonPlan?.data) {
@@ -124,13 +120,13 @@ export default class RoomResolver {
     const scoresByUser: Map<string, UserScores> = new Map()
 
     for (const userContentScore of await room.scores) {
-      const userScores = scoresByUser.get(userContentScore.student_id)
+      const userScores = scoresByUser.get(userContentScore.studentId)
       if (userScores) {
         userScores.scores.push(userContentScore)
       } else {
         scoresByUser.set(
-          userContentScore.student_id,
-          new UserScores(userContentScore.student_id, [userContentScore]),
+          userContentScore.studentId,
+          new UserScores(userContentScore.studentId, [userContentScore]),
         )
       }
     }
@@ -143,14 +139,14 @@ export default class RoomResolver {
     const scoresByContent: Map<string, ContentScores> = new Map()
 
     for (const userContentScore of await room.scores) {
-      const contentScores = scoresByContent.get(userContentScore.student_id)
+      const contentScores = scoresByContent.get(userContentScore.studentId)
       if (contentScores) {
         contentScores.scores.push(userContentScore)
       } else {
         scoresByContent.set(
-          userContentScore.student_id,
+          userContentScore.studentId,
           new ContentScores(
-            userContentScore.content_id,
+            userContentScore.contentId,
             [userContentScore],
             userContentScore.contentType,
           ),
@@ -168,13 +164,13 @@ export default class RoomResolver {
     const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
 
     for (const comment of await room.teacherComments) {
-      const teacherComments = commentsByStudent.get(comment.student_id)
+      const teacherComments = commentsByStudent.get(comment.studentId)
       if (teacherComments) {
         teacherComments.teacherComments.push(comment)
       } else {
         commentsByStudent.set(
-          comment.student_id,
-          new TeacherCommentsByStudent(comment.student_id, [comment]),
+          comment.studentId,
+          new TeacherCommentsByStudent(comment.studentId, [comment]),
         )
       }
     }

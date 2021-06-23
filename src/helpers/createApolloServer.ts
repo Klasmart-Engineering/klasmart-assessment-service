@@ -15,6 +15,7 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
     playground: true,
+    introspection: true,
     formatError: (err) => {
       // Override the @Authorized error by TypeGraphQL.
       if (err.message.startsWith('Access denied!')) {

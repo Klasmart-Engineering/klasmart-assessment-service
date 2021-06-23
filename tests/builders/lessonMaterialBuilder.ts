@@ -24,7 +24,7 @@ export default class LessonMaterialBuilder extends ContentBuilder {
 
   public build(): Content {
     const entity = super.build()
-    entity.h5p_id = this.fileType === FileType.H5P ? this.sourceId : undefined
+    entity.h5pId = this.fileType === FileType.H5P ? this.sourceId : undefined
     const mutableEntity: Mutable<Content> = entity
     mutableEntity.data = JSON.parse(
       `{"source": "${

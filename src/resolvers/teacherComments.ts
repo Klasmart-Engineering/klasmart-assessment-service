@@ -31,15 +31,15 @@ export default class TeacherCommentResolver {
   @Mutation(() => TeacherComment, { nullable: true })
   public async setComment(
     @Ctx() context: Context,
-    @Arg('room_id') room_id: string,
-    @Arg('student_id') student_id: string,
+    @Arg('room_id') roomId: string,
+    @Arg('student_id') studentId: string,
     @Arg('comment') comment: string,
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
     return await this.addComment(
       context,
-      room_id,
-      student_id,
+      roomId,
+      studentId,
       comment,
       teacher_id,
     )
@@ -52,18 +52,18 @@ export default class TeacherCommentResolver {
   })
   public async addComment(
     @Ctx() context: Context,
-    @Arg('room_id') room_id: string,
-    @Arg('student_id') student_id: string,
+    @Arg('room_id') roomId: string,
+    @Arg('student_id') studentId: string,
     @Arg('comment') comment: string,
-    @UserID() teacher_id: string,
+    @UserID() teacherId: string,
   ): Promise<TeacherComment | undefined> {
     try {
       const teacherComment =
         (await this.assesmentDB.findOne(TeacherComment, {
-          room_id,
-          student_id,
-          teacher_id,
-        })) || TeacherComment.new(room_id, teacher_id, student_id, comment)
+          roomId: roomId,
+          studentId: studentId,
+          teacherId: teacherId,
+        })) || TeacherComment.new(roomId, teacherId, studentId, comment)
 
       teacherComment.comment = comment
       await this.assesmentDB.save(TeacherComment, teacherComment)
@@ -80,7 +80,7 @@ export default class TeacherCommentResolver {
     @Root() source: TeacherComment,
   ): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.teacher_id },
+      where: { userId: source.teacherId },
     })
   }
 
@@ -89,7 +89,7 @@ export default class TeacherCommentResolver {
     @Root() source: TeacherComment,
   ): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.student_id },
+      where: { userId: source.studentId },
     })
   }
 }

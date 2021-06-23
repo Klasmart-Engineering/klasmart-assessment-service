@@ -17,7 +17,7 @@ export default class UserScoresResolver {
   @FieldResolver(() => User, { nullable: true })
   public async user(@Root() source: UserScores): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.user_id },
+      where: { userId: source.userId },
     })
   }
 }

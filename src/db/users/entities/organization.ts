@@ -10,11 +10,11 @@ import { OrganizationMembership } from './organizationMembership'
 
 @Entity()
 export class Organization extends BaseEntity {
-  @PrimaryColumn('uuid')
-  public organization_id!: string
+  @PrimaryColumn('uuid', { name: 'organization_id' })
+  public organizationId!: string
 
-  @Column({ nullable: true })
-  public organization_name?: string
+  @Column({ name: 'organization_name', nullable: true })
+  public organizationName?: string
 
   @OneToMany(
     () => OrganizationMembership,

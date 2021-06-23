@@ -37,37 +37,37 @@ export default class TeacherScoreResolver {
   @Mutation(() => TeacherScore)
   public async setScore(
     @Ctx() context: Context,
-    @Arg('room_id') room_id: string,
-    @Arg('student_id') student_id: string,
-    @Arg('content_id') content_id: string,
+    @Arg('room_id') roomId: string,
+    @Arg('student_id') studentId: string,
+    @Arg('content_id') contentId: string,
     @Arg('score') score: number,
-    @UserID() teacher_id: string,
+    @UserID() teacherId: string,
     @Arg('subcontent_id', { nullable: true }) subcontent_id?: string,
   ): Promise<TeacherScore> {
     try {
-      content_id = subcontent_id ? `${content_id}|${subcontent_id}` : content_id
+      contentId = subcontent_id ? `${contentId}|${subcontent_id}` : contentId
       const userContentScore = await this.assesmentDB.findOne(
         UserContentScore,
         {
-          room_id,
-          student_id,
-          content_id,
+          roomId: roomId,
+          studentId: studentId,
+          contentId: contentId,
         },
       )
 
       if (!userContentScore) {
         throw new UserInputError(
-          `Unknown UserContentScore(room_id(${room_id}), student_id(${student_id}), content_id(${content_id}))`,
+          `Unknown UserContentScore(room_id(${roomId}), student_id(${studentId}), content_id(${contentId}))`,
         )
       }
 
       const teacherScore =
         (await this.assesmentDB.findOne(TeacherScore, {
-          room_id: room_id,
-          student_id: student_id,
-          content_id: content_id,
-          teacher_id: teacher_id,
-        })) || TeacherScore.new(userContentScore, teacher_id, score)
+          roomId: roomId,
+          studentId: studentId,
+          contentId: contentId,
+          teacherId: teacherId,
+        })) || TeacherScore.new(userContentScore, teacherId, score)
 
       teacherScore.score = score
 
@@ -85,7 +85,7 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
   ): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.teacher_id },
+      where: { userId: source.teacherId },
     })
   }
 
@@ -94,7 +94,7 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
   ): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.student_id },
+      where: { userId: source.studentId },
     })
   }
 
@@ -102,7 +102,7 @@ export default class TeacherScoreResolver {
   public async content(@Root() source: TeacherScore): Promise<Content | null> {
     const contentType = (await source.userContentScore)?.contentType
     return await getContent(
-      source.content_id,
+      source.contentId,
       contentType,
       this.contentRepository,
     )

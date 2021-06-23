@@ -6,13 +6,13 @@ import { UserContentScore } from './userContentScore'
 @ObjectType()
 export class Answer {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly room_id: string
+  public readonly roomId: string
 
   @PrimaryColumn({ name: 'student_id', nullable: false })
-  public readonly student_id: string
+  public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly content_id: string
+  public readonly contentId: string
 
   @PrimaryColumn({ name: 'timestamp' })
   @Field(() => Date)
@@ -42,14 +42,14 @@ export class Answer {
   public maximumPossibleScore?: number
 
   constructor(
-    room_id: string,
-    student_id: string,
-    content_id: string,
+    roomId: string,
+    studentId: string,
+    contentId: string,
     date: Date,
   ) {
-    this.room_id = room_id
-    this.student_id = student_id
-    this.content_id = content_id
+    this.roomId = roomId
+    this.studentId = studentId
+    this.contentId = contentId
     this.date = date
   }
 
@@ -62,9 +62,9 @@ export class Answer {
     maximumPossibleScore?: number,
   ): Answer {
     const answerObject = new Answer(
-      userContentScore.room_id,
-      userContentScore.student_id,
-      userContentScore.content_id,
+      userContentScore.roomId,
+      userContentScore.studentId,
+      userContentScore.contentId,
       date,
     )
     answerObject.userContentScore = Promise.resolve(userContentScore)

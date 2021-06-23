@@ -16,13 +16,13 @@ import { TeacherScore } from './teacherScore'
 @ObjectType()
 export class UserContentScore {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly room_id: string
+  public readonly roomId: string
 
   @PrimaryColumn({ name: 'student_id', nullable: false })
-  public readonly student_id: string
+  public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly content_id: string
+  public readonly contentId: string
 
   @ManyToOne(
     () => Room, //Linter bug
@@ -109,9 +109,9 @@ export class UserContentScore {
   }
 
   constructor(roomId: string, studentId: string, contentId: string) {
-    this.room_id = roomId
-    this.student_id = studentId
-    this.content_id = contentId
+    this.roomId = roomId
+    this.studentId = studentId
+    this.contentId = contentId
   }
 
   public static new(
@@ -122,7 +122,7 @@ export class UserContentScore {
     answers: Answer[] = [],
     seen: boolean = answers.length > 0,
   ): UserContentScore {
-    const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.room_id
+    const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.roomId
     const userContentScore = new UserContentScore(roomId, studentId, contentId)
     userContentScore.contentType = contentType
     userContentScore.answers = Promise.resolve([])

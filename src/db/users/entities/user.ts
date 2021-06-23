@@ -7,16 +7,16 @@ import { OrganizationMembership } from './organizationMembership'
 @Entity()
 export class User {
   @PrimaryColumn('uuid', { name: 'user_id' })
-  @Field()
-  public readonly user_id!: string
+  @Field({ name: 'user_id' })
+  public readonly userId!: string
 
   @Column({ name: 'given_name', nullable: true })
-  @Field({ nullable: true })
-  public readonly given_name?: string
+  @Field({ name: 'given_name', nullable: true })
+  public readonly givenName?: string
 
   @Column({ name: 'family_name', nullable: true })
-  @Field({ nullable: true })
-  public readonly family_name?: string
+  @Field({ name: 'family_name', nullable: true })
+  public readonly familyName?: string
 
   @Column({ nullable: true })
   public readonly email?: string

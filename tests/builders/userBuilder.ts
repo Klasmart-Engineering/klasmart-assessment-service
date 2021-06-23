@@ -35,9 +35,9 @@ export default class UserBuilder {
   public build(): User {
     const user = new User()
     const mutableUser: Mutable<User> = user
-    mutableUser.user_id = this.userId
-    mutableUser.given_name = this.givenName
-    mutableUser.family_name = this.familyName
+    mutableUser.userId = this.userId
+    mutableUser.givenName = this.givenName
+    mutableUser.familyName = this.familyName
     mutableUser.email = this.email
     return user
   }

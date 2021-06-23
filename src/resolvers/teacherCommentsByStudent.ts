@@ -19,7 +19,7 @@ export default class TeacherCommentsByStudentResolver {
     @Root() source: TeacherCommentsByStudent,
   ): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.student_id },
+      where: { userId: source.studentId },
     })
   }
 }

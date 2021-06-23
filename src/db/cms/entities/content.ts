@@ -6,18 +6,18 @@ import { ContentType } from '../enums/contentType'
 @ObjectType()
 @Entity({ name: 'cms_contents' })
 export class Content {
-  @Field()
+  @Field({ name: 'content_id' })
   @PrimaryColumn({ name: 'id' })
-  readonly content_id!: string
+  readonly contentId!: string
 
-  @Field({ nullable: true })
-  subcontent_id?: string
+  @Field({ name: 'subcontent_id', nullable: true })
+  subcontentId?: string
 
-  @Field({ nullable: true })
-  h5p_id?: string
+  @Field({ name: 'h5p_id', nullable: true })
+  h5pId?: string
 
   @Column('enum', { name: 'content_type', enum: ContentType })
-  readonly content_type!: ContentType
+  readonly contentType!: ContentType
 
   @Field({ nullable: true })
   @Column({ name: 'content_name' })

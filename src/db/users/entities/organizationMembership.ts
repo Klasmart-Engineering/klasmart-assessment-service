@@ -5,11 +5,11 @@ import { Organization } from './organization'
 export const MEMBERSHIP_SHORTCODE_MAXLEN = 16
 @Entity()
 export class OrganizationMembership extends BaseEntity {
-  @PrimaryColumn()
-  public user_id!: string
+  @PrimaryColumn({ name: 'user_id' })
+  public userId!: string
 
-  @PrimaryColumn()
-  public organization_id!: string
+  @PrimaryColumn({ name: 'organization_id' })
+  public organizationId!: string
 
   @ManyToOne(() => User, (user) => user.memberships)
   public user?: Promise<User>

@@ -3,7 +3,7 @@ import { UserContentScore } from '../db/assessments/entities'
 
 @ObjectType()
 export class ContentScores {
-  public readonly content_id: string
+  public readonly contentId: string
 
   @Field(() => [UserContentScore])
   public readonly scores: UserContentScore[]
@@ -15,7 +15,7 @@ export class ContentScores {
     scores: UserContentScore[] = [],
     contentType: string | undefined,
   ) {
-    this.content_id = content_id
+    this.contentId = content_id
     this.scores = scores
     this.contentType = contentType
   }

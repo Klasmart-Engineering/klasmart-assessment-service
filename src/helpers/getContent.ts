@@ -17,15 +17,15 @@ export default async function getContent(
     content =
       (await contentRepository
         .createQueryBuilder()
-        .where({ content_type: ContentType.LessonMaterial })
+        .where({ contentType: ContentType.LessonMaterial })
         .andWhere(`data->"$.source" = :source`, {
           source: mainContentId,
         })
         .getOne()) || null
 
     if (content) {
-      content.h5p_id = mainContentId
-      content.subcontent_id = subcontentId
+      content.h5pId = mainContentId
+      content.subcontentId = subcontentId
       content.type = contentType
     }
   }

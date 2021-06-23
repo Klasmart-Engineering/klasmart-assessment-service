@@ -4,7 +4,7 @@ import { ContentType } from '../enums/contentType'
 @Entity({ name: 'cms_contents' })
 export class LessonPlan {
   @PrimaryColumn({ name: 'id' })
-  readonly content_id!: string
+  readonly contentId!: string
 
   @Column('enum', { name: 'content_type', enum: ContentType })
   readonly contentType!: ContentType

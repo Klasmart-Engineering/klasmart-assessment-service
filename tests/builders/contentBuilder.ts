@@ -47,8 +47,8 @@ export default class ContentBuilder {
   public build(): Content {
     const entity = new Content()
     const mutableEntity: Mutable<Content> = entity
-    mutableEntity.content_id = this.contentId
-    mutableEntity.content_type = this.contentType
+    mutableEntity.contentId = this.contentId
+    mutableEntity.contentType = this.contentType
     mutableEntity.type = this.type
     mutableEntity.name = this.name
     mutableEntity.author = this.author

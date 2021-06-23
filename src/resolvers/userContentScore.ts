@@ -25,7 +25,7 @@ export default class UserContentScoreResolver {
     @Root() source: UserContentScore,
   ): Promise<User | undefined> {
     return await this.userRepository.findOne({
-      where: { user_id: source.student_id },
+      where: { userId: source.studentId },
     })
   }
 
@@ -34,7 +34,7 @@ export default class UserContentScoreResolver {
     @Root() source: UserContentScore,
   ): Promise<Content | null> {
     return await getContent(
-      source.content_id,
+      source.contentId,
       source.contentType,
       this.contentRepository,
     )

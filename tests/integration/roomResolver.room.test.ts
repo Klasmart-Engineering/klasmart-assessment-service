@@ -89,11 +89,11 @@ describe('roomResolver.Room', () => {
   //         .buildAndPersist()
   //       const endUserAttendance = await new AttendanceBuilder()
   //         .withroomId(roomId)
-  //         .withUserId(endUser.user_id)
+  //         .withUserId(endUser.userId)
   //         .buildAndPersist()
   //       const studentAttendance = await new AttendanceBuilder()
   //         .withroomId(roomId)
-  //         .withUserId(student.user_id)
+  //         .withUserId(student.userId)
   //         .buildAndPersist()
   //       permissionChecker.hasPermission(Arg.any()).resolves(false)
 
@@ -115,7 +115,7 @@ describe('roomResolver.Room', () => {
   //       // Assert
   //       await expect(fn()).to.be.rejectedWith(
   //         ErrorMessage.permission(
-  //           endUser.user_id,
+  //           endUser.userId,
   //           Permission.assessments_page_406,
   //         ),
   //       )
@@ -141,23 +141,23 @@ describe('roomResolver.Room', () => {
         .buildAndPersist()
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
-        .withUserId(endUser.user_id)
+        .withUserId(endUser.userId)
         .buildAndPersist()
       const studentAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
-        .withUserId(student.user_id)
+        .withUserId(student.userId)
         .buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const xapiRecord = new XAPIRecordBuilder()
-        .withUserId(student.user_id)
-        .withH5pId(lessonMaterial.h5p_id)
+        .withUserId(student.userId)
+        .withH5pId(lessonMaterial.h5pId)
         .build()
       permissionChecker.hasPermission(Arg.any()).resolves(true)
       xapiRepository
-        .searchXApiEvents(endUser.user_id, Arg.any(), Arg.any())
+        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
         .returns(Promise.resolve<XAPIRecord[]>([]))
       xapiRepository
-        .searchXApiEvents(student.user_id, Arg.any(), Arg.any())
+        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .returns(
           Promise.resolve<XAPIRecord[]>([xapiRecord]),
         )
@@ -171,11 +171,11 @@ describe('roomResolver.Room', () => {
       // Act
       const gqlRoom = (
         await gqlTryQuery(testClient, query, { authorization: endUser.token })
-      )?.Room as Room
+      )?.Room
 
       // Assert
       expect(gqlRoom).to.not.be.undefined
-      expect(gqlRoom.room_id).to.equal(roomId)
+      expect(gqlRoom['room_id']).to.equal(roomId)
     })
   })
 })

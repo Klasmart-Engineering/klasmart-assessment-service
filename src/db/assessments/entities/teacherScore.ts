@@ -13,16 +13,16 @@ import { UserContentScore } from './userContentScore'
 @ObjectType()
 export class TeacherScore {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly room_id: string
+  public readonly roomId: string
 
   @PrimaryColumn({ name: 'student_id', nullable: false })
-  public readonly student_id: string
+  public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly content_id: string
+  public readonly contentId: string
 
   @PrimaryColumn({ name: 'teacher_id', nullable: false })
-  public readonly teacher_id: string
+  public readonly teacherId: string
 
   @ManyToOne(
     () => UserContentScore,
@@ -53,10 +53,10 @@ export class TeacherScore {
     studentId: string,
     contentId: string,
   ) {
-    this.room_id = roomId
-    this.teacher_id = teacherId
-    this.student_id = studentId
-    this.content_id = contentId
+    this.roomId = roomId
+    this.teacherId = teacherId
+    this.studentId = studentId
+    this.contentId = contentId
   }
 
   public static new(
@@ -66,10 +66,10 @@ export class TeacherScore {
     date = new Date(),
   ): TeacherScore {
     const teacherScore = new TeacherScore(
-      userContentScore.room_id,
+      userContentScore.roomId,
       teacherId,
-      userContentScore.student_id,
-      userContentScore.content_id,
+      userContentScore.studentId,
+      userContentScore.contentId,
     )
     teacherScore.userContentScore = Promise.resolve(userContentScore)
     teacherScore.score = score

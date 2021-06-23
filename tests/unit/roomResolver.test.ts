@@ -18,7 +18,7 @@
 //       const contentId = 'content1'
 //       const scores = [new UserContentScore(roomId, studentId, contentId)]
 //       const room: Room = {
-//         room_id: roomId,
+//         roomId: roomId,
 //         recalculate: true,
 //         scores: Promise.resolve([]),
 //         teacherComments: Promise.resolve([]),
@@ -57,7 +57,7 @@
 
 //       expect(resultScores).to.have.lengthOf(1)
 //       expect(resultRoom.recalculate).to.be.false
-//       expect(resultRoom.room_id).to.equal(roomId)
+//       expect(resultRoom.roomId).to.equal(roomId)
 //     })
 //   })
 
@@ -104,7 +104,7 @@
 
 //       expect(resultScores).to.have.lengthOf(1)
 //       expect(resultRoom.recalculate).to.be.false
-//       expect(resultRoom.room_id).to.equal(roomId)
+//       expect(resultRoom.roomId).to.equal(roomId)
 //     })
 //   })
 // })

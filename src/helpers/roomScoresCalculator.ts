@@ -41,10 +41,10 @@ export class RoomScoresCalculator {
 
     for (const userId of userIds) {
       for (const material of materials) {
-        const id = `${roomId}|${userId}|${material.content_id}`
+        const id = `${roomId}|${userId}|${material.contentId}`
         userContentScores.set(
           id,
-          UserContentScore.new(roomId, userId, material.content_id, undefined),
+          UserContentScore.new(roomId, userId, material.contentId, undefined),
         )
       }
     }
