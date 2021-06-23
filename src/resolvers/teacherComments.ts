@@ -5,7 +5,7 @@ import {
   Resolver,
   Root,
   Ctx,
-  UseMiddleware,
+  Authorized,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
@@ -16,7 +16,6 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
 import { Context, UserID } from '../auth/context'
-import { mutationAuth } from '../auth/authChecker'
 
 @Service()
 @Resolver(() => TeacherComment)
@@ -28,7 +27,7 @@ export default class TeacherCommentResolver {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  @UseMiddleware(mutationAuth)
+  @Authorized()
   @Mutation(() => TeacherComment, { nullable: true })
   public async setComment(
     @Ctx() context: Context,
@@ -46,7 +45,7 @@ export default class TeacherCommentResolver {
     )
   }
 
-  @UseMiddleware(mutationAuth)
+  @Authorized()
   @Mutation(() => TeacherComment, {
     nullable: true,
     deprecationReason: 'Use setComment(room_id, student_id, comment) resolver',

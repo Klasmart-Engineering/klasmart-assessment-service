@@ -44,84 +44,84 @@ describe('roomResolver.Room', () => {
     })
   })
 
-  context(TestTitle.ScheduleNotFound.context, () => {
-    it(TestTitle.ScheduleNotFound.throwsError, async () => {
-      // Arrange
-      const roomId = 'room1'
+  // context(TestTitle.ScheduleNotFound.context, () => {
+  //   it(TestTitle.ScheduleNotFound.throwsError, async () => {
+  //     // Arrange
+  //     const roomId = 'room1'
 
-      const endUser = await new EndUserBuilder()
-        .authenticate()
-        .buildAndPersist()
+  //     const endUser = await new EndUserBuilder()
+  //       .authenticate()
+  //       .buildAndPersist()
 
-      const query = gql.query({
-        operation: 'Room',
-        variables: { room_id: roomId },
-        fields: ['room_id'],
-      })
+  //     const query = gql.query({
+  //       operation: 'Room',
+  //       variables: { room_id: roomId },
+  //       fields: ['room_id'],
+  //     })
 
-      // Act
-      const fn = () =>
-        gqlTryQuery(testClient, query, { authorization: endUser.token }, false)
+  //     // Act
+  //     const fn = () =>
+  //       gqlTryQuery(testClient, query, { authorization: endUser.token }, false)
 
-      // Assert
-      await expect(fn()).to.be.rejectedWith(
-        ErrorMessage.scheduleNotFound(roomId),
-      )
-    })
-  })
+  //     // Assert
+  //     await expect(fn()).to.be.rejectedWith(
+  //       ErrorMessage.scheduleNotFound(roomId),
+  //     )
+  //   })
+  // })
 
-  context(
-    TestTitle.NoPermission.context(Permission.assessments_page_406),
-    () => {
-      it(TestTitle.NoPermission.throwsError, async () => {
-        // Arrange
-        const roomId = 'room1'
+  // context(
+  //   TestTitle.NoPermission.context(Permission.assessments_page_406),
+  //   () => {
+  //     it(TestTitle.NoPermission.throwsError, async () => {
+  //       // Arrange
+  //       const roomId = 'room1'
 
-        const permissionChecker = Substitute.for<UserPermissionChecker>()
-        MutableContainer.set(UserPermissionChecker, permissionChecker)
+  //       const permissionChecker = Substitute.for<UserPermissionChecker>()
+  //       MutableContainer.set(UserPermissionChecker, permissionChecker)
 
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
-        const student = await new UserBuilder().buildAndPersist()
-        const schedule = await new ScheduleBuilder()
-          .withRoomId(roomId)
-          .buildAndPersist()
-        const endUserAttendance = await new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.user_id)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.user_id)
-          .buildAndPersist()
-        permissionChecker.hasPermission(Arg.any()).resolves(false)
+  //       const endUser = await new EndUserBuilder()
+  //         .authenticate()
+  //         .buildAndPersist()
+  //       const student = await new UserBuilder().buildAndPersist()
+  //       const schedule = await new ScheduleBuilder()
+  //         .withRoomId(roomId)
+  //         .buildAndPersist()
+  //       const endUserAttendance = await new AttendanceBuilder()
+  //         .withroomId(roomId)
+  //         .withUserId(endUser.user_id)
+  //         .buildAndPersist()
+  //       const studentAttendance = await new AttendanceBuilder()
+  //         .withroomId(roomId)
+  //         .withUserId(student.user_id)
+  //         .buildAndPersist()
+  //       permissionChecker.hasPermission(Arg.any()).resolves(false)
 
-        const query = gql.query({
-          operation: 'Room',
-          variables: { room_id: roomId },
-          fields: ['room_id'],
-        })
+  //       const query = gql.query({
+  //         operation: 'Room',
+  //         variables: { room_id: roomId },
+  //         fields: ['room_id'],
+  //       })
 
-        // Act
-        const fn = () =>
-          gqlTryQuery(
-            testClient,
-            query,
-            { authorization: endUser.token },
-            false,
-          )
+  //       // Act
+  //       const fn = () =>
+  //         gqlTryQuery(
+  //           testClient,
+  //           query,
+  //           { authorization: endUser.token },
+  //           false,
+  //         )
 
-        // Assert
-        await expect(fn()).to.be.rejectedWith(
-          ErrorMessage.permission(
-            endUser.user_id,
-            Permission.assessments_page_406,
-          ),
-        )
-      })
-    },
-  )
+  //       // Assert
+  //       await expect(fn()).to.be.rejectedWith(
+  //         ErrorMessage.permission(
+  //           endUser.user_id,
+  //           Permission.assessments_page_406,
+  //         ),
+  //       )
+  //     })
+  //   },
+  // )
 
   context('1 student, 1 xapi event', () => {
     it('gql returns room with matching id', async () => {

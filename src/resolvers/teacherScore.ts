@@ -6,7 +6,7 @@ import {
   FieldResolver,
   Root,
   Ctx,
-  UseMiddleware,
+  Authorized,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
@@ -20,7 +20,6 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Context, UserID } from '../auth/context'
-import { mutationAuth } from '../auth/authChecker'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -34,7 +33,7 @@ export default class TeacherScoreResolver {
     private readonly contentRepository: Repository<Content>,
   ) {}
 
-  @UseMiddleware(mutationAuth)
+  @Authorized()
   @Mutation(() => TeacherScore)
   public async setScore(
     @Ctx() context: Context,
@@ -43,8 +42,10 @@ export default class TeacherScoreResolver {
     @Arg('content_id') content_id: string,
     @Arg('score') score: number,
     @UserID() teacher_id: string,
+    @Arg('subcontent_id', { nullable: true }) subcontent_id?: string,
   ): Promise<TeacherScore> {
     try {
+      content_id = subcontent_id ? `${content_id}|${subcontent_id}` : content_id
       const userContentScore = await this.assesmentDB.findOne(
         UserContentScore,
         {

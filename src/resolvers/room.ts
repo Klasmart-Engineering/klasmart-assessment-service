@@ -6,7 +6,7 @@ import {
   Resolver,
   Root,
   Ctx,
-  UseMiddleware,
+  Authorized,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
@@ -19,7 +19,11 @@ import { Attendance } from '../db/users/entities'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
 import { UserID, Context } from '../auth/context'
-import { roomAuth } from '../auth/authChecker'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
+import { Schedule } from '../db/cms/entities'
+import { ErrorMessage } from '../helpers/errorMessages'
+import { LessonPlan } from '../db/cms/entities/lessonPlan'
+import { LessonPlanItem } from '../db/cms/entities/lessonPlanItem'
 
 @Service()
 @Resolver(() => Room)
@@ -29,10 +33,12 @@ export default class RoomResolver {
     private readonly assessmentDB: EntityManager,
     @InjectManager(USERS_CONNECTION_NAME)
     private readonly userDB: EntityManager,
+    @InjectManager(CMS_CONNECTION_NAME)
+    private readonly cmsDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
-  @UseMiddleware(roomAuth)
+  @Authorized()
   @Query(() => Room)
   public async Room(
     @Arg('room_id', { nullable: true }) room_id: string,
@@ -62,9 +68,42 @@ export default class RoomResolver {
       where: { roomId },
     })
 
+    const schedule = await this.cmsDB.findOne(Schedule, {
+      where: { id: roomId },
+    })
+    if (!schedule) {
+      throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
+    }
+    const lessonPlanId = schedule.lessonPlanId
+    const lessonPlan = await this.cmsDB.findOne(LessonPlan, {
+      where: { content_id: lessonPlanId },
+    })
+
+    if (!lessonPlan?.data) {
+      console.warn(`lesson plan (${lessonPlanId}) not found`)
+      return []
+    }
+    const list = []
+    const q = []
+    q.push(lessonPlan.data)
+    while (q.length > 0) {
+      const current = q.shift()
+      let next: JSON[] | undefined
+      if (current && 'next' in current) {
+        next = current['next'] as JSON[]
+        delete current['next']
+      }
+      if (next) {
+        next.forEach((x) => q.push(x))
+      }
+      list.push(new LessonPlanItem(current))
+    }
+    const materialIds = list.map((x) => x.materialId)
+
     const userContentScores = await this.roomScoresCalculator.calculate(
       roomId,
       attendances,
+      materialIds,
     )
 
     for (const x of userContentScores) {

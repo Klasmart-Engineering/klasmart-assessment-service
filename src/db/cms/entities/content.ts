@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Column, Entity, PrimaryColumn } from 'typeorm'
 import { ObjectType, Field, Directive, ID } from 'type-graphql'
+import { ContentType } from '../enums/contentType'
 
 @ObjectType()
 @Entity({ name: 'cms_contents' })
@@ -10,10 +11,13 @@ export class Content {
   readonly content_id!: string
 
   @Field({ nullable: true })
+  subcontent_id?: string
+
+  @Field({ nullable: true })
   h5p_id?: string
 
-  @Column({ name: 'content_type' })
-  readonly content_type!: number
+  @Column('enum', { name: 'content_type', enum: ContentType })
+  readonly content_type!: ContentType
 
   @Field({ nullable: true })
   @Column({ name: 'content_name' })

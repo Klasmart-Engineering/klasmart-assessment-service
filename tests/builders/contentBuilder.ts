@@ -3,10 +3,11 @@ import { v4 } from 'uuid'
 import { Content } from '../../src/db/cms/entities/content'
 import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
 import { Mutable } from '../utils/mutable'
+import { ContentType } from '../../src/db/cms/enums/contentType'
 
 export default class ContentBuilder {
   private contentId = v4()
-  private contentType = 2
+  private contentType = ContentType.LessonMaterial
   private type? = 'Flashcards'
   private name? = 'My Content'
   private author? = v4()
@@ -18,7 +19,7 @@ export default class ContentBuilder {
     return this
   }
 
-  public withContentType(value: number): this {
+  public withContentType(value: ContentType): this {
     this.contentType = value
     return this
   }

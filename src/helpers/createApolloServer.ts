@@ -9,14 +9,16 @@ import { checkToken } from '../auth/auth'
 import { Context } from '../auth/context'
 import { UserPermissionChecker } from '../auth/userPermissionChecker'
 import { UserPermissions } from '../auth/permissions'
+import { ErrorMessage } from './errorMessages'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
+    playground: true,
     formatError: (err) => {
       // Override the @Authorized error by TypeGraphQL.
       if (err.message.startsWith('Access denied!')) {
-        return new AuthenticationError('Please authenticate')
+        return new AuthenticationError(ErrorMessage.notAuthenticated)
       }
       return err
     },

@@ -16,6 +16,7 @@ type Content {
   fileType: FileType
   h5p_id: String
   name: String
+  subcontent_id: String
   type: String
 }
 
@@ -36,7 +37,7 @@ enum FileType {
 type Mutation {
   addComment(comment: String!, room_id: String!, student_id: String!): TeacherComment @deprecated(reason: "Use setComment(room_id, student_id, comment) resolver")
   setComment(comment: String!, room_id: String!, student_id: String!): TeacherComment
-  setScore(content_id: String!, room_id: String!, score: Float!, student_id: String!): TeacherScore!
+  setScore(content_id: String!, room_id: String!, score: Float!, student_id: String!, subcontent_id: String): TeacherScore!
 }
 
 type Query {

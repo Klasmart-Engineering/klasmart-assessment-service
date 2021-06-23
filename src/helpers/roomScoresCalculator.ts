@@ -1,18 +1,53 @@
 import { Service } from 'typedi'
+import { Repository } from 'typeorm'
+import { InjectRepository } from 'typeorm-typedi-extensions'
 import { UserContentScore, Answer } from '../db/assessments/entities'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
+import { Content } from '../db/cms/entities'
+import { FileType } from '../db/cms/enums'
 import { Attendance } from '../db/users/entities'
 import { XAPIRepository, XAPIRecord } from '../db/xapi/repo'
 
 @Service()
 export class RoomScoresCalculator {
-  constructor(private readonly xapiRepository: XAPIRepository) {}
+  constructor(
+    private readonly xapiRepository: XAPIRepository,
+    @InjectRepository(Content, CMS_CONNECTION_NAME)
+    private readonly contentRepository: Repository<Content>,
+  ) {}
 
   public async calculate(
     roomId: string,
     attendances: Attendance[],
+    materialIds: string[],
   ): Promise<UserContentScore[]> {
     const userContentScores = new Map<string, UserContentScore>()
     const attendanceMap = new Map<string, Attendance>()
+
+    const materials = await this.contentRepository
+      .createQueryBuilder('content')
+      .where('content.id IN (:...contentIds)', { contentIds: materialIds })
+      .andWhere(`data->"$.file_type" != :fileType`, {
+        fileType: FileType.H5P,
+      })
+      .getMany()
+
+    const seen: { [key: string]: boolean } = {}
+    const userIds = attendances
+      .filter(function (item) {
+        return seen[item.userId] ? false : (seen[item.userId] = true)
+      })
+      .map((x) => x.userId)
+
+    for (const userId of userIds) {
+      for (const material of materials) {
+        const id = `${roomId}|${userId}|${material.content_id}`
+        userContentScores.set(
+          id,
+          UserContentScore.new(roomId, userId, material.content_id, undefined),
+        )
+      }
+    }
 
     // Handle duplicate session ids with different timestamps.
     for (const attendance of attendances) {
@@ -39,7 +74,6 @@ export class RoomScoresCalculator {
         joinTimestamp.getTime(),
         leaveTimestamp.getTime(),
       )
-      console.log(`events: ${xapiEvents?.length ?? 0}`)
       if (!xapiEvents) {
         continue
       }
@@ -72,7 +106,9 @@ export class RoomScoresCalculator {
         const subContentId =
           extensions && extensions['http://h5p.org/x-api/h5p-subContentId']
 
-        const contentId = `${localId}` //|${subContentId}`
+        const contentId = subContentId
+          ? `${localId}|${subContentId}`
+          : `${localId}`
         const contentTypeCategories =
           statement?.context?.contextActivities?.category
 
@@ -88,7 +124,7 @@ export class RoomScoresCalculator {
           contentType = (results && results[1]) || undefined
         }
 
-        const id = `${roomId}|${userId}|${contentId}|${subContentId}`
+        const id = `${roomId}|${userId}|${contentId}`
         let userContentScore = userContentScores.get(id)
         if (!userContentScore) {
           userContentScore = UserContentScore.new(
