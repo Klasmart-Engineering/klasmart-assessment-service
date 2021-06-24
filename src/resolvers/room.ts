@@ -54,8 +54,8 @@ export default class RoomResolver {
       return room
     } catch (e) {
       console.error(e)
+      throw e
     }
-    throw new UserInputError(`Unable to fetch Room(${roomId})`)
   }
 
   private async calculateRoom(room: Room): Promise<UserContentScore[]> {

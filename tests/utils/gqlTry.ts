@@ -41,7 +41,7 @@ export async function gqlTryMutation(
   return res.data
 }
 
-async function gqlTry(
+export async function gqlTry(
   gqlOperation: () => Promise<GraphQLResponse>,
   logErrors: boolean,
 ): Promise<GraphQLResponse> {
