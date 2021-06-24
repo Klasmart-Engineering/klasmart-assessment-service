@@ -8,6 +8,9 @@ import {
   createBootstrapPostgresConnection,
   createTestConnections,
 } from './testConnection'
+import path from 'path'
+import dotenv from 'dotenv'
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 export let connections: Connection[]
 export let testClient: ApolloServerTestClient
