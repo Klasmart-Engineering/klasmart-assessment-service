@@ -8,6 +8,7 @@ export interface XAPIRecord {
     clientTimestamp?: number
     data?: {
       statement?: {
+        verb?: { display?: { [indexer: string]: string | undefined } }
         object?: {
           definition?: {
             extensions?: { [indexer: string]: string | undefined }

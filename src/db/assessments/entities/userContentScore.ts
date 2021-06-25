@@ -60,6 +60,8 @@ export class UserContentScore {
   @Column()
   public seen!: boolean
 
+  private resetMultipleHotspots = false
+
   public async scores(): Promise<number[]> {
     const answers = await this.answers
     if (!answers) {
@@ -92,11 +94,12 @@ export class UserContentScore {
       this.answers = Promise.resolve(answers)
     }
 
-    if (
-      this.contentType === 'ImageMultipleHotspotQuestion' &&
-      answers.length > 0
-    ) {
-      answers[0].score = answer.score
+    if (this.contentType === 'ImageMultipleHotspotQuestion') {
+      if (this.resetMultipleHotspots || answers.length <= 0) {
+        this.resetMultipleHotspots = false
+        answers.push(answer)
+      }
+      answers[answers.length - 1].score = answer.score
     } else {
       answers.push(answer)
     }
@@ -114,6 +117,10 @@ export class UserContentScore {
     }
     this.sum += score
     this.scoreFrequency += 1
+  }
+
+  public startMultipleHotspots(): void {
+    this.resetMultipleHotspots = true
   }
 
   constructor(roomId: string, studentId: string, contentId: string) {

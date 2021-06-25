@@ -146,6 +146,14 @@ export class RoomScoresCalculator {
           userContentScore.max = max
         }
 
+        const verb = statement?.verb?.display?.['en-US']
+        if (
+          contentType === 'ImageMultipleHotspotQuestion' &&
+          verb === 'attempted'
+        ) {
+          userContentScore.startMultipleHotspots()
+        }
+
         const response = statement?.result?.response
         const score = statement?.result?.score?.raw
         if (

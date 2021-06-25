@@ -19,6 +19,9 @@ export async function connectToCmsDatabase(): Promise<void> {
         path.join(__dirname, './entities/*.ts'),
         path.join(__dirname, './entities/*.js'),
       ],
+      extra: {
+        connectionLimit: 20,
+      },
     })
     console.log('🐬 Connected to mysql: CMS database')
   } catch (e) {
