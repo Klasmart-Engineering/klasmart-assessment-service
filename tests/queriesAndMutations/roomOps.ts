@@ -1,6 +1,7 @@
 import EndUser from '../entities/endUser'
 import { testClient } from '../utils/globalIntegrationTestHooks'
 import { gqlTry } from '../utils/gqlTry'
+import { RoomQuery } from './gqlInterfaces'
 
 export const ROOM = `
 query Room($roomId: String) {
@@ -65,11 +66,12 @@ query Room($roomId: String) {
   }
 }
 `
+
 export async function roomQuery(
   roomId: string,
   endUser: EndUser,
   logErrors = true,
-): Promise<any | null | undefined> {
+): Promise<RoomQuery | null | undefined> {
   const { query } = testClient
 
   const operation = () =>
@@ -80,5 +82,5 @@ export async function roomQuery(
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.Room
+  return res.data?.Room as RoomQuery
 }

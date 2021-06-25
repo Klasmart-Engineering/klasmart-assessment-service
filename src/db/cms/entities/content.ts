@@ -21,12 +21,12 @@ export class Content {
 
   @Field({ nullable: true })
   @Column({ name: 'content_name' })
-  readonly name?: string
+  readonly name!: string
 
   @Column({ name: 'author' })
-  readonly author?: string
+  readonly author!: string
 
-  @Column({ type: 'json', name: 'data' })
+  @Column({ type: 'json', name: 'data', nullable: true })
   readonly data?: JSON
 
   @Column({ type: 'bigint', name: 'create_at' })

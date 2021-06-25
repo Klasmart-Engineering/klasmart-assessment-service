@@ -21,7 +21,7 @@ export class TeacherComment {
   @PrimaryColumn({ name: 'student_id', nullable: false })
   public readonly studentId: string
 
-  // This explicit field for the foreign should not be necessary.
+  // This explicit field for the foreign key should not be necessary.
   // But for some reason this column is null without it.
   @Column({ name: 'roomRoomId' })
   public readonly roomRoomId?: string

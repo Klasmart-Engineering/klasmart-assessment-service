@@ -23,14 +23,14 @@ before(async () => {
   testClient = createTestClient(server)
 })
 
-beforeEach(async () => {
+export async function dbConnect() {
   connections = await Promise.all(createTestConnections())
-})
+}
 
-afterEach(async () => {
+export async function dbDisconnect() {
   await Promise.all(connections?.map((x) => x.close()) || [])
   MutableContainer.reset()
-})
+}
 
 async function createUserDbIfItDoesntExist(): Promise<void> {
   const connection = await createBootstrapPostgresConnection()

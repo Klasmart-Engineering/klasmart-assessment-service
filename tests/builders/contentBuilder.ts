@@ -7,10 +7,11 @@ import { ContentType } from '../../src/db/cms/enums/contentType'
 
 export default class ContentBuilder {
   private contentId = v4()
+  private subcontentId?: string
   private contentType = ContentType.LessonMaterial
   private type? = 'Flashcards'
-  private name? = 'My Content'
-  private author? = v4()
+  private name = 'My Content'
+  private author = v4()
   protected data?: JSON
   private createdAt = Date.now()
 
@@ -48,6 +49,7 @@ export default class ContentBuilder {
     const entity = new Content()
     const mutableEntity: Mutable<Content> = entity
     mutableEntity.contentId = this.contentId
+    mutableEntity.subcontentId = this.subcontentId
     mutableEntity.contentType = this.contentType
     mutableEntity.type = this.type
     mutableEntity.name = this.name
