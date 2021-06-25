@@ -91,7 +91,15 @@ export class UserContentScore {
       answers = []
       this.answers = Promise.resolve(answers)
     }
-    answers.push(answer)
+
+    if (
+      this.contentType === 'ImageMultipleHotspotQuestion' &&
+      answers.length > 0
+    ) {
+      answers[0].score = answer.score
+    } else {
+      answers.push(answer)
+    }
 
     const { score } = answer
     if (score === undefined) {
