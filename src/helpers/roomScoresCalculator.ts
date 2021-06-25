@@ -77,7 +77,7 @@ export class RoomScoresCalculator {
       if (!xapiEvents) {
         continue
       }
-      this.applyEventsToUserContentScore(
+      await this.applyEventsToUserContentScore(
         roomId,
         userId,
         xapiEvents,
@@ -87,12 +87,12 @@ export class RoomScoresCalculator {
     return [...userContentScores.values()]
   }
 
-  private applyEventsToUserContentScore(
+  private async applyEventsToUserContentScore(
     roomId: string,
     userId: string,
     xapiEvents: XAPIRecord[],
     userContentScores: Map<string, UserContentScore>,
-  ): void {
+  ): Promise<void> {
     for (const event of xapiEvents) {
       if (!event) {
         continue
@@ -169,7 +169,7 @@ export class RoomScoresCalculator {
             min,
             max,
           )
-          userContentScore.addAnswer(answer)
+          await userContentScore.addAnswer(answer)
         }
       } catch (e) {
         console.error(`Unable to process event: ${e}`)
