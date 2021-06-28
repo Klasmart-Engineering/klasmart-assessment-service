@@ -15,7 +15,7 @@ import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { User } from '../db/users/entities'
-import getContent from '../helpers/getContent'
+import getContent, { findCmsContentIdUsingH5pId } from '../helpers/getContent'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
@@ -42,18 +42,27 @@ export default class TeacherScoreResolver {
     @Arg('content_id') contentId: string,
     @Arg('score') score: number,
     @UserID() teacherId: string,
-    @Arg('subcontent_id', { nullable: true }) subcontent_id?: string,
+    @Arg('subcontent_id', { nullable: true }) subcontentId?: string,
   ): Promise<TeacherScore> {
     try {
-      contentId = subcontent_id ? `${contentId}|${subcontent_id}` : contentId
-      const userContentScore = await this.assesmentDB.findOne(
-        UserContentScore,
-        {
-          roomId: roomId,
-          studentId: studentId,
-          contentId: contentId,
-        },
-      )
+      const fullContentId = subcontentId
+        ? `${contentId}|${subcontentId}`
+        : contentId
+      let userContentScore = await this.assesmentDB.findOne(UserContentScore, {
+        roomId: roomId,
+        studentId: studentId,
+        contentId: fullContentId,
+      })
+
+      // Temporary until frontend transitions to using cms content ids, rather than h5p ids.
+      if (!userContentScore) {
+        userContentScore = await this.findUserContentScoreUsingH5pId(
+          roomId,
+          studentId,
+          contentId,
+          subcontentId,
+        )
+      }
 
       if (!userContentScore) {
         throw new UserInputError(
@@ -65,7 +74,7 @@ export default class TeacherScoreResolver {
         (await this.assesmentDB.findOne(TeacherScore, {
           roomId: roomId,
           studentId: studentId,
-          contentId: contentId,
+          contentId: fullContentId,
           teacherId: teacherId,
         })) || TeacherScore.new(userContentScore, teacherId, score)
 
@@ -106,5 +115,27 @@ export default class TeacherScoreResolver {
       contentType,
       this.contentRepository,
     )
+  }
+
+  private async findUserContentScoreUsingH5pId(
+    roomId: string,
+    studentId: string,
+    h5pId: string,
+    subContentId?: string,
+  ) {
+    const cmsContentId = await findCmsContentIdUsingH5pId(h5pId)
+    if (!cmsContentId) {
+      return undefined
+    }
+
+    const fullContentId = subContentId
+      ? `${cmsContentId}|${subContentId}`
+      : cmsContentId
+    const userContentScore = await this.assesmentDB.findOne(UserContentScore, {
+      roomId: roomId,
+      studentId: studentId,
+      contentId: fullContentId,
+    })
+    return userContentScore
   }
 }

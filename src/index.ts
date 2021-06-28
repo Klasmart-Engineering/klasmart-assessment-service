@@ -10,6 +10,7 @@ import { connectToUserDatabase } from './db/users/connectToUserDatabase'
 import { createApolloServer } from './helpers/createApolloServer'
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
 import { buildDefaultSchema } from './helpers/buildDefaultSchema'
+import { createH5pIdToCmsContentIdCache } from './helpers/getContent'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
@@ -19,6 +20,8 @@ async function main() {
   await connectToCmsDatabase()
   await connectToUserDatabase()
   await connectToAssessmentDatabase()
+
+  await createH5pIdToCmsContentIdCache()
 
   const schema = await buildDefaultSchema()
   const server = createApolloServer(schema)
