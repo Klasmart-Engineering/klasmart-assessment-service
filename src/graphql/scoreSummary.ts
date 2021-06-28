@@ -81,7 +81,7 @@ export class ScoreSummary {
     this.answers.push(answer)
 
     const { score } = answer
-    if (!score) {
+    if (score === undefined) {
       return
     }
 
