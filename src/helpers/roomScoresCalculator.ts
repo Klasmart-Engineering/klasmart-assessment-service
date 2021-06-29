@@ -27,10 +27,14 @@ export class RoomScoresCalculator {
     const materials = await this.contentRepository
       .createQueryBuilder('content')
       .where('content.id IN (:...contentIds)', { contentIds: materialIds })
-      .andWhere(`data->"$.file_type" != :fileType`, {
-        fileType: FileType.H5P,
-      })
       .getMany()
+
+    const h5pIdToContentIdMap = new Map<string, string>()
+    for (const x of materials) {
+      if (x.h5pId) {
+        h5pIdToContentIdMap.set(x.h5pId, x.contentId)
+      }
+    }
 
     const seen: { [key: string]: boolean } = {}
     const userIds = attendances
@@ -40,7 +44,9 @@ export class RoomScoresCalculator {
       .map((x) => x.userId)
 
     for (const userId of userIds) {
-      for (const material of materials) {
+      for (const material of materials.filter(
+        (x) => x.fileType !== FileType.H5P,
+      )) {
         const id = `${roomId}|${userId}|${material.contentId}`
         userContentScores.set(
           id,
@@ -82,6 +88,7 @@ export class RoomScoresCalculator {
         userId,
         xapiEvents,
         userContentScores,
+        h5pIdToContentIdMap,
       )
     }
     return [...userContentScores.values()]
@@ -92,6 +99,7 @@ export class RoomScoresCalculator {
     userId: string,
     xapiEvents: XAPIRecord[],
     userContentScores: Map<string, UserContentScore>,
+    h5pIdToContentIdMap: Map<string, string>,
   ): Promise<void> {
     for (const event of xapiEvents) {
       if (!event) {
@@ -101,14 +109,26 @@ export class RoomScoresCalculator {
         const clientTimestamp = event?.xapi?.clientTimestamp
         const statement = event?.xapi?.data?.statement
         const extensions = statement?.object?.definition?.extensions
-        const localId =
+        const h5pId =
           extensions && extensions['http://h5p.org/x-api/h5p-local-content-id']
-        const subContentId =
+        const subcontentId =
           extensions && extensions['http://h5p.org/x-api/h5p-subContentId']
 
-        const contentId = subContentId
-          ? `${localId}|${subContentId}`
-          : `${localId}`
+        if (!h5pId) {
+          console.log('XAPI event did not include an H5P ID. Skipping...')
+          continue
+        }
+        const contentId = h5pIdToContentIdMap.get(h5pId)
+        if (!contentId) {
+          console.log(
+            `XAPI event was received for H5P ID (${h5pId}), which is not part of the lesson plan. Skipping...`,
+          )
+          continue
+        }
+
+        const fullContentId = subcontentId
+          ? `${contentId}|${subcontentId}`
+          : `${contentId}`
         const contentTypeCategories =
           statement?.context?.contextActivities?.category
 
@@ -126,13 +146,13 @@ export class RoomScoresCalculator {
 
         const contentName = statement?.object?.definition?.name?.['en-US']
 
-        const id = `${roomId}|${userId}|${contentId}`
+        const id = `${roomId}|${userId}|${fullContentId}`
         let userContentScore = userContentScores.get(id)
         if (!userContentScore) {
           userContentScore = UserContentScore.new(
             roomId,
             userId,
-            contentId,
+            fullContentId,
             contentType,
             contentName,
           )

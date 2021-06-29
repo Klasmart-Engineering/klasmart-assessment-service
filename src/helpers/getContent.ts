@@ -36,13 +36,12 @@ export default async function getContent(
     if (cmsContentId) {
       content = (await contentRepository.findOne(cmsContentId)) || null
     }
+  }
 
-    if (content) {
-      content.h5pId = mainContentId
-      content.subcontentId = subcontentId
-      content.type = contentType
-      content.name = contentName ?? content.name
-    }
+  if (content) {
+    content.subcontentId = subcontentId
+    content.type = contentType
+    content.name = contentName ?? content.name
   }
 
   return content

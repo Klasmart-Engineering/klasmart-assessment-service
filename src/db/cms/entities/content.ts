@@ -17,6 +17,8 @@ export class Content {
   @Field({ name: 'h5p_id', nullable: true })
   h5pId?: string
 
+  fileType?: FileType
+
   @Column('enum', { name: 'content_type', enum: ContentType })
   readonly contentType!: ContentType
 
@@ -43,6 +45,7 @@ export class Content {
   populateH5pId(): void {
     const typedData = (this.data as unknown) as IMaterial
     this.h5pId = typedData?.source
+    this.fileType = typedData?.file_type
   }
 }
 
