@@ -86,6 +86,8 @@ export class UserContentScore {
   public scoreFrequency!: number
   @Column({ nullable: true })
   public contentType?: string
+  @Column({ nullable: true })
+  public contentName?: string
 
   public async addAnswer(answer: Answer): Promise<void> {
     let answers = await this.answers
@@ -134,12 +136,14 @@ export class UserContentScore {
     studentId: string,
     contentId: string,
     contentType: string | undefined,
+    contentName?: string,
     answers: Answer[] = [],
     seen: boolean = answers.length > 0,
   ): UserContentScore {
     const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.roomId
     const userContentScore = new UserContentScore(roomId, studentId, contentId)
     userContentScore.contentType = contentType
+    userContentScore.contentName = contentName
     userContentScore.answers = Promise.resolve([])
     userContentScore.seen = seen
     userContentScore.sum = 0

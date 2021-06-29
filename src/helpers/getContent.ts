@@ -23,6 +23,7 @@ export async function createH5pIdToCmsContentIdCache(): Promise<void> {
 export default async function getContent(
   contentId: string,
   contentType: string | undefined,
+  contentName: string | undefined,
   contentRepository: Repository<Content>,
 ): Promise<Content | null> {
   const ids = contentId.split('|', 2)
@@ -40,6 +41,7 @@ export default async function getContent(
       content.h5pId = mainContentId
       content.subcontentId = subcontentId
       content.type = contentType
+      content.name = contentName ?? content.name
     }
   }
 

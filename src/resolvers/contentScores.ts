@@ -20,6 +20,7 @@ export default class ContentScoresResolver {
     return await getContent(
       source.contentId,
       source.contentType,
+      source.contentName,
       this.contentRepository,
     )
   }

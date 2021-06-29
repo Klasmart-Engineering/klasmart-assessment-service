@@ -124,6 +124,8 @@ export class RoomScoresCalculator {
           contentType = (results && results[1]) || undefined
         }
 
+        const contentName = statement?.object?.definition?.name?.['en-US']
+
         const id = `${roomId}|${userId}|${contentId}`
         let userContentScore = userContentScores.get(id)
         if (!userContentScore) {
@@ -132,6 +134,7 @@ export class RoomScoresCalculator {
             userId,
             contentId,
             contentType,
+            contentName,
           )
           userContentScores.set(id, userContentScore)
         }

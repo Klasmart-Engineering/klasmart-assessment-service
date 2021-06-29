@@ -11,6 +11,7 @@ export interface XAPIRecord {
         verb?: { display?: { [indexer: string]: string | undefined } }
         object?: {
           definition?: {
+            name?: { [indexer: string]: string | undefined }
             extensions?: { [indexer: string]: string | undefined }
           }
         }

@@ -22,7 +22,7 @@ export class Content {
 
   @Field({ nullable: true })
   @Column({ name: 'content_name' })
-  readonly name!: string
+  name!: string
 
   @Column({ name: 'author' })
   readonly author!: string
