@@ -10,6 +10,7 @@ export default class XAPIRecordBuilder {
   private h5pId?: string = v4()
   private h5pSubId?: string
   private h5pType? = 'Flashcards'
+  private h5pName? = 'My Activity'
 
   public withUserId(value: string): this {
     this.userId = value
@@ -51,6 +52,11 @@ export default class XAPIRecordBuilder {
     return this
   }
 
+  public withH5pName(value?: string): this {
+    this.h5pName = value
+    return this
+  }
+
   public build(): XAPIRecord {
     let h5pTypeUrl: string | undefined
     if (this.h5pType) {
@@ -63,8 +69,10 @@ export default class XAPIRecordBuilder {
         clientTimestamp: this.clientTimestamp,
         data: {
           statement: {
+            verb: { display: { 'en-US': 'attempted' } },
             object: {
               definition: {
+                name: { 'en-US': this.h5pName },
                 extensions: {
                   'http://h5p.org/x-api/h5p-local-content-id': this.h5pId,
                   'http://h5p.org/x-api/h5p-subContentId': this.h5pSubId,

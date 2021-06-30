@@ -14,6 +14,7 @@ export default class ContentBuilder {
   private author = v4()
   protected data?: JSON
   private createdAt = Date.now()
+  private publishStatus = 'published'
 
   public withContentId(value: string): this {
     this.contentId = value
@@ -45,6 +46,11 @@ export default class ContentBuilder {
     return this
   }
 
+  public withSubcontentId(value?: string): this {
+    this.subcontentId = value
+    return this
+  }
+
   public build(): Content {
     const entity = new Content()
     const mutableEntity: Mutable<Content> = entity
@@ -55,6 +61,7 @@ export default class ContentBuilder {
     mutableEntity.name = this.name
     mutableEntity.author = this.author
     mutableEntity.createdAt = this.createdAt
+    mutableEntity.publishStatus = this.publishStatus
     return entity
   }
 
