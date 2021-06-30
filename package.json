@@ -1,6 +1,6 @@
 {
   "name": "assessment-service",
-  "description": "User Service",
+  "description": "Assessment Service",
   "author": "KidsLoop Ltd",
   "license": "ISC",
   "version": "1.0.0",
@@ -17,7 +17,7 @@
     "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
     "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
     "test:single": "mocha --require ts-node/register --grep \"tests.unit.stub\" tests/**/*.test.ts",
-    "test:file": "mocha --require ts-node/register tests/unit/stub.test.ts"
+    "test:file": "mocha --require ts-node/register tests/integration/roomResolver.room.test.ts --timeout 8000"
   },
   "devDependencies": {
     "@fluffy-spoon/substitute": "^1.208.0",

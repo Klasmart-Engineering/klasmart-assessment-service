@@ -28,7 +28,19 @@
         "ts-node/register"
       ],
       "sourceMaps": true,
-      "smartStep": true
+      "smartStep": true,
+      "internalConsoleOptions": "openOnSessionStart",
+      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"]
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "script debugging",
+      "program": "${workspaceFolder}/debug/main_xapiFetching.ts",
+      "sourceMaps": true,
+      "smartStep": true,
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
