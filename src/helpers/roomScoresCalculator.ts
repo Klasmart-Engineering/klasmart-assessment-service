@@ -1,6 +1,7 @@
 import { Service } from 'typedi'
-import { Repository } from 'typeorm'
+import { getRepository, Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { UserContentScore, Answer } from '../db/assessments/entities'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Content } from '../db/cms/entities'
@@ -126,9 +127,24 @@ export class RoomScoresCalculator {
           continue
         }
 
-        const fullContentId = subcontentId
-          ? `${contentId}|${subcontentId}`
-          : `${contentId}`
+        let fullContentId = subcontentId
+          ? `${h5pId}|${subcontentId}`
+          : `${h5pId}`
+
+        // If we find a content_id entry that's still using the h5pId, it means we haven't
+        // run the migration script yet. So keep using the h5pId, for now.
+        const existingUserContentScoreUsingH5pId = await getRepository(
+          UserContentScore,
+          ASSESSMENTS_CONNECTION_NAME,
+        ).findOne({
+          where: { contentId: fullContentId },
+        })
+        if (!existingUserContentScoreUsingH5pId) {
+          fullContentId = subcontentId
+            ? `${contentId}|${subcontentId}`
+            : `${contentId}`
+        }
+
         const contentTypeCategories =
           statement?.context?.contextActivities?.category
 
