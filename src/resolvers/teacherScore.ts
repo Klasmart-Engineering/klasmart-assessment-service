@@ -15,11 +15,11 @@ import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { User } from '../db/users/entities'
-import getContent, { findCmsContentIdUsingH5pId } from '../helpers/getContent'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Context, UserID } from '../auth/context'
+import getContent, { findCmsContentIdUsingH5pId } from '../helpers/getContent'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -45,7 +45,7 @@ export default class TeacherScoreResolver {
     @Arg('subcontent_id', { nullable: true }) subcontentId?: string,
   ): Promise<TeacherScore> {
     try {
-      const fullContentId = subcontentId
+      let fullContentId = subcontentId
         ? `${contentId}|${subcontentId}`
         : contentId
       let userContentScore = await this.assesmentDB.findOne(UserContentScore, {
@@ -54,7 +54,27 @@ export default class TeacherScoreResolver {
         contentId: fullContentId,
       })
 
-      // Temporary until frontend transitions to using cms content ids, rather than h5p ids.
+      // If the provided content id is a cms content id, and the db ids
+      // haven't been migrated yet, we need to try with the h5pId.
+      if (!userContentScore) {
+        const content = await this.contentRepository.findOne({
+          where: { contentId: contentId },
+        })
+        if (content?.h5pId) {
+          fullContentId = subcontentId
+            ? `${content.h5pId}|${subcontentId}`
+            : content.h5pId
+          userContentScore = await this.assesmentDB.findOne(UserContentScore, {
+            roomId: roomId,
+            studentId: studentId,
+            contentId: fullContentId,
+          })
+        }
+      }
+
+      // Shouldn't be the case anymore because they mentioned switching from passing
+      // h5p ids to cms content ids, but just in case, if the contentId is actually
+      // an h5p id, let's try searching by that.
       if (!userContentScore) {
         userContentScore = await this.findUserContentScoreUsingH5pId(
           roomId,
