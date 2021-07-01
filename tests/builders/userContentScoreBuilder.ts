@@ -8,6 +8,7 @@ export default class UserContentScoreBuilder {
   private studentId = v4()
   private contentId = v4()
   private contentType?: string
+  private contentName?: string
 
   public withroomId(value: string): this {
     this.roomId = value
@@ -19,8 +20,18 @@ export default class UserContentScoreBuilder {
     return this
   }
 
-  public withContentId(value: string): this {
+  public withFullContentId(value: string): this {
     this.contentId = value
+    return this
+  }
+
+  public withContentType(value: string): this {
+    this.contentType = value
+    return this
+  }
+
+  public withContentName(value: string): this {
+    this.contentName = value
     return this
   }
 
@@ -30,6 +41,7 @@ export default class UserContentScoreBuilder {
       this.studentId,
       this.contentId,
       this.contentType,
+      this.contentName,
     )
     return entity
   }

@@ -1,9 +1,9 @@
-import { Content } from '../../src/db/cms/entities/content'
 import { Mutable } from '../utils/mutable'
 import { LessonPlan } from '../../src/db/cms/entities/lessonPlan'
 import { v4 } from 'uuid'
 import { getRepository } from 'typeorm'
 import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
+import { ContentType } from '../../src/db/cms/enums/contentType'
 
 export default class LessonPlanBuilder {
   private contentId = v4()
@@ -39,6 +39,7 @@ export default class LessonPlanBuilder {
     mutableEntity.name = this.name
     mutableEntity.author = this.author
     mutableEntity.createdAt = this.createdAt
+    mutableEntity.contentType = ContentType.LessonPlan
 
     // TODO: Support more than one ID.
     mutableEntity.data = JSON.parse(

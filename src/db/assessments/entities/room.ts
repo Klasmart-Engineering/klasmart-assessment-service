@@ -29,11 +29,11 @@ export class Room {
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public teacherComments!: Promise<TeacherComment[]>
 
-  @Column({ nullable: true })
-  public startTime?: Date
+  @Column({ type: 'timestamp', nullable: true })
+  public startTime?: Date | null
 
-  @Column({ nullable: true })
-  public endTime?: Date
+  @Column({ type: 'timestamp', nullable: true })
+  public endTime?: Date | null
 
   @Column({ default: false })
   public recalculate!: boolean

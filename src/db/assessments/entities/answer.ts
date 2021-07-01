@@ -12,7 +12,7 @@ export class Answer {
   public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly contentId: string
+  public readonly fullContentId: string
 
   @PrimaryColumn({ name: 'timestamp' })
   @Field(() => Date)
@@ -49,7 +49,7 @@ export class Answer {
   ) {
     this.roomId = roomId
     this.studentId = studentId
-    this.contentId = contentId
+    this.fullContentId = contentId
     this.date = date
   }
 

@@ -183,7 +183,7 @@ export class RoomScoresCalculator {
           (score !== undefined || response !== undefined) &&
           clientTimestamp !== undefined
         ) {
-          console.log(JSON.stringify({ id, response, score }))
+          //console.log(JSON.stringify({ id, response, score }))
           const answer = Answer.new(
             userContentScore,
             new Date(clientTimestamp),

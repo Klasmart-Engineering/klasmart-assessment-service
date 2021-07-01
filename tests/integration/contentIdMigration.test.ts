@@ -8,7 +8,7 @@ import {
   UserContentScore,
 } from '../../src/db/assessments/entities'
 import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
-import { migrateContentIdColumnsToUseContentIdInsteadOfH5pId } from '../../src/migrateContentIdColumnsToUseContentIdInsteadOfH5pId'
+import { migrateContentIdColumnsToUseContentIdInsteadOfH5pId } from '../../src/helpers/migrateContentIdColumnsToUseContentIdInsteadOfH5pId'
 import {
   AnswerBuilder,
   LessonMaterialBuilder,
@@ -18,258 +18,272 @@ import {
   UserBuilder,
   UserContentScoreBuilder,
 } from '../builders'
-import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
+import {
+  dbConnect,
+  dbDisconnect,
+  dbSynchronize,
+} from '../utils/globalIntegrationTestHooks'
 
 describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
+  const fullContentIdRelationColumnName = 'userContentScoreContentId'
+
+  before(async () => await dbConnect())
   after(async () => await dbDisconnect())
+  afterEach(async () => await dbSynchronize())
 
-  it('full content id does not include a subcontent id', async () => {
-    // Arrange
-    await dbConnect()
-    const roomId = 'room1'
-    const student = await new UserBuilder().buildAndPersist()
-    const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
-    const lessonPlan = await new LessonPlanBuilder()
-      .addMaterialId(lessonMaterial.contentId)
-      .buildAndPersist()
-    const schedule = await new ScheduleBuilder()
-      .withRoomId(roomId)
-      .withLessonPlanId(lessonPlan.contentId)
-      .buildAndPersist()
-    const userContentScore = await new UserContentScoreBuilder()
-      .withroomId(roomId)
-      .withStudentId(student.userId)
-      .withContentId(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
-      .buildAndPersist()
-    const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
-    const teacherScore = await new TeacherScoreBuilder(
-      userContentScore,
-    ).buildAndPersist()
+  context('contentId columns are set as h5pId', () => {
+    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId', async () => {
+      // Arrange
+      const roomId = 'room1'
+      const student = await new UserBuilder().buildAndPersist()
+      const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+      const lessonPlan = await new LessonPlanBuilder()
+        .addMaterialId(lessonMaterial.contentId)
+        .buildAndPersist()
+      const schedule = await new ScheduleBuilder()
+        .withRoomId(roomId)
+        .withLessonPlanId(lessonPlan.contentId)
+        .buildAndPersist()
+      const userContentScore = await new UserContentScoreBuilder()
+        .withroomId(roomId)
+        .withStudentId(student.userId)
+        .withFullContentId(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+        .buildAndPersist()
+      const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
+      const teacherScore = await new TeacherScoreBuilder(
+        userContentScore,
+      ).buildAndPersist()
 
-    expect(userContentScore.contentId).to.equal(lessonMaterial.h5pId)
-    expect(answer.contentId).to.equal(lessonMaterial.h5pId)
-    expect(teacherScore.contentId).to.equal(lessonMaterial.h5pId)
+      expect(userContentScore.contentId).to.equal(lessonMaterial.h5pId)
+      expect(answer.fullContentId).to.equal(lessonMaterial.h5pId)
+      expect(teacherScore.fullContentId).to.equal(lessonMaterial.h5pId)
 
-    // Act
-    await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
-      getConnection(CMS_CONNECTION_NAME),
-      getConnection(ASSESSMENTS_CONNECTION_NAME),
-    )
+      // Act
+      await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
+        getConnection(CMS_CONNECTION_NAME),
+        getConnection(ASSESSMENTS_CONNECTION_NAME),
+        false,
+      )
 
-    // Assert
-    const dbUserContentScore = await getRepository(
-      UserContentScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: lessonMaterial.contentId, // now it should be set as the cms content ID
-      },
+      // Assert
+      const dbUserContentScore = await getRepository(
+        UserContentScore,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          contentId: lessonMaterial.contentId, // now it should be set as the cms content ID
+        },
+      })
+
+      const dbTeacherScore = await getRepository(
+        TeacherScore,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          fullContentId: lessonMaterial.contentId, // now it should be set as the cms content ID
+        },
+      })
+
+      const dbAnswer = await getRepository(
+        Answer,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          fullContentId: lessonMaterial.contentId, // now it should be set as the cms content ID
+        },
+      })
+
+      await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
+        .createQueryBuilder()
+        .where(
+          `"${fullContentIdRelationColumnName}" = '${lessonMaterial.contentId}'`,
+        )
+        .getOneOrFail()
+
+      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
+        .createQueryBuilder()
+        .where(
+          `"${fullContentIdRelationColumnName}" = '${lessonMaterial.contentId}'`,
+        )
+        .getOneOrFail()
     })
-
-    const dbTeacherScore = await getRepository(
-      TeacherScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: lessonMaterial.contentId, // now it should be set as the cms content ID
-      },
-    })
-
-    const dbAnswer = await getRepository(
-      Answer,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: lessonMaterial.contentId, // now it should be set as the cms content ID
-      },
-    })
-
-    await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-      .createQueryBuilder()
-      .where(`"userContentScoreContentId" = '${lessonMaterial.contentId}'`)
-      .getOneOrFail()
-
-    await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
-      .createQueryBuilder()
-      .where(`"userContentScoreContentId" = '${lessonMaterial.contentId}'`)
-      .getOneOrFail()
   })
-})
 
-describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
-  after(async () => await dbDisconnect())
+  context('contentId columns are set as h5pId|subcontentId', () => {
+    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId|subcontentId', async () => {
+      // Arrange
+      const roomId = 'room1'
+      const student = await new UserBuilder().buildAndPersist()
+      const lessonMaterial = await new LessonMaterialBuilder()
+        .withSubcontentId(v4())
+        .buildAndPersist()
+      const lessonPlan = await new LessonPlanBuilder()
+        .addMaterialId(lessonMaterial.contentId)
+        .buildAndPersist()
+      const schedule = await new ScheduleBuilder()
+        .withRoomId(roomId)
+        .withLessonPlanId(lessonPlan.contentId)
+        .buildAndPersist()
 
-  it('full content id includes a subcontent id', async () => {
-    // Arrange
-    await dbConnect()
-    const roomId = 'room1'
-    const student = await new UserBuilder().buildAndPersist()
-    const lessonMaterial = await new LessonMaterialBuilder()
-      .withSubcontentId(v4())
-      .buildAndPersist()
-    const lessonPlan = await new LessonPlanBuilder()
-      .addMaterialId(lessonMaterial.contentId)
-      .buildAndPersist()
-    const schedule = await new ScheduleBuilder()
-      .withRoomId(roomId)
-      .withLessonPlanId(lessonPlan.contentId)
-      .buildAndPersist()
-    const oldContentId = `${lessonMaterial.h5pId}|${lessonMaterial.subcontentId}`
-    const userContentScore = await new UserContentScoreBuilder()
-      .withroomId(roomId)
-      .withStudentId(student.userId)
-      .withContentId(oldContentId) // content ID is currently set as the h5p ID.
-      .buildAndPersist()
-    const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
-    const teacherScore = await new TeacherScoreBuilder(
-      userContentScore,
-    ).buildAndPersist()
+      // The content id column is currently set as h5pId|subcontentId.
+      const oldContentId = `${lessonMaterial.h5pId}|${lessonMaterial.subcontentId}`
+      const newContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
 
-    expect(userContentScore.contentId).to.equal(oldContentId)
-    expect(answer.contentId).to.equal(oldContentId)
-    expect(teacherScore.contentId).to.equal(oldContentId)
+      const userContentScore = await new UserContentScoreBuilder()
+        .withroomId(roomId)
+        .withStudentId(student.userId)
+        .withFullContentId(oldContentId)
+        .buildAndPersist()
+      const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
+      const teacherScore = await new TeacherScoreBuilder(
+        userContentScore,
+      ).buildAndPersist()
 
-    // Act
-    await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
-      getConnection(CMS_CONNECTION_NAME),
-      getConnection(ASSESSMENTS_CONNECTION_NAME),
-    )
+      expect(userContentScore.contentId).to.equal(oldContentId)
+      expect(answer.fullContentId).to.equal(oldContentId)
+      expect(teacherScore.fullContentId).to.equal(oldContentId)
 
-    const newContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
+      // Act
+      await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
+        getConnection(CMS_CONNECTION_NAME),
+        getConnection(ASSESSMENTS_CONNECTION_NAME),
+        false,
+      )
 
-    // Assert
-    const dbUserContentScore = await getRepository(
-      UserContentScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: newContentId, // now it should be set as the cms content ID
-      },
+      // Assert
+      const dbUserContentScore = await getRepository(
+        UserContentScore,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          contentId: newContentId, // now it should be set as contentId|subcontentId
+        },
+      })
+
+      const dbTeacherScore = await getRepository(
+        TeacherScore,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          fullContentId: newContentId, // now it should be set as contentId|subcontentId
+        },
+      })
+
+      const dbAnswer = await getRepository(
+        Answer,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          fullContentId: newContentId, // now it should be set as the contentId|subcontentId
+        },
+      })
+
+      await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
+        .createQueryBuilder()
+        .where(`"${fullContentIdRelationColumnName}" = '${newContentId}'`)
+        .getOneOrFail()
+
+      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
+        .createQueryBuilder()
+        .where(`"${fullContentIdRelationColumnName}" = '${newContentId}'`)
+        .getOneOrFail()
     })
-
-    const dbTeacherScore = await getRepository(
-      TeacherScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: newContentId, // now it should be set as the cms content ID
-      },
-    })
-
-    const dbAnswer = await getRepository(
-      Answer,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: newContentId, // now it should be set as the cms content ID
-      },
-    })
-
-    await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-      .createQueryBuilder()
-      .where(`"userContentScoreContentId" = '${newContentId}'`)
-      .getOneOrFail()
-
-    await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
-      .createQueryBuilder()
-      .where(`"userContentScoreContentId" = '${newContentId}'`)
-      .getOneOrFail()
   })
-})
 
-describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
-  after(async () => await dbDisconnect())
+  context('contentId columns are set as contentId|subcontentId', () => {
+    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are not modified', async () => {
+      // Arrange
+      const roomId = 'room1'
+      const student = await new UserBuilder().buildAndPersist()
+      const lessonMaterial = await new LessonMaterialBuilder()
+        .withSubcontentId(v4())
+        .buildAndPersist()
+      const lessonPlan = await new LessonPlanBuilder()
+        .addMaterialId(lessonMaterial.contentId)
+        .buildAndPersist()
+      const schedule = await new ScheduleBuilder()
+        .withRoomId(roomId)
+        .withLessonPlanId(lessonPlan.contentId)
+        .buildAndPersist()
 
-  it('full content id includes a subcontent id; does not include h5p id', async () => {
-    // Arrange
-    await dbConnect()
-    const roomId = 'room1'
-    const student = await new UserBuilder().buildAndPersist()
-    const lessonMaterial = await new LessonMaterialBuilder()
-      .withSubcontentId(v4())
-      .buildAndPersist()
-    const lessonPlan = await new LessonPlanBuilder()
-      .addMaterialId(lessonMaterial.contentId)
-      .buildAndPersist()
-    const schedule = await new ScheduleBuilder()
-      .withRoomId(roomId)
-      .withLessonPlanId(lessonPlan.contentId)
-      .buildAndPersist()
-    const fullContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
-    const userContentScore = await new UserContentScoreBuilder()
-      .withroomId(roomId)
-      .withStudentId(student.userId)
-      .withContentId(fullContentId)
-      .buildAndPersist()
-    const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
-    const teacherScore = await new TeacherScoreBuilder(
-      userContentScore,
-    ).buildAndPersist()
+      const fullContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
 
-    expect(userContentScore.contentId).to.equal(fullContentId)
-    expect(answer.contentId).to.equal(fullContentId)
-    expect(teacherScore.contentId).to.equal(fullContentId)
+      const userContentScore = await new UserContentScoreBuilder()
+        .withroomId(roomId)
+        .withStudentId(student.userId)
+        .withFullContentId(fullContentId)
+        .buildAndPersist()
+      const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
+      const teacherScore = await new TeacherScoreBuilder(
+        userContentScore,
+      ).buildAndPersist()
 
-    // Act
-    await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
-      getConnection(CMS_CONNECTION_NAME),
-      getConnection(ASSESSMENTS_CONNECTION_NAME),
-    )
+      expect(userContentScore.contentId).to.equal(fullContentId)
+      expect(answer.fullContentId).to.equal(fullContentId)
+      expect(teacherScore.fullContentId).to.equal(fullContentId)
 
-    // Assert
-    const dbUserContentScore = await getRepository(
-      UserContentScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: fullContentId, // should not change
-      },
+      // Act
+      await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
+        getConnection(CMS_CONNECTION_NAME),
+        getConnection(ASSESSMENTS_CONNECTION_NAME),
+        false,
+      )
+
+      // Assert
+      const dbUserContentScore = await getRepository(
+        UserContentScore,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          contentId: fullContentId, // should not change
+        },
+      })
+
+      const dbTeacherScore = await getRepository(
+        TeacherScore,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          fullContentId: fullContentId, // should not change
+        },
+      })
+
+      const dbAnswer = await getRepository(
+        Answer,
+        ASSESSMENTS_CONNECTION_NAME,
+      ).findOneOrFail({
+        where: {
+          roomId: roomId,
+          studentId: student.userId,
+          fullContentId: fullContentId, // should not change
+        },
+      })
+
+      await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
+        .createQueryBuilder()
+        .where(`"${fullContentIdRelationColumnName}" = '${fullContentId}'`)
+        .getOneOrFail()
+
+      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
+        .createQueryBuilder()
+        .where(`"${fullContentIdRelationColumnName}" = '${fullContentId}'`)
+        .getOneOrFail()
     })
-
-    const dbTeacherScore = await getRepository(
-      TeacherScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: fullContentId, // should not change
-      },
-    })
-
-    const dbAnswer = await getRepository(
-      Answer,
-      ASSESSMENTS_CONNECTION_NAME,
-    ).findOneOrFail({
-      where: {
-        roomId: roomId,
-        studentId: student.userId,
-        contentId: fullContentId, // should not change
-      },
-    })
-
-    await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-      .createQueryBuilder()
-      .where(`"userContentScoreContentId" = '${fullContentId}'`)
-      .getOneOrFail()
-
-    await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
-      .createQueryBuilder()
-      .where(`"userContentScoreContentId" = '${fullContentId}'`)
-      .getOneOrFail()
   })
 })

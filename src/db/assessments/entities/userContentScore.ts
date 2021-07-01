@@ -125,10 +125,10 @@ export class UserContentScore {
     this.resetMultipleHotspots = true
   }
 
-  constructor(roomId: string, studentId: string, contentId: string) {
+  constructor(roomId: string, studentId: string, fullContentId: string) {
     this.roomId = roomId
     this.studentId = studentId
-    this.contentId = contentId
+    this.contentId = fullContentId
   }
 
   public static new(

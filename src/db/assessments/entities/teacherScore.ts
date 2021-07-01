@@ -19,7 +19,7 @@ export class TeacherScore {
   public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly contentId: string
+  public readonly fullContentId: string
 
   @PrimaryColumn({ name: 'teacher_id', nullable: false })
   public readonly teacherId: string
@@ -56,7 +56,7 @@ export class TeacherScore {
     this.roomId = roomId
     this.teacherId = teacherId
     this.studentId = studentId
-    this.contentId = contentId
+    this.fullContentId = contentId
   }
 
   public static new(

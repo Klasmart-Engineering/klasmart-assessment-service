@@ -118,13 +118,13 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         ),
         manager.update(
           TeacherScore,
-          { roomId: roomId, contentId: oldContentId },
-          { contentId: newContentId },
+          { roomId: roomId, fullContentId: oldContentId },
+          { fullContentId: newContentId },
         ),
         manager.update(
           Answer,
-          { roomId: roomId, contentId: oldContentId },
-          { contentId: newContentId },
+          { roomId: roomId, fullContentId: oldContentId },
+          { fullContentId: newContentId },
         ),
       ])
     }

@@ -74,7 +74,7 @@ export default class TeacherScoreResolver {
         (await this.assesmentDB.findOne(TeacherScore, {
           roomId: roomId,
           studentId: studentId,
-          contentId: fullContentId,
+          fullContentId: fullContentId,
           teacherId: teacherId,
         })) || TeacherScore.new(userContentScore, teacherId, score)
 
@@ -113,7 +113,7 @@ export default class TeacherScoreResolver {
     const contentType = userContentScore?.contentType
     const contentName = userContentScore?.contentName
     return await getContent(
-      source.contentId,
+      source.fullContentId,
       contentType,
       contentName,
       this.contentRepository,

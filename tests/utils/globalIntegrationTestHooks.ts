@@ -32,6 +32,10 @@ export async function dbDisconnect() {
   MutableContainer.reset()
 }
 
+export async function dbSynchronize() {
+  await Promise.all(connections?.map((x) => x.synchronize(true)))
+}
+
 async function createUserDbIfItDoesntExist(): Promise<void> {
   const connection = await createBootstrapPostgresConnection()
   const queryRunner = connection.createQueryRunner()

@@ -15,15 +15,46 @@ import {
   GqlUser,
 } from '../queriesAndMutations/gqlInterfaces'
 import { FindConditions } from 'typeorm'
+import { ErrorMessage } from '../../src/helpers/errorMessages'
+import { TestTitle } from '../utils/testTitles'
+
+/**
+ * TODO:
+ * - throws when wrong id
+ * - comment exists (update)
+ */
 
 describe('teacherCommentResolver.setComment', () => {
-  const roomId = 'room1'
-  let endUser: EndUser
-  let gqlTeacherComment: GqlTeacherComment | undefined | null
-  let student: User
-  const comment = 'great job!'
+  context(TestTitle.Authentication.context, () => {
+    it(TestTitle.Authentication.throwsError, async () => {
+      // Arrange
+      await dbConnect()
+      const roomId = 'room1'
+      const comment = 'great job!'
+      const student = await new UserBuilder().buildAndPersist()
+      const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+
+      const endUser = await new EndUserBuilder()
+        .dontAuthenticate()
+        .buildAndPersist()
+
+      // Act
+      const fn = () =>
+        setTeacherCommentMutation(roomId, student.userId, comment, endUser)
+
+      // Assert
+      await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
+      await dbDisconnect()
+    })
+  })
 
   context('1 student, 1 xapi event', () => {
+    const roomId = 'room1'
+    let endUser: EndUser
+    let gqlTeacherComment: GqlTeacherComment | undefined | null
+    let student: User
+    const comment = 'great job!'
+
     before(async () => {
       // Arrange
       await dbConnect()
@@ -34,7 +65,7 @@ describe('teacherCommentResolver.setComment', () => {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withContentId(lessonMaterial.contentId)
+        .withFullContentId(lessonMaterial.contentId)
         .buildAndPersist()
     })
 
@@ -48,11 +79,11 @@ describe('teacherCommentResolver.setComment', () => {
         comment,
         endUser,
       )
-      //console.log(JSON.stringify(gqlRoom, null, 2))
     })
 
-    it('returns non-null teacherComment', () => {
+    it('returns non-null/undefined teacherComment', () => {
       expect(gqlTeacherComment).to.not.be.null
+      expect(gqlTeacherComment).to.not.be.undefined
     })
 
     // it('returns teacherComment with expected created date', () => {
