@@ -5,12 +5,10 @@ import {
   LessonMaterialBuilder,
   LessonPlanBuilder,
   ScheduleBuilder,
-  TeacherScoreBuilder,
   UserBuilder,
   UserContentScoreBuilder,
 } from '../builders'
 import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
-import { createH5pIdToCmsContentIdCache } from '../../src/helpers/getContent'
 import { setTeacherScoreMutation } from '../queriesAndMutations/teacherScoreOps'
 import { v4 } from 'uuid'
 import {
@@ -407,97 +405,6 @@ describe('teacherScoreResolver.setScore', function () {
         }
 
         expect(dbTeacherScore).to.deep.include(expected)
-      })
-    },
-  )
-
-  context(
-    'h5pId is provided instead of a fullContentId; entry exists in h5pIdToCmsContentIdCache',
-    () => {
-      after(async () => await dbDisconnect())
-
-      it('score is set to 1', async () => {
-        // Arrange
-        await dbConnect()
-        const roomId = 'room1'
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
-        const student = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
-        const lessonPlan = await new LessonPlanBuilder()
-          .addMaterialId(lessonMaterial.contentId)
-          .buildAndPersist()
-        const schedule = await new ScheduleBuilder()
-          .withRoomId(roomId)
-          .withLessonPlanId(lessonPlan.contentId)
-          .buildAndPersist()
-        const userContentScore = await new UserContentScoreBuilder()
-          .withroomId(roomId)
-          .withStudentId(student.userId)
-          .withFullContentId(lessonMaterial.contentId)
-          .buildAndPersist()
-        const answer = await new AnswerBuilder(
-          userContentScore,
-        ).buildAndPersist()
-
-        // Act
-        await createH5pIdToCmsContentIdCache()
-        const gqlTeacherScore = await setTeacherScoreMutation(
-          roomId,
-          student.userId,
-          lessonMaterial.h5pId!,
-          1,
-          endUser,
-        )
-
-        // Assert
-        expect(gqlTeacherScore?.score).is.equal(1)
-      })
-    },
-  )
-
-  context(
-    'h5pId is provided instead of a fullContentId; entry does not exist in h5pIdToCmsContentIdCache',
-    () => {
-      after(async () => await dbDisconnect())
-
-      it('score is set to 1', async () => {
-        // Arrange
-        await dbConnect()
-        const roomId = 'room1'
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
-        const student = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
-        const lessonPlan = await new LessonPlanBuilder()
-          .addMaterialId(lessonMaterial.contentId)
-          .buildAndPersist()
-        const schedule = await new ScheduleBuilder()
-          .withRoomId(roomId)
-          .withLessonPlanId(lessonPlan.contentId)
-          .buildAndPersist()
-        const userContentScore = await new UserContentScoreBuilder()
-          .withroomId(roomId)
-          .withStudentId(student.userId)
-          .withFullContentId(lessonMaterial.contentId)
-          .buildAndPersist()
-        const answer = await new AnswerBuilder(
-          userContentScore,
-        ).buildAndPersist()
-
-        // Act
-        const gqlTeacherScore = await setTeacherScoreMutation(
-          roomId,
-          student.userId,
-          lessonMaterial.h5pId!,
-          1,
-          endUser,
-        )
-
-        // Assert
-        expect(gqlTeacherScore?.score).is.equal(1)
       })
     },
   )
