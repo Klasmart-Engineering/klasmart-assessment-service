@@ -47,7 +47,7 @@ export default async function getContent(
   return content
 }
 
-export async function findCmsContentIdUsingH5pId(
+async function findCmsContentIdUsingH5pId(
   h5pId: string,
 ): Promise<string | undefined> {
   let cmsContentId = h5pIdToCmsContentIdCache.get(h5pId)

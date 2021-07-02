@@ -19,7 +19,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Context, UserID } from '../auth/context'
-import getContent, { findCmsContentIdUsingH5pId } from '../helpers/getContent'
+import getContent from '../helpers/getContent'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -54,8 +54,8 @@ export default class TeacherScoreResolver {
         contentId: fullContentId,
       })
 
-      // If the provided content id is a cms content id, and the db ids
-      // haven't been migrated yet, we need to try with the h5pId.
+      // If the content_id columns haven't been migrated yet
+      // (still using h5p ids), we need to try with the h5pId.
       if (!userContentScore) {
         const content = await this.contentRepository.findOne({
           where: { contentId: contentId },
@@ -70,18 +70,6 @@ export default class TeacherScoreResolver {
             contentId: fullContentId,
           })
         }
-      }
-
-      // Shouldn't be the case anymore because they mentioned switching from passing
-      // h5p ids to cms content ids, but just in case, if the contentId is actually
-      // an h5p id, let's try searching by that.
-      if (!userContentScore) {
-        userContentScore = await this.findUserContentScoreUsingH5pId(
-          roomId,
-          studentId,
-          contentId,
-          subcontentId,
-        )
       }
 
       if (!userContentScore) {
@@ -138,27 +126,5 @@ export default class TeacherScoreResolver {
       contentName,
       this.contentRepository,
     )
-  }
-
-  private async findUserContentScoreUsingH5pId(
-    roomId: string,
-    studentId: string,
-    h5pId: string,
-    subContentId?: string,
-  ) {
-    const cmsContentId = await findCmsContentIdUsingH5pId(h5pId)
-    if (!cmsContentId) {
-      return undefined
-    }
-
-    const fullContentId = subContentId
-      ? `${cmsContentId}|${subContentId}`
-      : cmsContentId
-    const userContentScore = await this.assesmentDB.findOne(UserContentScore, {
-      roomId: roomId,
-      studentId: studentId,
-      contentId: fullContentId,
-    })
-    return userContentScore
   }
 }
