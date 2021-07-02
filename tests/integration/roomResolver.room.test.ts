@@ -33,7 +33,6 @@ import {
 import {
   Answer,
   Room,
-  TeacherScore,
   UserContentScore,
 } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'

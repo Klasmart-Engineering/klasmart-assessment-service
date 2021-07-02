@@ -22,10 +22,19 @@ import { Schedule } from '../db/cms/entities'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { LessonPlan } from '../db/cms/entities/lessonPlan'
 import { LessonPlanItem } from '../db/cms/entities/lessonPlanItem'
+import { ILogger, Logger } from '../helpers/logger'
 
 @Service()
 @Resolver(() => Room)
 export default class RoomResolver {
+  private static _logger: ILogger
+  private get Logger(): ILogger {
+    return (
+      RoomResolver._logger ||
+      (RoomResolver._logger = Logger.get('RoomResolver'))
+    )
+  }
+
   constructor(
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
@@ -53,7 +62,7 @@ export default class RoomResolver {
       await this.assessmentDB.save(room)
       return room
     } catch (e) {
-      console.error(e)
+      this.Logger.error(e)
       throw e
     }
   }
@@ -76,7 +85,7 @@ export default class RoomResolver {
     })
 
     if (!lessonPlan?.data) {
-      console.warn(`lesson plan (${lessonPlanId}) not found`)
+      this.Logger.warn(`lesson plan (${lessonPlanId}) not found`)
       return []
     }
     const list = []
