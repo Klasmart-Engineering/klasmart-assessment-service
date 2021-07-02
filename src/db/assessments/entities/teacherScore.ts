@@ -19,7 +19,7 @@ export class TeacherScore {
   public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly fullContentId: string
+  public readonly contentKey: string
 
   @PrimaryColumn({ name: 'teacher_id', nullable: false })
   public readonly teacherId: string
@@ -51,12 +51,12 @@ export class TeacherScore {
     roomId: string,
     teacherId: string,
     studentId: string,
-    contentId: string,
+    contentKey: string,
   ) {
     this.roomId = roomId
     this.teacherId = teacherId
     this.studentId = studentId
-    this.fullContentId = contentId
+    this.contentKey = contentKey
   }
 
   public static new(
@@ -69,7 +69,7 @@ export class TeacherScore {
       userContentScore.roomId,
       teacherId,
       userContentScore.studentId,
-      userContentScore.contentId,
+      userContentScore.contentKey,
     )
     teacherScore.userContentScore = Promise.resolve(userContentScore)
     teacherScore.score = score

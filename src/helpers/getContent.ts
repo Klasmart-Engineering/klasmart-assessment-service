@@ -2,6 +2,7 @@ import { getRepository, Repository } from 'typeorm'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Content } from '../db/cms/entities/content'
 import { ContentType } from '../db/cms/enums/contentType'
+import ContentKey from './contentKey'
 
 const h5pIdToCmsContentIdCache = new Map<string, string>()
 
@@ -21,18 +22,15 @@ export async function createH5pIdToCmsContentIdCache(): Promise<void> {
 }
 
 export default async function getContent(
-  fullContentId: string,
+  contentKey: string,
   contentType: string | undefined,
   contentName: string | undefined,
   contentRepository: Repository<Content>,
 ): Promise<Content | null> {
-  const ids = fullContentId.split('|', 2)
-  const mainContentId = ids[0]
-  const subcontentId = ids.length >= 2 ? ids[1] : undefined
-  let content = (await contentRepository.findOne(mainContentId)) || null
-
+  const { contentId, subcontentId } = ContentKey.deconstruct(contentKey)
+  let content = (await contentRepository.findOne(contentId)) || null
   if (!content) {
-    const cmsContentId = await findCmsContentIdUsingH5pId(mainContentId)
+    const cmsContentId = await findCmsContentIdUsingH5pId(contentId)
     if (cmsContentId) {
       content = (await contentRepository.findOne(cmsContentId)) || null
     }

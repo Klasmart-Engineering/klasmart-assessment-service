@@ -34,7 +34,7 @@ export default class UserContentScoreResolver {
     @Root() source: UserContentScore,
   ): Promise<Content | null> {
     return await getContent(
-      source.contentId,
+      source.contentKey,
       source.contentType,
       source.contentName,
       this.contentRepository,

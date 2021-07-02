@@ -8,6 +8,7 @@ import { LessonPlan } from '../db/cms/entities/lessonPlan'
 import { LessonPlanItem } from '../db/cms/entities/lessonPlanItem'
 import { ContentType } from '../db/cms/enums/contentType'
 import { Connection, getManager } from 'typeorm'
+import ContentKey from './contentKey'
 
 export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   cmsDbConnection: Connection,
@@ -40,8 +41,8 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   let ucsReqUpdateCount = 0
   const updates: {
     roomId: string
-    oldContentId: string
-    newContentId: string
+    oldContentKey: string
+    newContentKey: string
   }[] = []
 
   const roomIdToLessonMaterialIdsCache = new Map<string, string[]>()
@@ -49,12 +50,11 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
 
   for (const ucs of ucsList) {
     const roomId = ucs.roomId
-    const oldContentId = ucs.contentId
-    const idParts = oldContentId.split('|', 2)
-    const oldMainContentId = idParts[0]
-    const subcontentId = idParts.length >= 2 ? idParts[1] : undefined
+    const oldContentKey = ucs.contentKey
+    const { contentId, subcontentId } = ContentKey.deconstruct(oldContentKey)
+    const oldContentId = contentId
 
-    const realContentIds = h5pIdToContentIdsMap.get(oldMainContentId)
+    const realContentIds = h5pIdToContentIdsMap.get(oldContentId)
     if (!realContentIds) {
       //console.log('ucs already has a real content id')
       continue
@@ -76,30 +76,31 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
       roomIdToLessonMaterialIdsCache.set(ucs.roomId, lessonMaterialIds)
     }
 
-    let newMainContentId: string | undefined
+    let newContentId: string | undefined
     for (let index = 0; index < realContentIds.length; index++) {
       if (lessonMaterialIds.includes(realContentIds[index].contentId)) {
-        newMainContentId = realContentIds[index].contentId
+        newContentId = realContentIds[index].contentId
         break
       }
     }
-    if (!newMainContentId) {
+    if (!newContentId) {
       // console.log(
       //   'a content id was found but it does not match any of the lesson plan content ids',
       //   oldContentId,
       // )
-      cache.add(oldContentId)
+      cache.add(oldContentKey)
       const publishedContent = realContentIds.find(
         (x) => x.publishStatus === 'published',
       )
-      newMainContentId =
-        publishedContent?.contentId ?? realContentIds[0].contentId
+      newContentId = publishedContent?.contentId ?? realContentIds[0].contentId
     }
 
-    const newContentId = subcontentId
-      ? `${newMainContentId}|${subcontentId}`
-      : `${newMainContentId}`
-    updates.push({ roomId, oldContentId, newContentId })
+    const newContentKey = ContentKey.construct(newContentId, subcontentId)
+    updates.push({
+      roomId,
+      oldContentKey,
+      newContentKey,
+    })
   }
 
   console.log(`# of ids that don't match lesson plan: ${cache.size}`)
@@ -109,22 +110,22 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
     return
   }
   await getManager(assessmentDbConnection.name).transaction(async (manager) => {
-    for (const { roomId, oldContentId, newContentId } of updates) {
+    for (const { roomId, oldContentKey, newContentKey } of updates) {
       await Promise.all([
         manager.update(
           UserContentScore,
-          { roomId: roomId, contentId: oldContentId },
-          { contentId: newContentId },
+          { roomId: roomId, contentKey: oldContentKey },
+          { contentKey: newContentKey },
         ),
         manager.update(
           TeacherScore,
-          { roomId: roomId, fullContentId: oldContentId },
-          { fullContentId: newContentId },
+          { roomId: roomId, contentKey: oldContentKey },
+          { contentKey: newContentKey },
         ),
         manager.update(
           Answer,
-          { roomId: roomId, fullContentId: oldContentId },
-          { fullContentId: newContentId },
+          { roomId: roomId, contentKey: oldContentKey },
+          { contentKey: newContentKey },
         ),
       ])
     }

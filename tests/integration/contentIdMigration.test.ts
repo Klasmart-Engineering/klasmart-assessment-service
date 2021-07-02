@@ -8,6 +8,7 @@ import {
   UserContentScore,
 } from '../../src/db/assessments/entities'
 import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
+import ContentKey from '../../src/helpers/contentKey'
 import { migrateContentIdColumnsToUseContentIdInsteadOfH5pId } from '../../src/helpers/migrateContentIdColumnsToUseContentIdInsteadOfH5pId'
 import {
   AnswerBuilder,
@@ -25,7 +26,7 @@ import {
 } from '../utils/globalIntegrationTestHooks'
 
 describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
-  const fullContentIdRelationColumnName = 'userContentScoreContentId'
+  const contentKeyRelationColumnName = 'userContentScoreContentKey'
 
   before(async () => await dbConnect())
   after(async () => await dbDisconnect())
@@ -47,16 +48,16 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withFullContentId(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+        .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
         userContentScore,
       ).buildAndPersist()
 
-      expect(userContentScore.contentId).to.equal(lessonMaterial.h5pId)
-      expect(answer.fullContentId).to.equal(lessonMaterial.h5pId)
-      expect(teacherScore.fullContentId).to.equal(lessonMaterial.h5pId)
+      expect(userContentScore.contentKey).to.equal(lessonMaterial.h5pId)
+      expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
+      expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
@@ -73,7 +74,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          contentId: lessonMaterial.contentId, // now it should be set as the cms content ID
+          contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
         },
       })
 
@@ -84,7 +85,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          fullContentId: lessonMaterial.contentId, // now it should be set as the cms content ID
+          contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
         },
       })
 
@@ -95,21 +96,21 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          fullContentId: lessonMaterial.contentId, // now it should be set as the cms content ID
+          contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
         },
       })
 
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(
-          `"${fullContentIdRelationColumnName}" = '${lessonMaterial.contentId}'`,
+          `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
         )
         .getOneOrFail()
 
       await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(
-          `"${fullContentIdRelationColumnName}" = '${lessonMaterial.contentId}'`,
+          `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
         )
         .getOneOrFail()
     })
@@ -132,22 +133,28 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         .buildAndPersist()
 
       // The content id column is currently set as h5pId|subcontentId.
-      const oldContentId = `${lessonMaterial.h5pId}|${lessonMaterial.subcontentId}`
-      const newContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
+      const oldContentKey = ContentKey.construct(
+        lessonMaterial.h5pId!,
+        lessonMaterial.subcontentId,
+      )
+      const newContentKey = ContentKey.construct(
+        lessonMaterial.contentId,
+        lessonMaterial.subcontentId,
+      )
 
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withFullContentId(oldContentId)
+        .withContentKey(oldContentKey)
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
         userContentScore,
       ).buildAndPersist()
 
-      expect(userContentScore.contentId).to.equal(oldContentId)
-      expect(answer.fullContentId).to.equal(oldContentId)
-      expect(teacherScore.fullContentId).to.equal(oldContentId)
+      expect(userContentScore.contentKey).to.equal(oldContentKey)
+      expect(answer.contentKey).to.equal(oldContentKey)
+      expect(teacherScore.contentKey).to.equal(oldContentKey)
 
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
@@ -164,7 +171,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          contentId: newContentId, // now it should be set as contentId|subcontentId
+          contentKey: newContentKey, // now it should be set as contentId|subcontentId
         },
       })
 
@@ -175,7 +182,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          fullContentId: newContentId, // now it should be set as contentId|subcontentId
+          contentKey: newContentKey, // now it should be set as contentId|subcontentId
         },
       })
 
@@ -186,18 +193,18 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          fullContentId: newContentId, // now it should be set as the contentId|subcontentId
+          contentKey: newContentKey, // now it should be set as the contentId|subcontentId
         },
       })
 
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
-        .where(`"${fullContentIdRelationColumnName}" = '${newContentId}'`)
+        .where(`"${contentKeyRelationColumnName}" = '${newContentKey}'`)
         .getOneOrFail()
 
       await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
-        .where(`"${fullContentIdRelationColumnName}" = '${newContentId}'`)
+        .where(`"${contentKeyRelationColumnName}" = '${newContentKey}'`)
         .getOneOrFail()
     })
   })
@@ -218,21 +225,24 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         .withLessonPlanId(lessonPlan.contentId)
         .buildAndPersist()
 
-      const fullContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
+      const contentKey = ContentKey.construct(
+        lessonMaterial.contentId,
+        lessonMaterial.subcontentId,
+      )
 
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withFullContentId(fullContentId)
+        .withContentKey(contentKey)
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
         userContentScore,
       ).buildAndPersist()
 
-      expect(userContentScore.contentId).to.equal(fullContentId)
-      expect(answer.fullContentId).to.equal(fullContentId)
-      expect(teacherScore.fullContentId).to.equal(fullContentId)
+      expect(userContentScore.contentKey).to.equal(contentKey)
+      expect(answer.contentKey).to.equal(contentKey)
+      expect(teacherScore.contentKey).to.equal(contentKey)
 
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
@@ -249,7 +259,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          contentId: fullContentId, // should not change
+          contentKey: contentKey, // should not change
         },
       })
 
@@ -260,7 +270,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          fullContentId: fullContentId, // should not change
+          contentKey: contentKey, // should not change
         },
       })
 
@@ -271,18 +281,18 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         where: {
           roomId: roomId,
           studentId: student.userId,
-          fullContentId: fullContentId, // should not change
+          contentKey: contentKey, // should not change
         },
       })
 
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
-        .where(`"${fullContentIdRelationColumnName}" = '${fullContentId}'`)
+        .where(`"${contentKeyRelationColumnName}" = '${contentKey}'`)
         .getOneOrFail()
 
       await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
-        .where(`"${fullContentIdRelationColumnName}" = '${fullContentId}'`)
+        .where(`"${contentKeyRelationColumnName}" = '${contentKey}'`)
         .getOneOrFail()
     })
   })

@@ -6,7 +6,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 export default class UserContentScoreBuilder {
   private roomId = v4()
   private studentId = v4()
-  private contentId = v4()
+  private contentKey = v4()
   private contentType?: string
   private contentName?: string
 
@@ -20,8 +20,8 @@ export default class UserContentScoreBuilder {
     return this
   }
 
-  public withFullContentId(value: string): this {
-    this.contentId = value
+  public withContentKey(value: string): this {
+    this.contentKey = value
     return this
   }
 
@@ -39,7 +39,7 @@ export default class UserContentScoreBuilder {
     const entity = UserContentScore.new(
       this.roomId,
       this.studentId,
-      this.contentId,
+      this.contentKey,
       this.contentType,
       this.contentName,
     )

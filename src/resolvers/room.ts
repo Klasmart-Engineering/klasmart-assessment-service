@@ -146,7 +146,7 @@ export default class RoomResolver {
         scoresByContent.set(
           userContentScore.studentId,
           new ContentScores(
-            userContentScore.contentId,
+            userContentScore.contentKey,
             [userContentScore],
             userContentScore.contentType,
             userContentScore.contentName,

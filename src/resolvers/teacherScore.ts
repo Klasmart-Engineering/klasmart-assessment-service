@@ -20,6 +20,7 @@ import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Context, UserID } from '../auth/context'
 import getContent from '../helpers/getContent'
+import ContentKey from '../helpers/contentKey'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -45,13 +46,11 @@ export default class TeacherScoreResolver {
     @Arg('subcontent_id', { nullable: true }) subcontentId?: string,
   ): Promise<TeacherScore> {
     try {
-      let fullContentId = subcontentId
-        ? `${contentId}|${subcontentId}`
-        : contentId
+      let contentKey = ContentKey.construct(contentId, subcontentId)
       let userContentScore = await this.assesmentDB.findOne(UserContentScore, {
         roomId: roomId,
         studentId: studentId,
-        contentId: fullContentId,
+        contentKey: contentKey,
       })
 
       // If the content_id columns haven't been migrated yet
@@ -61,13 +60,13 @@ export default class TeacherScoreResolver {
           where: { contentId: contentId },
         })
         if (content?.h5pId) {
-          fullContentId = subcontentId
+          contentKey = subcontentId
             ? `${content.h5pId}|${subcontentId}`
             : content.h5pId
           userContentScore = await this.assesmentDB.findOne(UserContentScore, {
             roomId: roomId,
             studentId: studentId,
-            contentId: fullContentId,
+            contentKey: contentKey,
           })
         }
       }
@@ -82,7 +81,7 @@ export default class TeacherScoreResolver {
         (await this.assesmentDB.findOne(TeacherScore, {
           roomId: roomId,
           studentId: studentId,
-          fullContentId: fullContentId,
+          contentKey: contentKey,
           teacherId: teacherId,
         })) || TeacherScore.new(userContentScore, teacherId, score)
 
@@ -121,7 +120,7 @@ export default class TeacherScoreResolver {
     const contentType = userContentScore?.contentType
     const contentName = userContentScore?.contentName
     return await getContent(
-      source.fullContentId,
+      source.contentKey,
       contentType,
       contentName,
       this.contentRepository,
