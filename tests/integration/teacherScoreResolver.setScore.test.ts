@@ -25,6 +25,7 @@ import { TeacherScore } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import { TestTitle } from '../utils/testTitles'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
+import ContentKey from '../../src/helpers/contentKey'
 
 /**
  * TODO:
@@ -66,7 +67,7 @@ describe('teacherScoreResolver.setScore', function () {
   })
 
   context(
-    'contentId is provided, but the stored userContentScore is using the h5pId.',
+    '[PRE CONTENT_ID MIGRATION] stored UserContentScore is using the h5pId',
     () => {
       const roomId = 'room1'
       let endUser: EndUser
@@ -92,7 +93,7 @@ describe('teacherScoreResolver.setScore', function () {
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withFullContentId(lessonMaterial.h5pId!) // using h5pId instead of contentId
+          .withContentKey(lessonMaterial.h5pId!) // using h5pId instead of contentId
           .withContentType(xapiContentType)
           .withContentName(xapiContentName)
           .buildAndPersist()
@@ -167,7 +168,7 @@ describe('teacherScoreResolver.setScore', function () {
 
         const expected: FindConditions<TeacherScore> = {
           roomId: roomId,
-          fullContentId: lessonMaterial.h5pId, // make sure the teacherScore is stored using the h5pId just like the userContentScore.
+          contentKey: lessonMaterial.h5pId, // make sure the teacherScore is stored using the h5pId just like the userContentScore.
           studentId: student.userId,
           teacherId: endUser.userId,
           //date
@@ -205,7 +206,7 @@ describe('teacherScoreResolver.setScore', function () {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withFullContentId(lessonMaterial.contentId)
+        .withContentKey(lessonMaterial.contentId)
         .withContentType(xapiContentType)
         .withContentName(xapiContentName)
         .buildAndPersist()
@@ -278,7 +279,7 @@ describe('teacherScoreResolver.setScore', function () {
 
       const expected: FindConditions<TeacherScore> = {
         roomId: roomId,
-        fullContentId: lessonMaterial.contentId,
+        contentKey: lessonMaterial.contentId,
         studentId: student.userId,
         teacherId: endUser.userId,
         //date
@@ -300,7 +301,7 @@ describe('teacherScoreResolver.setScore', function () {
       let gqlTeacherScore: GqlTeacherScore | undefined | null
       const xapiContentName = 'My H5P Name'
       const xapiContentType = 'Flashcards'
-      let fullContentId: string
+      let contentKey: string
 
       before(async () => {
         // Arrange
@@ -317,11 +318,14 @@ describe('teacherScoreResolver.setScore', function () {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        fullContentId = `${lessonMaterial.contentId}|${lessonMaterial.subcontentId}`
+        contentKey = ContentKey.construct(
+          lessonMaterial.contentId,
+          lessonMaterial.subcontentId,
+        )
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withFullContentId(fullContentId)
+          .withContentKey(contentKey)
           .withContentType(xapiContentType)
           .withContentName(xapiContentName)
           .buildAndPersist()
@@ -337,7 +341,7 @@ describe('teacherScoreResolver.setScore', function () {
         gqlTeacherScore = await setTeacherScoreMutation(
           roomId,
           student.userId,
-          fullContentId,
+          contentKey,
           1,
           endUser,
         )
@@ -396,7 +400,7 @@ describe('teacherScoreResolver.setScore', function () {
 
         const expected: FindConditions<TeacherScore> = {
           roomId: roomId,
-          fullContentId: fullContentId,
+          contentKey: contentKey,
           studentId: student.userId,
           teacherId: endUser.userId,
           //date

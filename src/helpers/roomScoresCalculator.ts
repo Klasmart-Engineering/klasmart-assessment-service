@@ -8,6 +8,7 @@ import { Content } from '../db/cms/entities'
 import { FileType } from '../db/cms/enums'
 import { Attendance } from '../db/users/entities'
 import { XAPIRepository, XAPIRecord } from '../db/xapi/repo'
+import ContentKey from './contentKey'
 
 @Service()
 export class RoomScoresCalculator {
@@ -127,9 +128,7 @@ export class RoomScoresCalculator {
           continue
         }
 
-        let fullContentId = subcontentId
-          ? `${h5pId}|${subcontentId}`
-          : `${h5pId}`
+        let contentKey = ContentKey.construct(h5pId, subcontentId)
 
         // If we find a content_id entry that's still using the h5pId, it means we haven't
         // run the migration script yet. So keep using the h5pId, for now.
@@ -137,12 +136,10 @@ export class RoomScoresCalculator {
           UserContentScore,
           ASSESSMENTS_CONNECTION_NAME,
         ).findOne({
-          where: { contentId: fullContentId },
+          where: { contentKey: contentKey },
         })
         if (!existingUserContentScoreUsingH5pId) {
-          fullContentId = subcontentId
-            ? `${contentId}|${subcontentId}`
-            : `${contentId}`
+          contentKey = ContentKey.construct(contentId, subcontentId)
         }
 
         const contentTypeCategories =
@@ -162,13 +159,13 @@ export class RoomScoresCalculator {
 
         const contentName = statement?.object?.definition?.name?.['en-US']
 
-        const id = `${roomId}|${userId}|${fullContentId}`
+        const id = `${roomId}|${userId}|${contentKey}`
         let userContentScore = userContentScores.get(id)
         if (!userContentScore) {
           userContentScore = UserContentScore.new(
             roomId,
             userId,
-            fullContentId,
+            contentKey,
             contentType,
             contentName,
           )

@@ -12,7 +12,7 @@ export class Answer {
   public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly fullContentId: string
+  public readonly contentKey: string
 
   @PrimaryColumn({
     type: 'bigint',
@@ -55,12 +55,12 @@ export class Answer {
   constructor(
     roomId: string,
     studentId: string,
-    contentId: string,
+    contentKey: string,
     date: Date,
   ) {
     this.roomId = roomId
     this.studentId = studentId
-    this.fullContentId = contentId
+    this.contentKey = contentKey
     // This null check is needed because TypeOrm calls constructors
     // with null parameters when loading entities.
     this.timestamp = date?.getTime() ?? 0
@@ -77,7 +77,7 @@ export class Answer {
     const answerObject = new Answer(
       userContentScore.roomId,
       userContentScore.studentId,
-      userContentScore.contentId,
+      userContentScore.contentKey,
       date,
     )
     answerObject.userContentScore = Promise.resolve(userContentScore)

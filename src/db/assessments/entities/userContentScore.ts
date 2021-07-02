@@ -22,7 +22,7 @@ export class UserContentScore {
   public readonly studentId: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly contentId: string
+  public readonly contentKey: string
 
   @ManyToOne(
     () => Room, //Linter bug
@@ -125,23 +125,23 @@ export class UserContentScore {
     this.resetMultipleHotspots = true
   }
 
-  constructor(roomId: string, studentId: string, fullContentId: string) {
+  constructor(roomId: string, studentId: string, contentKey: string) {
     this.roomId = roomId
     this.studentId = studentId
-    this.contentId = fullContentId
+    this.contentKey = contentKey
   }
 
   public static new(
     roomOrId: Room | string,
     studentId: string,
-    contentId: string,
+    contentKey: string,
     contentType: string | undefined,
     contentName?: string,
     answers: Answer[] = [],
     seen: boolean = answers.length > 0,
   ): UserContentScore {
     const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.roomId
-    const userContentScore = new UserContentScore(roomId, studentId, contentId)
+    const userContentScore = new UserContentScore(roomId, studentId, contentKey)
     userContentScore.contentType = contentType
     userContentScore.contentName = contentName
     userContentScore.answers = Promise.resolve([])

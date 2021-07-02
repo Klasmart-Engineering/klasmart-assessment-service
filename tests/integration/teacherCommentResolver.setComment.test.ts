@@ -65,7 +65,7 @@ describe('teacherCommentResolver.setComment', () => {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withFullContentId(lessonMaterial.contentId)
+        .withContentKey(lessonMaterial.contentId)
         .buildAndPersist()
     })
 
