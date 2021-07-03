@@ -1,5 +1,7 @@
 # Assessment Service
 
+[![codecov](https://codecov.io/bb/calmisland/kidsloop-assessment-service/branch/master/graph/badge.svg?token=HMADF4LC8H)](https://codecov.io/bb/calmisland/kidsloop-assessment-service)
+
 Consumed by the [cms-backend-service](https://bitbucket.org/calmisland/cms-backend-service/src/ee26db558f8d624d045262d4b28f2daee2ce1591/external/h5p_room_score.go?at=dev%2Fglobal%2Falpha#lines-139), which is then consumed by the cms frontend (link needed).
 
 **External KidsLoop dependencies**

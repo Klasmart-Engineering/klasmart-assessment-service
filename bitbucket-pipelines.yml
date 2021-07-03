@@ -34,10 +34,13 @@ pipelines:
       - step: *build-and-test
 
   branches:
-    '{alpha,production}':
+    master:
+      - step: *build-and-test
+    alpha:
       - step: *build-and-test
       - step:
           name: 'Docker build and push to AWS'
+          deployment: alpha
           image: python:3.9-alpine
           services:
             - docker
@@ -62,3 +65,46 @@ pipelines:
             - docker push $REPO:$BRANCH_TAG-latest
             - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
             - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
+      - step:
+          name: Slack Notification
+          script:
+            - pipe: atlassian/slack-notify:1.0.1
+              variables:
+                WEBHOOK_URL: $SLACK_WEBHOOK
+                MESSAGE: 'A new build of Assessment Service ($BITBUCKET_COMMIT) has been push with the "$BITBUCKET_BRANCH" tag'
+    production:
+      - step: *build-and-test
+      - step:
+          name: 'Docker build and push to AWS'
+          deployment: production
+          image: python:3.9-alpine
+          services:
+            - docker
+          script:
+            - pip3 install -U awscli
+
+            - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
+            - export REPO=$DOCKER_REPO_URL/kidsloop-assessment # DOCKER_REPO_URL is workspace wide variable
+            - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+            - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
+
+            - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
+
+            - docker build -t kidsloop-assessment .
+
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-latest
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+            - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
+
+            - docker push $REPO:$BRANCH_TAG
+            - docker push $REPO:$BRANCH_TAG-latest
+            - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+            - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
+      - step:
+          name: Slack Notification
+          script:
+            - pipe: atlassian/slack-notify:1.0.1
+              variables:
+                WEBHOOK_URL: $SLACK_WEBHOOK
+                MESSAGE: 'A new build of Assessment Service ($BITBUCKET_COMMIT) has been push with the "$BITBUCKET_BRANCH" tag'
