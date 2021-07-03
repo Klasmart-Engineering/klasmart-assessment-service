@@ -22,7 +22,7 @@ definitions:
           - mysql
         script:
           - npm i
-          - npm run test:bitbucket
+          - TEST_POSTGRES_PORT=5432 TEST_MYSQL_PORT=3306 npm run test:codecov
         caches:
           - nodemodules
         artifacts:
