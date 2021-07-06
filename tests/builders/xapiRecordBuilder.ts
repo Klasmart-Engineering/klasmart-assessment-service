@@ -11,6 +11,7 @@ export default class XAPIRecordBuilder {
   private h5pSubId?: string
   private h5pType? = 'Flashcards'
   private h5pName? = 'My Activity'
+  private verb = 'answered'
 
   public withUserId(value: string): this {
     this.userId = value
@@ -57,6 +58,19 @@ export default class XAPIRecordBuilder {
     return this
   }
 
+  public withVerb(
+    value:
+      | 'attempted'
+      | 'answered'
+      | 'interacted'
+      | 'completed'
+      | 'progressed'
+      | 'passed',
+  ): this {
+    this.verb = value
+    return this
+  }
+
   public build(): XAPIRecord {
     let h5pTypeUrl: string | undefined
     if (this.h5pType) {
@@ -69,7 +83,7 @@ export default class XAPIRecordBuilder {
         clientTimestamp: this.clientTimestamp,
         data: {
           statement: {
-            verb: { display: { 'en-US': 'attempted' } },
+            verb: { display: { 'en-US': this.verb } },
             object: {
               definition: {
                 name: { 'en-US': this.h5pName },

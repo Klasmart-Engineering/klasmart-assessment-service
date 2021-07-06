@@ -41,15 +41,28 @@ export default class LessonPlanBuilder {
     mutableEntity.createdAt = this.createdAt
     mutableEntity.contentType = ContentType.LessonPlan
 
-    // TODO: Support more than one ID.
-    mutableEntity.data = JSON.parse(
-      `{"materialId": "${this.lessonMaterialIds[0]}"}`,
-    )
+    mutableEntity.data = this.createMaterialLinkedList()
     return entity
   }
 
   public async buildAndPersist(): Promise<LessonPlan> {
     const entity = this.build()
     return await getRepository(LessonPlan, CMS_CONNECTION_NAME).save(entity)
+  }
+
+  private createMaterialLinkedList(): JSON {
+    const data = {}
+    let current = data
+    if (this.lessonMaterialIds.length > 0) {
+      const newNode = { materialId: this.lessonMaterialIds[0] }
+      current = Object.assign(current, newNode)
+      for (let index = 1; index < this.lessonMaterialIds.length; index++) {
+        const materialId = this.lessonMaterialIds[index]
+        const newNode = { materialId }
+        Object.assign(current, { next: [newNode] })
+        current = newNode
+      }
+    }
+    return JSON.parse(JSON.stringify(data))
   }
 }

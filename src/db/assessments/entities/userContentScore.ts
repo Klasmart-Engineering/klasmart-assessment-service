@@ -11,6 +11,7 @@ import { Answer } from './answer'
 import { Room } from './room'
 import { ScoreSummary } from '../../../graphql/scoreSummary'
 import { TeacherScore } from './teacherScore'
+import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -41,7 +42,7 @@ export class UserContentScore {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
-  public answers?: Promise<Answer[]>
+  public answers = Promise.resolve<Answer[]>([])
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -60,8 +61,6 @@ export class UserContentScore {
   @Column()
   public seen!: boolean
 
-  private resetMultipleHotspots = false
-
   public async scores(): Promise<number[]> {
     const answers = await this.answers
     if (!answers) {
@@ -76,53 +75,28 @@ export class UserContentScore {
     return new ScoreSummary(await this.answers)
   }
 
-  @Column({ nullable: true })
-  public min?: number
-  @Column({ nullable: true })
-  public max?: number
-  @Column({ default: 0 })
-  public sum!: number
-  @Column({ default: 0 })
-  public scoreFrequency!: number
-  @Column({ nullable: true })
-  public contentType?: string
-  @Column({ nullable: true })
-  public contentName?: string
+  @Column({ type: 'int4', nullable: true })
+  public min?: number | null
+  @Column({ type: 'int4', nullable: true })
+  public max?: number | null
+  @Column({ type: 'int4', default: 0 })
+  public sum = 0
+  @Column({ type: 'int4', default: 0 })
+  public scoreFrequency = 0
+  @Column({ type: 'varchar', nullable: true })
+  public contentType?: string | null
+  @Column({ type: 'varchar', nullable: true })
+  public contentName?: string | null
 
-  public async addAnswer(answer: Answer): Promise<void> {
-    let answers = await this.answers
-    if (!answers) {
-      answers = []
-      this.answers = Promise.resolve(answers)
-    }
-
-    if (this.contentType === 'ImageMultipleHotspotQuestion') {
-      if (this.resetMultipleHotspots || answers.length <= 0) {
-        this.resetMultipleHotspots = false
-        answers.push(answer)
-      }
-      answers[answers.length - 1].score = answer.score
-    } else {
-      answers.push(answer)
-    }
-
-    const { score } = answer
-    if (score === undefined) {
+  public async applyEvent(xapiEvent: ParsedXapiEvent): Promise<void> {
+    this.seen = true
+    const score = xapiEvent.score?.raw
+    const response = xapiEvent.response
+    if (score === undefined && response === undefined) {
       return
     }
-
-    if (this.min === undefined || score < this.min) {
-      this.min = score
-    }
-    if (this.max === undefined || score > this.max) {
-      this.max = score
-    }
-    this.sum += score
-    this.scoreFrequency += 1
-  }
-
-  public startMultipleHotspots(): void {
-    this.resetMultipleHotspots = true
+    await this.addAnswer(xapiEvent)
+    this.updateMinMax(xapiEvent)
   }
 
   constructor(roomId: string, studentId: string, contentKey: string) {
@@ -137,21 +111,44 @@ export class UserContentScore {
     contentKey: string,
     contentType: string | undefined,
     contentName?: string,
-    answers: Answer[] = [],
-    seen: boolean = answers.length > 0,
   ): UserContentScore {
     const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.roomId
     const userContentScore = new UserContentScore(roomId, studentId, contentKey)
     userContentScore.contentType = contentType
     userContentScore.contentName = contentName
-    userContentScore.answers = Promise.resolve([])
-    userContentScore.seen = seen
-    userContentScore.sum = 0
-    userContentScore.scoreFrequency = 0
-    for (const answer of answers) {
-      userContentScore.addAnswer(answer)
-    }
+    userContentScore.seen = false
 
     return userContentScore
+  }
+
+  protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<void> {
+    const answers = await this.answers
+    const answer = Answer.new(
+      this,
+      new Date(xapiEvent.timestamp),
+      xapiEvent.response,
+      // TODO: Maybe pass whole score object, instead.
+      xapiEvent.score?.raw,
+      xapiEvent.score?.min,
+      xapiEvent.score?.max,
+    )
+    answers.push(answer)
+    const score = xapiEvent.score?.raw
+    if (score === undefined) {
+      return
+    }
+    this.sum += score
+    this.scoreFrequency += 1
+  }
+
+  protected updateMinMax(xapiEvent: ParsedXapiEvent): void {
+    const min = xapiEvent?.score?.min
+    if (min !== undefined) {
+      this.min = min
+    }
+    const max = xapiEvent?.score?.max
+    if (max !== undefined) {
+      this.max = max
+    }
   }
 }

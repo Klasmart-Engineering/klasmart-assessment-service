@@ -23,8 +23,8 @@ export async function createH5pIdToCmsContentIdCache(): Promise<void> {
 
 export default async function getContent(
   contentKey: string,
-  contentType: string | undefined,
-  contentName: string | undefined,
+  contentType: string | undefined | null,
+  contentName: string | undefined | null,
   contentRepository: Repository<Content>,
 ): Promise<Content | null> {
   const { contentId, subcontentId } = ContentKey.deconstruct(contentKey)

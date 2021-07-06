@@ -26,9 +26,9 @@ content {
 export interface GqlContent {
   content_id?: string
   subcontent_id: string | null
-  type?: string
+  type?: string | null
   name?: string
-  h5p_id?: string
+  h5p_id?: string | null
   fileType?: string
 }
 
@@ -65,9 +65,9 @@ answers {
 }
 `
 export interface GqlAnswer {
-  date?: Date
-  answer?: string
-  score?: number
+  date: Date | null
+  answer: string | null
+  score: number | null
   minimumPossibleScore?: number
   maximumPossibleScore?: number
 }
@@ -88,14 +88,14 @@ score {
 }
 `
 export interface GqlScoreSummary {
-  min?: number
-  max?: number
+  min?: number | null
+  max?: number | null
   sum?: number
   scoreFrequency?: number
-  mean?: number
+  mean?: number | null
   scores?: number[]
   answers?: GqlAnswer[]
-  median?: number
+  median?: number | null
   medians?: number[]
 }
 

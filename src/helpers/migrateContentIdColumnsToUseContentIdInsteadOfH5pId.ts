@@ -5,7 +5,6 @@ import {
 } from '../db/assessments/entities'
 import { Content, Schedule } from '../db/cms/entities'
 import { LessonPlan } from '../db/cms/entities/lessonPlan'
-import { LessonPlanItem } from '../db/cms/entities/lessonPlanItem'
 import { ContentType } from '../db/cms/enums/contentType'
 import { Connection, getManager } from 'typeorm'
 import ContentKey from './contentKey'
@@ -65,14 +64,16 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
       const schedule = await scheduleRepo.findOne({ where: { id: ucs.roomId } })
       if (!schedule) {
         console.log('schedule not found')
+        continue
       }
-      const plan = await planRepo.findOne({
-        where: { contentId: schedule?.lessonPlanId },
+      const lessonPlan = await planRepo.findOne({
+        where: { contentId: schedule.lessonPlanId },
       })
-      if (!plan) {
-        console.log('plan not found')
+      if (!lessonPlan) {
+        console.log('lesson plan not found')
+        continue
       }
-      lessonMaterialIds = parsePlan(plan)
+      lessonMaterialIds = lessonPlan.materialIds
       roomIdToLessonMaterialIdsCache.set(ucs.roomId, lessonMaterialIds)
     }
 
@@ -130,24 +131,4 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
       ])
     }
   })
-}
-
-function parsePlan(lessonPlan?: LessonPlan) {
-  if (!lessonPlan) return []
-  const list = []
-  const q = []
-  q.push(lessonPlan.data)
-  while (q.length > 0) {
-    const current = q.shift()
-    let next: JSON[] | undefined
-    if (current && 'next' in current) {
-      next = current['next'] as JSON[]
-      delete current['next']
-    }
-    if (next) {
-      next.forEach((x) => q.push(x))
-    }
-    list.push(new LessonPlanItem(current))
-  }
-  return list.map((x) => x.materialId)
 }

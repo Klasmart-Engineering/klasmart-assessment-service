@@ -40,7 +40,8 @@
       "sourceMaps": true,
       "smartStep": true,
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "internalConsoleOptions": "openOnSessionStart"
+      "internalConsoleOptions": "openOnSessionStart",
+      "envFile": "${workspaceFolder}/debug/.env"
     }
   ]
 }

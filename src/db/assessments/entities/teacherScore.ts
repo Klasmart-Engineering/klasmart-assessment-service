@@ -63,7 +63,6 @@ export class TeacherScore {
     userContentScore: UserContentScore,
     teacherId: string,
     score: number,
-    date = new Date(),
   ): TeacherScore {
     const teacherScore = new TeacherScore(
       userContentScore.roomId,
@@ -73,7 +72,6 @@ export class TeacherScore {
     )
     teacherScore.userContentScore = Promise.resolve(userContentScore)
     teacherScore.score = score
-    teacherScore.date = date
 
     return teacherScore
   }

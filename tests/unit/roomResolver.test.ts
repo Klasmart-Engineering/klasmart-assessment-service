@@ -7,6 +7,7 @@
 // import { UserContentScore } from '../../src/db/assessments/entities/userContentScore'
 // import { RoomScoresCalculator } from '../../src/helpers/roomScoresCalculator'
 // import { TestTitle } from '../utils/testTitles'
+// import { Content } from '../../src/db/cms/entities'
 
 // describe('roomResolver', () => {
 //   context('queried room exists in database', () => {
@@ -30,28 +31,36 @@
 //         joinTimestamp: new Date(),
 //         leaveTimestamp: new Date(),
 //       }
+//       const materialIds = ['123']
 
 //       const userDB = Substitute.for<EntityManager>()
 //       const assessmentDB = Substitute.for<EntityManager>()
+//       const cmsDB = Substitute.for<EntityManager>()
 //       const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
 
 //       assessmentDB.findOne(Room, roomId, {}).resolves(room)
 //       userDB.find(Attendance, { where: { roomId } }).resolves([attendance])
-//       roomScoresCalculator.calculate(roomId, [attendance]).resolves(scores)
+//       //cmsDB.find(Content, { where: { roomId } }).resolves([attendance])
+//       roomScoresCalculator
+//         .calculate(roomId, [attendance], materialIds)
+//         .resolves(scores)
 
 //       const resolver = new RoomResolver(
 //         assessmentDB,
 //         userDB,
+//         cmsDB,
 //         roomScoresCalculator,
 //       )
 
 //       // Act
-//       const resultRoom = await resolver.Room(roomId, {}, teacherId)
+//       const resultRoom = await resolver.Room(roomId)
 
 //       // Assert
 //       assessmentDB.received(1).findOne(Room, roomId, {})
 //       userDB.received(1).find(Attendance, { where: { roomId } })
-//       roomScoresCalculator.received(1).calculate(roomId, [attendance])
+//       roomScoresCalculator
+//         .received(1)
+//         .calculate(roomId, [attendance], materialIds)
 //       assessmentDB.received(1).save(room)
 //       const resultScores = await resultRoom.scores
 
@@ -77,28 +86,35 @@
 //         joinTimestamp: new Date(),
 //         leaveTimestamp: new Date(),
 //       }
+//       const materialIds = ['123']
 
 //       const userDB = Substitute.for<EntityManager>()
 //       const assessmentDB = Substitute.for<EntityManager>()
+//       const cmsDB = Substitute.for<EntityManager>()
 //       const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
 
 //       assessmentDB.findOne(Room, roomId, {}).resolves(undefined)
 //       userDB.find(Attendance, { where: { roomId } }).resolves([attendance])
-//       roomScoresCalculator.calculate(roomId, [attendance]).resolves(scores)
+//       roomScoresCalculator
+//         .calculate(roomId, [attendance], materialIds)
+//         .resolves(scores)
 
 //       const resolver = new RoomResolver(
 //         assessmentDB,
 //         userDB,
+//         cmsDB,
 //         roomScoresCalculator,
 //       )
 
 //       // Act
-//       const resultRoom = await resolver.Room(roomId, {}, teacherId)
+//       const resultRoom = await resolver.Room(roomId)
 
 //       // Assert
 //       assessmentDB.received(1).findOne(Room, roomId, {})
 //       userDB.received(1).find(Attendance, { where: { roomId } })
-//       roomScoresCalculator.received(1).calculate(roomId, [attendance])
+//       roomScoresCalculator
+//         .received(1)
+//         .calculate(roomId, [attendance], materialIds)
 //       assessmentDB.received(1).save(resultRoom)
 //       const resultScores = await resultRoom.scores
 
