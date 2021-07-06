@@ -270,27 +270,12 @@ describe('roomResolver.Room', () => {
       expect(dbUserContentScore).to.deep.include(expected)
     })
 
-    it('DB: adds 1 Answer entry', async () => {
+    it('DB: adds 0 Answer entries', async () => {
       const dbAnswers = await answerRepo().find()
-      expect(dbAnswers).to.have.lengthOf(1)
+      expect(dbAnswers).to.have.lengthOf(0)
     })
 
-    it('DB: Answer has expected values', async () => {
-      const dbAnswer = await answerRepo().findOneOrFail()
-
-      const expected: FindConditions<Answer> = {
-        roomId: roomId,
-        studentId: student.userId,
-        fullContentId: lessonMaterial.contentId,
-        answer: xapiRecord.xapi?.data?.statement?.result?.response,
-        date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
-        maximumPossibleScore: 1,
-        minimumPossibleScore: 1,
-        score: 1,
-      }
-
-      expect(dbAnswer).to.deep.include(expected)
-    })
+    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
   })
 
   context('1 student, 2 xapi events', () => {
@@ -340,8 +325,8 @@ describe('roomResolver.Room', () => {
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
         .withH5pType(xapiContentType)
-        .withServerTimestamp(xapiRecord.serverTimestamp! + 1000)
-        .withClientTimestamp(xapiRecord.xapi?.clientTimestamp! + 1000)
+        .withServerTimestamp(xapiRecord.serverTimestamp! + 10)
+        .withClientTimestamp(xapiRecord.xapi?.clientTimestamp! + 10)
         .withScore({ raw: 2, min: 0, max: 3 })
         .build()
       //console.log(xapiRecord.xapi?.data?.statement?.verb?.display?.['en-US'])
@@ -466,38 +451,11 @@ describe('roomResolver.Room', () => {
       expect(dbUserContentScore).to.deep.include(expected)
     })
 
-    it('DB: adds 2 Answer entries', async () => {
+    it('DB: adds 0 Answer entries', async () => {
       const answerCount = await answerRepo().count()
-      expect(answerCount).to.equal(2)
+      expect(answerCount).to.equal(0)
     })
 
-    it('DB: Answer has expected values', async () => {
-      const dbAnswers = await answerRepo().find()
-
-      const expected: FindConditions<Answer>[] = [
-        {
-          roomId: roomId,
-          studentId: student.userId,
-          fullContentId: lessonMaterial.contentId,
-          answer: xapiRecord.xapi?.data?.statement?.result?.response,
-          date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
-          maximumPossibleScore: 3,
-          minimumPossibleScore: 0,
-          score: 0,
-        },
-        {
-          roomId: roomId,
-          studentId: student.userId,
-          fullContentId: lessonMaterial.contentId,
-          answer: xapiRecord2.xapi?.data?.statement?.result?.response,
-          date: new Date(xapiRecord2.xapi?.clientTimestamp ?? 0),
-          maximumPossibleScore: 3,
-          minimumPossibleScore: 0,
-          score: 2,
-        },
-      ]
-
-      expect(dbAnswers).to.deep.equal(expected)
-    })
+    // TODO: Add back 'DB: Answers has expected values' test once caching is enabled.
   })
 })

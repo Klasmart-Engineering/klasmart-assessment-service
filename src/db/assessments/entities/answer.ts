@@ -14,9 +14,20 @@ export class Answer {
   @PrimaryColumn({ name: 'content_id', nullable: false })
   public readonly fullContentId: string
 
-  @PrimaryColumn({ name: 'timestamp' })
+  @PrimaryColumn({
+    type: 'bigint',
+    default: 0,
+    transformer: {
+      to: (entityValue: number) => entityValue,
+      from: (databaseValue: string): number => Number(databaseValue),
+    },
+  })
+  public readonly timestamp!: number
+
   @Field(() => Date)
-  public readonly date: Date
+  public get date(): Date {
+    return new Date(this.timestamp)
+  }
 
   @ManyToOne(
     () => UserContentScore,
@@ -50,7 +61,9 @@ export class Answer {
     this.roomId = roomId
     this.studentId = studentId
     this.fullContentId = contentId
-    this.date = date
+    // This null check is needed because TypeOrm calls constructors
+    // with null parameters when loading entities.
+    this.timestamp = date?.getTime() ?? 0
   }
 
   public static new(

@@ -34,7 +34,7 @@ export class UserContentScore {
   @OneToMany(
     () => Answer, //Useless comment due to linter bug
     (answer) => answer.userContentScore,
-    { lazy: true, cascade: true },
+    { lazy: true, cascade: false },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
