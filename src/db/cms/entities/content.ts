@@ -38,14 +38,16 @@ export class Content {
   @Column({ name: 'publish_status', default: 'draft' })
   readonly publishStatus!: string
 
-  @Field({ nullable: true })
-  type?: string
+  @Field(() => String, { nullable: true })
+  type?: string | null
 
   @AfterLoad()
   populateH5pId(): void {
     const typedData = (this.data as unknown) as IMaterial
-    this.h5pId = typedData?.source
     this.fileType = typedData?.file_type
+    if (this.fileType === FileType.H5P) {
+      this.h5pId = typedData?.source
+    }
   }
 }
 

@@ -18,7 +18,7 @@ export async function roomQuery(
   roomId: string,
   endUser: EndUser,
   logErrors = true,
-): Promise<RoomQuery | null | undefined> {
+): Promise<GqlRoom | null | undefined> {
   const { query } = testClient
 
   const operation = () =>
@@ -29,7 +29,7 @@ export async function roomQuery(
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.Room as RoomQuery
+  return res.data?.Room as GqlRoom
 }
 
 export const ROOM = `
@@ -44,7 +44,7 @@ query Room($roomId: String) {
   }
 }
 `
-export interface RoomQuery {
+export interface GqlRoom {
   room_id?: string
   scores?: GqlScore[]
   teacherComments?: GqlTeacherComment[]

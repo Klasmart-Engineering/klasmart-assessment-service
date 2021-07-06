@@ -41,7 +41,7 @@ export class Answer {
   @Field({ nullable: true })
   public maximumPossibleScore?: number
 
-  constructor(
+  private constructor(
     roomId: string,
     studentId: string,
     contentKey: string,

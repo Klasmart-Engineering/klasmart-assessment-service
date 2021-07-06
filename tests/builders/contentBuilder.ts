@@ -9,8 +9,7 @@ export default class ContentBuilder {
   private contentId = v4()
   private subcontentId?: string
   private contentType = ContentType.LessonMaterial
-  private type? = 'Flashcards'
-  private name = 'My Content'
+  private name = 'Default Content Name'
   private author = v4()
   protected data?: JSON
   private createdAt = Date.now()
@@ -23,11 +22,6 @@ export default class ContentBuilder {
 
   public withContentType(value: ContentType): this {
     this.contentType = value
-    return this
-  }
-
-  public withType(value: string): this {
-    this.type = value
     return this
   }
 
@@ -57,7 +51,6 @@ export default class ContentBuilder {
     mutableEntity.contentId = this.contentId
     mutableEntity.subcontentId = this.subcontentId
     mutableEntity.contentType = this.contentType
-    mutableEntity.type = this.type
     mutableEntity.name = this.name
     mutableEntity.author = this.author
     mutableEntity.createdAt = this.createdAt

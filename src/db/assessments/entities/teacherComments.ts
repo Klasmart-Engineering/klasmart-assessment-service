@@ -61,10 +61,8 @@ export class TeacherComment {
     teacherId: string,
     studentId: string,
     comment: string,
-    date = new Date(),
   ): TeacherComment {
     const teacherComment = new TeacherComment(roomId, teacherId, studentId)
-    teacherComment.date = date
     teacherComment.comment = comment
     return teacherComment
   }

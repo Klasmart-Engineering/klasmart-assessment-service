@@ -8,14 +8,14 @@ export class ContentScores {
   @Field(() => [UserContentScore])
   public readonly scores: UserContentScore[]
 
-  public readonly contentType: string | undefined
-  public readonly contentName: string | undefined
+  public readonly contentType?: string | null
+  public readonly contentName?: string | null
 
   constructor(
     contentKey: string,
     scores: UserContentScore[] = [],
-    contentType: string | undefined,
-    contentName?: string | undefined,
+    contentType: string | undefined | null,
+    contentName: string | undefined | null,
   ) {
     this.contentKey = contentKey
     this.scores = scores
