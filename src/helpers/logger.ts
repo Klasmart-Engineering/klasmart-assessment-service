@@ -6,10 +6,10 @@ export interface ILogger {
 }
 
 export class ConsoleLogger implements ILogger {
-  private className: string
+  private key: string
 
   constructor(className: string) {
-    this.className = className
+    this.key = className
   }
 
   public debug(message: string): void {
@@ -29,26 +29,29 @@ export class ConsoleLogger implements ILogger {
     logLevel: 'debug' | 'info' | 'warn' | 'error',
     message: string,
   ): void {
-    console[logLevel](`[${this.className}] ${message}`)
+    console[logLevel](`[${this.key}] ${message}`)
   }
 }
 
 export class Logger {
-  private static factory: (className: string) => ILogger = (
-    className: string,
-  ) => new ConsoleLogger(className)
+  private static factory: (key: string) => ILogger = (key: string) =>
+    new ConsoleLogger(key)
   private static loggerMap = new Map<string, ILogger>()
 
-  public static get(className: string): ILogger {
-    let logger = this.loggerMap.get(className)
+  public static get(key = 'Default'): ILogger {
+    let logger = this.loggerMap.get(key)
     if (!logger) {
-      logger = Logger.factory(className)
-      this.loggerMap.set(className, logger)
+      logger = Logger.factory(key)
+      this.loggerMap.set(key, logger)
     }
     return logger
   }
 
-  public static register(factory: (className: string) => ILogger): void {
+  public static register(factory: (key: string) => ILogger): void {
     this.factory = factory
+  }
+
+  private static clearCache() {
+    Logger.loggerMap.clear()
   }
 }

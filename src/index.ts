@@ -17,10 +17,7 @@ const routePrefix = process.env.ROUTE_PREFIX || ''
 useContainer(Container)
 
 async function main() {
-  await connectToCmsDatabase()
-  await connectToUserDatabase()
-  await connectToAssessmentDatabase()
-
+  await connectToDatabases()
   await createH5pIdToCmsContentIdCache()
 
   const schema = await buildDefaultSchema()
@@ -42,6 +39,26 @@ async function main() {
       `🌎 Server ready at http://localhost:${port}${server.graphqlPath}`,
     )
   })
+}
+
+async function connectToDatabases() {
+  const cmsDatabaseUrl = process.env.CMS_DATABASE_URL
+  if (!cmsDatabaseUrl) {
+    throw new Error('Please specify a value for CMS_DATABASE_URL')
+  }
+  await connectToCmsDatabase(cmsDatabaseUrl)
+
+  const userDatabaseUrl = process.env.USER_DATABASE_URL
+  if (!userDatabaseUrl) {
+    throw new Error('Please specify a value for USER_DATABASE_URL')
+  }
+  await connectToUserDatabase(userDatabaseUrl)
+
+  const assessmentDatabaseUrl = process.env.ASSESSMENT_DATABASE_URL
+  if (!assessmentDatabaseUrl) {
+    throw new Error('Please specify a value for ASSESSMENT_DATABASE_URL')
+  }
+  await connectToAssessmentDatabase(assessmentDatabaseUrl)
 }
 
 main().catch((e) => {

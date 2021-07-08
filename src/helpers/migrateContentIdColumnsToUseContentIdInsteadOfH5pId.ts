@@ -8,6 +8,7 @@ import { LessonPlan } from '../db/cms/entities/lessonPlan'
 import { ContentType } from '../db/cms/enums/contentType'
 import { Connection, getManager } from 'typeorm'
 import ContentKey from './contentKey'
+import { Logger } from './logger'
 
 export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   cmsDbConnection: Connection,
@@ -19,6 +20,7 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   const userContentScoreRepo = assessmentDbConnection.getRepository(
     UserContentScore,
   )
+  const logger = Logger.get('ContentIdMigration')
   const planRepo = cmsDbConnection.getRepository(LessonPlan)
   const materials = await contentRepo.find({
     where: { contentType: ContentType.LessonMaterial },
@@ -55,7 +57,7 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
 
     const realContentIds = h5pIdToContentIdsMap.get(oldContentId)
     if (!realContentIds) {
-      //console.log('ucs already has a real content id')
+      //logger.info('ucs already has a real content id')
       continue
     }
     ucsReqUpdateCount += 1
@@ -63,14 +65,14 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
     if (!lessonMaterialIds) {
       const schedule = await scheduleRepo.findOne({ where: { id: ucs.roomId } })
       if (!schedule) {
-        console.log('schedule not found')
+        logger.info('schedule not found')
         continue
       }
       const lessonPlan = await planRepo.findOne({
         where: { contentId: schedule.lessonPlanId },
       })
       if (!lessonPlan) {
-        console.log('lesson plan not found')
+        logger.info('lesson plan not found')
         continue
       }
       lessonMaterialIds = lessonPlan.materialIds
@@ -85,7 +87,7 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
       }
     }
     if (!newContentId) {
-      // console.log(
+      // logger.info(
       //   'a content id was found but it does not match any of the lesson plan content ids',
       //   oldContentId,
       // )
@@ -104,8 +106,8 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
     })
   }
 
-  console.log(`# of ids that don't match lesson plan: ${cache.size}`)
-  console.log(`ucsReqUpdateCount: ${ucsReqUpdateCount}/${totalUcs}`)
+  logger.info(`# of ids that don't match lesson plan: ${cache.size}`)
+  logger.info(`ucsReqUpdateCount: ${ucsReqUpdateCount}/${totalUcs}`)
 
   if (readOnlyRun) {
     return

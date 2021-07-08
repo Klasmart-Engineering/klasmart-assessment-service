@@ -1,31 +1,33 @@
 import path from 'path'
-import { createConnection } from 'typeorm'
+import { ConnectionOptions, createConnection } from 'typeorm'
+import { Logger } from '../../helpers/logger'
 
 export const CMS_CONNECTION_NAME = 'cms'
 
-export async function connectToCmsDatabase(): Promise<void> {
-  const url = process.env.CMS_DATABASE_URL
-  if (!url) {
-    throw new Error('Please specify a value for CMS_DATABASE_URL')
+export function getCmsDatabaseConnectionOptions(
+  url: string,
+): ConnectionOptions {
+  return {
+    name: CMS_CONNECTION_NAME,
+    type: 'mysql',
+    url,
+    synchronize: false,
+    entities: [
+      path.join(__dirname, './entities/*.ts'),
+      path.join(__dirname, './entities/*.js'),
+    ],
+    extra: {
+      connectionLimit: 3,
+    },
   }
+}
 
+export async function connectToCmsDatabase(url: string): Promise<void> {
   try {
-    await createConnection({
-      name: CMS_CONNECTION_NAME,
-      type: 'mysql',
-      url,
-      synchronize: false,
-      entities: [
-        path.join(__dirname, './entities/*.ts'),
-        path.join(__dirname, './entities/*.js'),
-      ],
-      extra: {
-        connectionLimit: 3,
-      },
-    })
-    console.log('🐬 Connected to mysql: CMS database')
+    await createConnection(getCmsDatabaseConnectionOptions(url))
+    Logger.get().info('🐬 Connected to mysql: CMS database')
   } catch (e) {
-    console.log('❌ Failed to connect or initialize mysql: CMS database')
+    Logger.get().error('❌ Failed to connect or initialize mysql: CMS database')
     throw e
   }
 }

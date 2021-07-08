@@ -10,6 +10,7 @@ import { Context } from '../auth/context'
 import { UserPermissionChecker } from '../auth/userPermissionChecker'
 import { UserPermissions } from '../auth/permissions'
 import { ErrorMessage } from './errorMessages'
+import { Logger } from './logger'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
@@ -40,7 +41,7 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         )
         return { token, ip, userId: token?.id, permissions }
       } catch (e) {
-        console.error(e)
+        Logger.get().error(e)
         const permissions = new UserPermissions(
           undefined,
           Container.get(UserPermissionChecker),
