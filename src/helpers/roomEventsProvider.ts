@@ -8,6 +8,7 @@ export class RoomEventsProvider {
   constructor(private readonly xapiRepository: XAPIRepository) {}
 
   public async getEvents(
+    roomId: string,
     attendances: Attendance[],
   ): Promise<ParsedXapiEvent[]> {
     const parsedXapiEvents: ParsedXapiEvent[] = []
@@ -20,18 +21,21 @@ export class RoomEventsProvider {
       if (!xapiEvents) {
         continue
       }
-      parsedXapiEvents.push(...this.parseEvents(xapiEvents))
+      parsedXapiEvents.push(...this.parseEvents(roomId, xapiEvents))
     }
     return parsedXapiEvents
   }
 
-  private parseEvents(rawXapiEvents: XAPIRecord[]): ParsedXapiEvent[] {
+  private parseEvents(
+    roomId: string,
+    rawXapiEvents: XAPIRecord[],
+  ): ParsedXapiEvent[] {
     const parsedXapiEvents: ParsedXapiEvent[] = []
     for (const rawXapiEvent of rawXapiEvents) {
       if (!rawXapiEvent) {
         continue
       }
-      const parsedEvent = ParsedXapiEvent.parseRawEvent(rawXapiEvent)
+      const parsedEvent = ParsedXapiEvent.parseRawEvent(roomId, rawXapiEvent)
       if (parsedEvent) {
         parsedXapiEvents.push(parsedEvent)
       }

@@ -1,16 +1,13 @@
 import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
-import {
-  TeacherComment,
-  UserContentScore,
-} from '../../src/db/assessments/entities'
+import { TeacherComment } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 
 export default class TeacherCommentBuilder {
   private roomId = v4()
   private teacherId = v4()
   private studentId = v4()
-  private comment = 'Great job!'
+  private comment = 'default comment'
 
   public withRoomId(value: string): this {
     this.roomId = value

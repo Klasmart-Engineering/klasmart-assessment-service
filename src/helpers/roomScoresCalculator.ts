@@ -7,9 +7,18 @@ import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
 import { ParsedXapiEvent } from './parsedXapiEvent'
 import { RoomScoresTemplateProvider } from './roomScoresTemplateProvider'
+import { ILogger, Logger } from './logger'
 
 @Service()
 export class RoomScoresCalculator {
+  private static _logger: ILogger
+  private get Logger(): ILogger {
+    return (
+      RoomScoresCalculator._logger ||
+      (RoomScoresCalculator._logger = Logger.get('RoomScoresCalculator'))
+    )
+  }
+
   constructor(
     private readonly roomAttendanceProvider: RoomAttendanceProvider,
     private readonly roomEventsProvider: RoomEventsProvider,
@@ -24,7 +33,10 @@ export class RoomScoresCalculator {
     const materials = await this.roomMaterialsProvider.getMaterials(roomId)
     const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(materials)
     const attendances = await this.roomAttendanceProvider.getAttendances(roomId)
-    const xapiEvents = await this.roomEventsProvider.getEvents(attendances)
+    const xapiEvents = await this.roomEventsProvider.getEvents(
+      roomId,
+      attendances,
+    )
     const userContentScores = await this.calculateScores(
       roomId,
       teacherId,
@@ -66,8 +78,8 @@ export class RoomScoresCalculator {
     for (const xapiEvent of xapiEvents) {
       const contentId = h5pIdToContentIdMap.get(xapiEvent.h5pId)
       if (!contentId) {
-        console.warn(
-          `contentId (${contentId}) not part of the lesson plan. Skipping event...`,
+        this.Logger.warn(
+          `h5pId (${xapiEvent.h5pId}) not part of the lesson plan. Skipping event...`,
         )
         continue
       }

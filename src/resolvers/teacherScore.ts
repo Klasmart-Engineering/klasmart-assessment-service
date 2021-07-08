@@ -21,10 +21,20 @@ import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { Context, UserID } from '../auth/context'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
+import { ILogger, Logger } from '../helpers/logger'
+import { ErrorMessage } from '../helpers/errorMessages'
 
 @Service()
 @Resolver(() => TeacherScore)
 export default class TeacherScoreResolver {
+  private static _logger: ILogger
+  private get Logger(): ILogger {
+    return (
+      TeacherScoreResolver._logger ||
+      (TeacherScoreResolver._logger = Logger.get('TeacherScoreResolver'))
+    )
+  }
+
   constructor(
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
@@ -60,9 +70,7 @@ export default class TeacherScoreResolver {
           where: { contentId: contentId },
         })
         if (content?.h5pId) {
-          contentKey = subcontentId
-            ? `${content.h5pId}|${subcontentId}`
-            : content.h5pId
+          contentKey = ContentKey.construct(content.h5pId, subcontentId)
           userContentScore = await this.assesmentDB.findOne(UserContentScore, {
             roomId: roomId,
             studentId: studentId,
@@ -73,7 +81,7 @@ export default class TeacherScoreResolver {
 
       if (!userContentScore) {
         throw new UserInputError(
-          `Unknown UserContentScore(room_id(${roomId}), student_id(${studentId}), content_id(${contentId}))`,
+          ErrorMessage.unknownUserContentScore(roomId, studentId, contentId),
         )
       }
 
@@ -91,7 +99,7 @@ export default class TeacherScoreResolver {
 
       return teacherScore
     } catch (e) {
-      console.error(e)
+      this.Logger.error(e)
       throw e
     }
   }

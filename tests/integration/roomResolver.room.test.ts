@@ -288,6 +288,208 @@ describe('roomResolver.Room', () => {
   })
 
   context(
+    '1 student, 1 xapi event, 3 overlapping attendance sessions with same id',
+    () => {
+      const roomId = 'room1'
+      let endUser: EndUser
+      let gqlRoom: GqlRoom | undefined | null
+      let student: User
+      let lessonMaterial: Content
+      let xapiRecord: XAPIRecord
+      const xapiContentName = 'My H5P Name'
+      const xapiContentType = 'Flashcards'
+
+      before(async () => {
+        // Arrange
+        await dbConnect()
+        const xapiRepository = Substitute.for<XAPIRepository>()
+        MutableContainer.set(XAPIRepository, xapiRepository)
+
+        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
+        student = await new UserBuilder().buildAndPersist()
+        const endUserAttendance = await new AttendanceBuilder()
+          .withroomId(roomId)
+          .withUserId(endUser.userId)
+          .buildAndPersist()
+        const studentAttendance = await new AttendanceBuilder()
+          .withroomId(roomId)
+          .withUserId(student.userId)
+          .withPeriod(new Date(), new Date(Date.now() + 5 * 60000))
+          .buildAndPersist()
+        const studentAttendance2 = await new AttendanceBuilder()
+          .withroomId(roomId)
+          .withUserId(student.userId)
+          .withSessionId(studentAttendance.sessionId)
+          .withPeriod(
+            new Date(Date.now() + 2.5 * 60000),
+            new Date(Date.now() + 7.5 * 60000),
+          )
+          .buildAndPersist()
+        const studentAttendance3 = await new AttendanceBuilder()
+          .withroomId(roomId)
+          .withUserId(student.userId)
+          .withSessionId(studentAttendance.sessionId)
+          .withPeriod(
+            new Date(Date.now() - 2.5 * 60000),
+            new Date(Date.now() + 2 * 60000),
+          )
+          .buildAndPersist()
+        lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+        const lessonPlan = await new LessonPlanBuilder()
+          .addMaterialId(lessonMaterial.contentId)
+          .buildAndPersist()
+        const schedule = await new ScheduleBuilder()
+          .withRoomId(roomId)
+          .withLessonPlanId(lessonPlan.contentId)
+          .buildAndPersist()
+        xapiRecord = new XAPIRecordBuilder()
+          .withUserId(student.userId)
+          .withH5pId(lessonMaterial.h5pId)
+          .withH5pName(xapiContentName)
+          .withH5pType(xapiContentType)
+          .build()
+        xapiRepository
+          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .returns(Promise.resolve<XAPIRecord[]>([]))
+        xapiRepository
+          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .returns(
+            Promise.resolve<XAPIRecord[]>([xapiRecord]),
+          )
+
+        gqlRoom = await roomQuery(roomId, endUser)
+      })
+
+      after(async () => await dbDisconnect())
+
+      it('returns room with expected id', async () => {
+        expect(gqlRoom).to.not.be.null
+        expect(gqlRoom).to.not.be.undefined
+        expect(gqlRoom?.room_id).to.equal(roomId)
+      })
+
+      it('returns room.scores with length of 1', async () => {
+        const gqlScores = gqlRoom?.scores
+        expect(gqlScores).to.have.lengthOf(1)
+      })
+
+      it('returns room.scores[0].teacherScores with length of 0', async () => {
+        const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
+        expect(gqlTeacherScores).to.have.lengthOf(0)
+      })
+
+      it('returns expected room.scores[0].user', async () => {
+        const score = gqlRoom?.scores?.[0]
+        const gqlStudent = score?.user
+        const expectedStudent: FindConditions<GqlUser> = {
+          user_id: student.userId,
+          given_name: student.givenName,
+          family_name: student.familyName,
+        }
+        expect(gqlStudent).to.deep.equal(expectedStudent)
+      })
+
+      it('returns expected room.scores[0].content', async () => {
+        const gqlContent = gqlRoom?.scores?.[0]?.content
+        const expectedContent: FindConditions<GqlContent> = {
+          content_id: lessonMaterial.contentId,
+          subcontent_id: lessonMaterial.subcontentId ?? null,
+          h5p_id: lessonMaterial.h5pId,
+          name: xapiContentName,
+          type: xapiContentType,
+          fileType: FileType[FileType.H5P],
+        }
+        expect(gqlContent).to.deep.equal(expectedContent)
+      })
+
+      it('returns expected room.scores[0].score', async () => {
+        const gqlScore = gqlRoom?.scores?.[0]?.score
+        const expectedScore: FindConditions<GqlScoreSummary> = {
+          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
+          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+          mean: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          median: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          medians: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
+          scoreFrequency: 1,
+          scores: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
+          sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+        }
+        expect(gqlScore).to.deep.include(expectedScore)
+      })
+
+      it('returns room.scores[0].score.answers with length of 1', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+        expect(gqlAnswers).to.have.lengthOf(1)
+      })
+
+      it('returns expected room.scores[0].score.answers', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+        const expectedAnswers: FindConditions<GqlAnswer>[] = [
+          {
+            answer: xapiRecord.xapi?.data?.statement?.result?.response,
+            date: xapiRecord.xapi?.clientTimestamp,
+            maximumPossibleScore:
+              xapiRecord.xapi?.data?.statement?.result?.score?.max,
+            minimumPossibleScore:
+              xapiRecord.xapi?.data?.statement?.result?.score?.min,
+            score: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          },
+        ]
+        expect(gqlAnswers).to.deep.equal(expectedAnswers)
+      })
+
+      it('DB: adds 1 Room entry', async () => {
+        const dbRooms = await roomRepo().find()
+        expect(dbRooms).to.have.lengthOf(1)
+      })
+
+      it('DB: Room has expected values', async () => {
+        const dbRoom = await roomRepo().findOneOrFail()
+
+        const expected: FindConditions<Room> = {
+          roomId: roomId,
+          startTime: null,
+          endTime: null,
+          recalculate: false,
+        }
+
+        expect(dbRoom).to.deep.include(expected)
+      })
+
+      it('DB: adds 1 UserContentScore entry', async () => {
+        const dbUserContentScores = await userContentScoreRepo().find()
+        expect(dbUserContentScores).to.have.lengthOf(1)
+      })
+
+      it('DB: UserContentScore has expected values', async () => {
+        const dbUserContentScore = await userContentScoreRepo().findOneOrFail()
+
+        const expected: FindConditions<UserContentScore> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          contentName: xapiContentName,
+          contentType: xapiContentType,
+          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
+          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+          sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          scoreFrequency: 1,
+          seen: true,
+        }
+
+        expect(dbUserContentScore).to.deep.include(expected)
+      })
+
+      it('DB: adds 0 Answer entries', async () => {
+        const dbAnswers = await answerRepo().find()
+        expect(dbAnswers).to.have.lengthOf(0)
+      })
+
+      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+    },
+  )
+
+  context(
     '1 student, 1 xapi event for 2nd material, 1 xapi event for 1st material (in that order)',
     () => {
       const roomId = 'room1'
@@ -616,7 +818,6 @@ describe('roomResolver.Room', () => {
         .withClientTimestamp(xapiRecord.xapi?.clientTimestamp! + 10)
         .withScore({ raw: 2, min: 0, max: 3 })
         .build()
-      //console.log(xapiRecord.xapi?.data?.statement?.verb?.display?.['en-US'])
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
         .returns(Promise.resolve<XAPIRecord[]>([]))

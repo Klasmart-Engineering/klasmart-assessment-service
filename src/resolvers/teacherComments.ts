@@ -16,15 +16,30 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { User } from '../db/users/entities'
 import { Context, UserID } from '../auth/context'
+import { ILogger, Logger } from '../helpers/logger'
+import { UserInputError } from 'apollo-server-express'
+import { ErrorMessage } from '../helpers/errorMessages'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
+import { Schedule } from '../db/cms/entities'
 
 @Service()
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {
+  private static _logger: ILogger
+  private get Logger(): ILogger {
+    return (
+      TeacherCommentResolver._logger ||
+      (TeacherCommentResolver._logger = Logger.get('TeacherCommentResolver'))
+    )
+  }
+
   constructor(
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
-    private readonly assesmentDB: EntityManager,
+    private readonly assessmentDB: EntityManager,
     @InjectRepository(User, USERS_CONNECTION_NAME)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Schedule, CMS_CONNECTION_NAME)
+    private readonly scheduleRepository: Repository<Schedule>,
   ) {}
 
   @Authorized()
@@ -58,19 +73,33 @@ export default class TeacherCommentResolver {
     @UserID() teacherId: string,
   ): Promise<TeacherComment | undefined> {
     try {
+      const schedule = await this.scheduleRepository.findOne({
+        where: { id: roomId },
+      })
+      if (!schedule) {
+        throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
+      }
+
+      const student = await this.userRepository.findOne({
+        where: { userId: studentId },
+      })
+      if (!student) {
+        throw new UserInputError(ErrorMessage.unknownUser(studentId))
+      }
+
       const teacherComment =
-        (await this.assesmentDB.findOne(TeacherComment, {
+        (await this.assessmentDB.findOne(TeacherComment, {
           roomId: roomId,
           studentId: studentId,
           teacherId: teacherId,
         })) || TeacherComment.new(roomId, teacherId, studentId, comment)
 
       teacherComment.comment = comment
-      await this.assesmentDB.save(TeacherComment, teacherComment)
+      await this.assessmentDB.save(TeacherComment, teacherComment)
 
       return teacherComment
     } catch (e) {
-      console.error(e)
+      this.Logger.error(e)
       throw e
     }
   }

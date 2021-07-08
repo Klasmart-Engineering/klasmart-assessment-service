@@ -26,6 +26,8 @@ before(async () => {
   Logger.register(() => Substitute.for<ILogger>())
 })
 
+afterEach(() => Logger['clearCache']())
+
 export async function dbConnect(): Promise<void> {
   connections = await Promise.all(createTestConnections())
 }

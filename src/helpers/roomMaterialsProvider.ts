@@ -6,9 +6,18 @@ import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Content, Schedule } from '../db/cms/entities'
 import { LessonPlan } from '../db/cms/entities/lessonPlan'
 import { ErrorMessage } from './errorMessages'
+import { ILogger, Logger } from './logger'
 
 @Service()
 export class RoomMaterialsProvider {
+  private static _logger: ILogger
+  private get Logger(): ILogger {
+    return (
+      RoomMaterialsProvider._logger ||
+      (RoomMaterialsProvider._logger = Logger.get('RoomMaterialsProvider'))
+    )
+  }
+
   public constructor(
     @InjectRepository(Schedule, CMS_CONNECTION_NAME)
     private readonly scheduleRepository: Repository<Schedule>,
@@ -30,7 +39,9 @@ export class RoomMaterialsProvider {
       where: { contentId: lessonPlanId },
     })
     if (!lessonPlan) {
-      console.warn(`lesson plan (${lessonPlanId}) not found`)
+      this.Logger.warn(
+        `lesson plan (${lessonPlanId}) not found. Returning an empty material list`,
+      )
       return []
     }
     const materialIds = lessonPlan.materialIds

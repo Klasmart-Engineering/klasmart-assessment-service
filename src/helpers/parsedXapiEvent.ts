@@ -1,4 +1,5 @@
 import { XAPIRecord } from '../db/xapi/repo'
+import { ILogger, Logger } from './logger'
 
 type XapiScore = {
   min?: number
@@ -19,6 +20,7 @@ export class ParsedXapiEvent {
   public readonly response?: string
 
   public static parseRawEvent(
+    roomId: string,
     rawXapiEvent: XAPIRecord,
   ): ParsedXapiEvent | null {
     try {
@@ -31,16 +33,10 @@ export class ParsedXapiEvent {
       const h5pSubId =
         extensions && extensions['http://h5p.org/x-api/h5p-subContentId']
 
-      if (!h5pId) {
-        console.log('XAPI event did not include an H5P ID. Skipping...')
-        return null
-      }
-      if (!userId) {
-        console.log('XAPI event did not include a user ID. Skipping...')
-        return null
-      }
-      if (!timestamp) {
-        console.log('XAPI event did not include a timestamp. Skipping...')
+      if (!userId || !h5pId || !timestamp) {
+        ParsedXapiEvent.Logger.info(
+          `XAPI event didn't include all required info (roomId:${roomId}, userId:${userId}, h5pId:${h5pId}, timestamp:${timestamp}). Skipping...`,
+        )
         return null
       }
 
@@ -74,8 +70,16 @@ export class ParsedXapiEvent {
         timestamp,
       }
     } catch (e) {
-      console.error(`Unable to process event: ${e}`)
+      ParsedXapiEvent.Logger.error(`Unable to process event: ${e}`)
     }
     return null
+  }
+
+  private static _logger: ILogger
+  private static get Logger(): ILogger {
+    return (
+      ParsedXapiEvent._logger ||
+      (ParsedXapiEvent._logger = Logger.get('ParsedXapiEvent'))
+    )
   }
 }
