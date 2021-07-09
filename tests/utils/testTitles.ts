@@ -1,5 +1,3 @@
-import { Permission } from '../../src/auth/permissions'
-
 /**
  * Centralizes common test scenarios that are repeated in numerous tests.
  */
@@ -13,12 +11,5 @@ export class TestTitle {
     static readonly context =
       'no schedule in the cms database corresponding to the provided room id'
     static readonly throwsError = 'throws "schedule not found" error'
-  }
-
-  static NoPermission = class {
-    static context(permission: Permission): string {
-      return `user doesn't have permission: ${permission}`
-    }
-    static readonly throwsError = 'throws permission error'
   }
 }

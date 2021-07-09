@@ -7,8 +7,6 @@ import { GraphQLSchema } from 'graphql'
 import { Container } from 'typedi'
 import { checkToken } from '../auth/auth'
 import { Context } from '../auth/context'
-import { UserPermissionChecker } from '../auth/userPermissionChecker'
-import { UserPermissions } from '../auth/permissions'
 import { ErrorMessage } from './errorMessages'
 import { Logger } from './logger'
 
@@ -35,18 +33,9 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
         const encodedToken = req.headers.authorization || req.cookies?.access
         const token = await checkToken(encodedToken)
-        const permissions = new UserPermissions(
-          token,
-          Container.get(UserPermissionChecker),
-        )
-        return { token, ip, userId: token?.id, permissions }
+        return { token, ip, userId: token?.id }
       } catch (e) {
         Logger.get().error(e)
-        const permissions = new UserPermissions(
-          undefined,
-          Container.get(UserPermissionChecker),
-        )
-        return { permissions }
       }
     },
   })
