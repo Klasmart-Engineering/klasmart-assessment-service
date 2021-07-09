@@ -58,8 +58,8 @@ export class UserContentScore {
   public teacherScores!: Promise<TeacherScore[]>
 
   @Field(() => Boolean)
-  @Column()
-  public seen!: boolean
+  @Column({ type: 'bool', default: false })
+  public seen: boolean
 
   public async scores(): Promise<number[]> {
     const answers = await this.answers
@@ -103,6 +103,7 @@ export class UserContentScore {
     this.roomId = roomId
     this.studentId = studentId
     this.contentKey = contentKey
+    this.seen = false
   }
 
   public static new(
@@ -116,7 +117,6 @@ export class UserContentScore {
     const userContentScore = new UserContentScore(roomId, studentId, contentKey)
     userContentScore.contentType = contentType
     userContentScore.contentName = contentName
-    userContentScore.seen = false
 
     return userContentScore
   }
