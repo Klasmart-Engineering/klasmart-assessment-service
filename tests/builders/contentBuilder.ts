@@ -14,6 +14,7 @@ export default class ContentBuilder {
   protected data?: JSON
   private createdAt = Date.now()
   private publishStatus = 'published'
+  protected isDataDefined = true
 
   public withContentId(value: string): this {
     this.contentId = value
@@ -42,6 +43,16 @@ export default class ContentBuilder {
 
   public withSubcontentId(value?: string): this {
     this.subcontentId = value
+    return this
+  }
+
+  public withPublishStatus(value: 'published' | 'hidden' | 'draft'): this {
+    this.publishStatus = value
+    return this
+  }
+
+  public withUndefinedData(): this {
+    this.isDataDefined = false
     return this
   }
 

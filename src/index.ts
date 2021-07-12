@@ -3,6 +3,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import compression from 'compression'
 import { useContainer } from 'typeorm'
+import { Container as MutableContainer } from 'typedi'
 import { Container } from 'typeorm-typedi-extensions'
 
 import { connectToCmsDatabase } from './db/cms/connectToCmsDatabase'
@@ -11,17 +12,21 @@ import { createApolloServer } from './helpers/createApolloServer'
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
 import { buildDefaultSchema } from './helpers/buildDefaultSchema'
 import { createH5pIdToCmsContentIdCache } from './helpers/getContent'
+import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { XAPIRepository } from './db/xapi/repo'
+import { TokenDecoder } from './auth/auth'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
 useContainer(Container)
 
 async function main() {
+  registerXAPIRepositoryDependencies()
   await connectToDatabases()
   await createH5pIdToCmsContentIdCache()
 
   const schema = await buildDefaultSchema()
-  const server = createApolloServer(schema)
+  const server = createApolloServer(schema, new TokenDecoder())
 
   const app = express()
   app.use(compression())
@@ -39,6 +44,27 @@ async function main() {
       `🌎 Server ready at http://localhost:${port}${server.graphqlPath}`,
     )
   })
+}
+
+// *** Restrict all environment variable access to be done here at the entry point. ***
+
+function registerXAPIRepositoryDependencies() {
+  const dynamodbTableName = process.env.DYNAMODB_TABLE_NAME
+  if (!dynamodbTableName) {
+    throw new Error(
+      `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
+    )
+  }
+  MutableContainer.set(
+    XAPIRepository.DYNAMODB_TABLE_NAME_DI_KEY,
+    dynamodbTableName,
+  )
+  MutableContainer.set(
+    XAPIRepository.DYNAMODB_DOC_CLIENT_DI_KEY,
+    new DocumentClient({
+      apiVersion: '2012-08-10',
+    }),
+  )
 }
 
 async function connectToDatabases() {

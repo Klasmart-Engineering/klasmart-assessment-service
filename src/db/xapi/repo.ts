@@ -1,5 +1,5 @@
 import { DocumentClient, QueryOutput } from 'aws-sdk/clients/dynamodb'
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
 
 export interface XAPIRecord {
   userId?: string
@@ -35,31 +35,25 @@ export interface XAPIRecord {
   }
 }
 
-const docClient = new DocumentClient({
-  apiVersion: '2012-08-10',
-})
-
 @Service()
 export class XAPIRepository {
-  private TableName: string
-
-  constructor(TableName = process.env.DYNAMODB_TABLE_NAME) {
-    if (!TableName) {
-      throw new Error(
-        `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
-      )
-    }
-    this.TableName = TableName
-  }
+  public static readonly DYNAMODB_TABLE_NAME_DI_KEY = 'dynamodb-table-name'
+  public static readonly DYNAMODB_DOC_CLIENT_DI_KEY = 'dynamodb-doc-client'
+  constructor(
+    @Inject(XAPIRepository.DYNAMODB_TABLE_NAME_DI_KEY)
+    private readonly tableName: string,
+    @Inject(XAPIRepository.DYNAMODB_DOC_CLIENT_DI_KEY)
+    private readonly docClient: DocumentClient,
+  ) {}
 
   async searchXApiEvents(
     userId: string,
     from?: number,
     to?: number,
   ): Promise<XAPIRecord[]> {
-    const xapiRecords: QueryOutput = await docClient
+    const result: QueryOutput = await this.docClient
       .query({
-        TableName: this.TableName,
+        TableName: this.tableName,
         KeyConditionExpression:
           'userId = :userId AND (serverTimestamp BETWEEN :from AND :to)',
         ExpressionAttributeValues: {
@@ -70,6 +64,6 @@ export class XAPIRepository {
       })
       .promise()
 
-    return xapiRecords.Items || []
+    return result.Items || []
   }
 }

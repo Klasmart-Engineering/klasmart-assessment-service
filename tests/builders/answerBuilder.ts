@@ -5,6 +5,8 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 export default class AnswerBuilder {
   private userContentScore: UserContentScore
   private date = new Date()
+  private score?: { min: number; max: number; raw: number }
+  private response?: string
 
   constructor(userContentScore: UserContentScore) {
     this.userContentScore = userContentScore
@@ -15,8 +17,25 @@ export default class AnswerBuilder {
     return this
   }
 
+  public withScore(value?: { min: number; max: number; raw: number }): this {
+    this.score = value
+    return this
+  }
+
+  public withResponse(value?: string): this {
+    this.response = value
+    return this
+  }
+
   public build(): Answer {
-    const entity = Answer.new(this.userContentScore, this.date)
+    const entity = Answer.new(
+      this.userContentScore,
+      this.date,
+      this.response,
+      this.score?.raw,
+      this.score?.min,
+      this.score?.max,
+    )
     return entity
   }
 

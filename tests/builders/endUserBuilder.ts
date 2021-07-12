@@ -1,6 +1,6 @@
 import { getRepository } from 'typeorm'
 import { User } from '../../src/db/users/entities'
-import { sign } from 'jsonwebtoken'
+import { sign, SignOptions } from 'jsonwebtoken'
 import UserBuilder from './userBuilder'
 import EndUser from '../entities/endUser'
 import { debugJwtIssuer } from '../../src/auth/auth'
@@ -8,6 +8,7 @@ import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
 
 export default class EndUserBuilder extends UserBuilder {
   private isAuthenticated = false
+  private isExpired = false
 
   public authenticate(): this {
     this.isAuthenticated = true
@@ -16,6 +17,12 @@ export default class EndUserBuilder extends UserBuilder {
 
   public dontAuthenticate(): this {
     this.isAuthenticated = false
+    return this
+  }
+
+  public expiredToken(): this {
+    this.isAuthenticated = true
+    this.isExpired = true
     return this
   }
 
@@ -39,9 +46,10 @@ export default class EndUserBuilder extends UserBuilder {
       email: this.email,
       iss: debugJwtIssuer.options.issuer,
     }
-    const token = sign(payload, debugJwtIssuer.secretOrPublicKey, {
-      expiresIn: '2000s',
-    })
+    const signOptions: SignOptions = {
+      expiresIn: this.isExpired ? '0s' : '2000s',
+    }
+    const token = sign(payload, debugJwtIssuer.secretOrPublicKey, signOptions)
     return token
   }
 }

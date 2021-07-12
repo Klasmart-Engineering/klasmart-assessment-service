@@ -10,6 +10,7 @@ export default class LessonPlanBuilder {
   private name = 'My Content'
   private author = v4()
   private createdAt = Date.now()
+  protected isDataDefined = true
   private lessonMaterialIds: string[] = []
 
   public withContentId(value: string): this {
@@ -27,6 +28,11 @@ export default class LessonPlanBuilder {
     return this
   }
 
+  public withUndefinedData(): this {
+    this.isDataDefined = false
+    return this
+  }
+
   public addMaterialId(lessonMaterialId: string): this {
     this.lessonMaterialIds.push(lessonMaterialId)
     return this
@@ -41,7 +47,9 @@ export default class LessonPlanBuilder {
     mutableEntity.createdAt = this.createdAt
     mutableEntity.contentType = ContentType.LessonPlan
 
-    mutableEntity.data = this.createMaterialLinkedList()
+    if (this.isDataDefined) {
+      mutableEntity.data = this.createMaterialLinkedList()
+    }
     return entity
   }
 

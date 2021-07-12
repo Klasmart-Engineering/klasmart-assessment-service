@@ -1,6 +1,6 @@
 import { UserInputError } from 'apollo-server-express'
 import { Service } from 'typedi'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Content, Schedule } from '../db/cms/entities'
@@ -50,10 +50,9 @@ export class RoomMaterialsProvider {
       map[id] = index
       return map
     }, initial)
-    const materials = await this.contentRepository
-      .createQueryBuilder('content')
-      .where('content.id IN (:...materialIds)', { materialIds })
-      .getMany()
+    const materials = await this.contentRepository.find({
+      where: { contentId: In(materialIds) },
+    })
     return materials.sort(
       (a, b) =>
         materialIdToIndexMap[a.contentId] - materialIdToIndexMap[b.contentId],

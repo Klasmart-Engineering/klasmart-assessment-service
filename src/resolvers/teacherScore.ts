@@ -124,7 +124,13 @@ export default class TeacherScoreResolver {
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(@Root() source: TeacherScore): Promise<Content | null> {
-    const userContentScore = await source.userContentScore
+    const userContentScore = await this.assesmentDB.findOne(UserContentScore, {
+      where: {
+        roomId: source.roomId,
+        studentId: source.studentId,
+        contentKey: source.contentKey,
+      },
+    })
     const contentType = userContentScore?.contentType
     const contentName = userContentScore?.contentName
     return await getContent(

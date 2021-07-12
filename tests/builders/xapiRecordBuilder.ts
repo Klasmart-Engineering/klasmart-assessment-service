@@ -2,18 +2,18 @@ import { XAPIRecord } from '../../src/db/xapi/repo'
 import { v4 } from 'uuid'
 
 export default class XAPIRecordBuilder {
-  private userId: string = v4()
+  private userId?: string = v4()
   private serverTimestamp: number = Date.now()
-  private clientTimestamp: number = Date.now()
-  private response? = 'abc'
-  private score? = { min: 1, max: 1, raw: 1 }
+  private clientTimestamp?: number = Date.now()
+  private response: string | undefined
+  private score: { min: number; max: number; raw: number } | undefined
   private h5pId?: string = v4()
   private h5pSubId?: string
   private h5pType? = 'Flashcards'
   private h5pName? = 'My Activity'
   private verb = 'answered'
 
-  public withUserId(value: string): this {
+  public withUserId(value?: string): this {
     this.userId = value
     return this
   }
@@ -23,7 +23,7 @@ export default class XAPIRecordBuilder {
     return this
   }
 
-  public withClientTimestamp(value: number): this {
+  public withClientTimestamp(value?: number): this {
     this.clientTimestamp = value
     return this
   }

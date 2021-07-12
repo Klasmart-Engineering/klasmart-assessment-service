@@ -13,7 +13,7 @@ export default class ContentResolver {
     }
   }
 
-  @FieldResolver(() => FileType, { nullable: true })
+  @FieldResolver({ nullable: true })
   type(@Root() content: Content): string | undefined {
     if (content.type) {
       return content.type

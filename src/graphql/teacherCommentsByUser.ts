@@ -8,7 +8,7 @@ export class TeacherCommentsByStudent {
   @Field(() => [TeacherComment])
   public teacherComments: TeacherComment[]
 
-  constructor(studentId: string, comment: TeacherComment[] = []) {
+  constructor(studentId: string, comment: TeacherComment[]) {
     this.studentId = studentId
     this.teacherComments = comment
   }

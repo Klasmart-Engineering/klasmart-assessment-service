@@ -14,6 +14,8 @@ export class DropAnswerTable1625183413268 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS assessment_xapi_answer`)
   }
 
+  // Not worried about being able to restore the table because the values
+  // are reproducable when running the Room query.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async down(queryRunner: QueryRunner): Promise<void> {
     return Promise.resolve()

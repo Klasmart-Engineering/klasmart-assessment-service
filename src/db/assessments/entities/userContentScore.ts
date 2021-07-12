@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { Answer } from './answer'
 import { Room } from './room'
-import { ScoreSummary } from '../../../graphql/scoreSummary'
+import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 
@@ -61,17 +61,8 @@ export class UserContentScore {
   @Column({ type: 'bool', default: false })
   public seen: boolean
 
-  public async scores(): Promise<number[]> {
-    const answers = await this.answers
-    if (!answers) {
-      return []
-    }
-    const scores = answers.map((x) => x.score)
-    return scores.filter((x) => typeof x === 'number') as number[]
-  }
-
-  @Field(() => ScoreSummary)
-  public async score(): Promise<ScoreSummary> {
+  @Field(() => ScoreSummary, { name: 'score' })
+  public async scoreSummary(): Promise<ScoreSummary> {
     return new ScoreSummary(await this.answers)
   }
 
@@ -107,13 +98,12 @@ export class UserContentScore {
   }
 
   public static new(
-    roomOrId: Room | string,
+    roomId: string,
     studentId: string,
     contentKey: string,
     contentType: string | undefined,
     contentName?: string,
   ): UserContentScore {
-    const roomId = typeof roomOrId === 'string' ? roomOrId : roomOrId.roomId
     const userContentScore = new UserContentScore(roomId, studentId, contentKey)
     userContentScore.contentType = contentType
     userContentScore.contentName = contentName
@@ -142,11 +132,11 @@ export class UserContentScore {
   }
 
   protected updateMinMax(xapiEvent: ParsedXapiEvent): void {
-    const min = xapiEvent?.score?.min
+    const min = xapiEvent.score?.min
     if (min !== undefined) {
       this.min = min
     }
-    const max = xapiEvent?.score?.max
+    const max = xapiEvent.score?.max
     if (max !== undefined) {
       this.max = max
     }

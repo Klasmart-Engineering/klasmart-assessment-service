@@ -17,11 +17,11 @@ export function getAssessmentDatabaseConnectionOptions(
       path.join(__dirname, './entities/*.js'),
     ],
     logging: Boolean(process.env.ASSESSMENT_DATABASE_LOGGING),
-    migrations: ['migrations/*.ts'],
+    migrations: ['src/migrations/*.ts'],
     migrationsTableName: 'assessment_xapi_migration',
-    migrationsRun: true,
+    migrationsRun: false,
     cli: {
-      migrationsDir: 'migrations',
+      migrationsDir: 'src/migrations',
     },
   }
 }

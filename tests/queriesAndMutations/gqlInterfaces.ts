@@ -68,8 +68,8 @@ export interface GqlAnswer {
   date: Date | null
   answer: string | null
   score: number | null
-  minimumPossibleScore?: number
-  maximumPossibleScore?: number
+  minimumPossibleScore?: number | null
+  maximumPossibleScore?: number | null
 }
 
 // ====================================================

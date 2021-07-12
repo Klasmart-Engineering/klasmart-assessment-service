@@ -19,8 +19,13 @@ import {
   GqlAnswer,
   GqlTeacherScore,
   GqlTeacherComment,
+  GqlTeacherCommentsByStudent,
 } from '../queriesAndMutations/gqlInterfaces'
-import { GqlRoom, roomQuery } from '../queriesAndMutations/roomOps'
+import {
+  GqlRoom,
+  roomQuery,
+  roomQueryWithCookie,
+} from '../queriesAndMutations/roomOps'
 import {
   AttendanceBuilder,
   EndUserBuilder,
@@ -42,19 +47,24 @@ import {
 } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import TeacherCommentBuilder from '../builders/teacherCommentBuilder'
+import { v4 } from 'uuid'
+import ContentKey from '../../src/helpers/contentKey'
 
 /**
+ * - scores 0 the first time
+ * - room/ucs/answer exist (update), make sure teacher scores and comments don't get wiped out
+ * - multiple-hotspot scoring
+ * - non-h5p materials
+ * - user content score ordering
+ * - include user content scores for students with no events
+ * - multiple students
+ * - multiple contents
+ * - xapi event not part of lesson plan
+ * - score and response are null
+ * - response is included but score is not
+ * - subcontentId
  * TODO:
- * - *scores 0 the first time
- * - *room/ucs/answer exist (update), make sure teacher scores and comments don't get wiped out
- * - *multiple-hotspot scoring
- * - *non-h5p materials
  * - specify expected xapi timestamps
- * - *user content score ordering
- * - *include user content scores for students with no events
- * - *multiple students
- * - *multiple contents
- * - *xapi event not part of lesson plan
  */
 
 describe('roomResolver.Room', () => {
@@ -72,7 +82,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-
+      MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
       const endUser = await new EndUserBuilder()
         .dontAuthenticate()
         .buildAndPersist()
@@ -82,16 +92,63 @@ describe('roomResolver.Room', () => {
 
       // Assert
       await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
-      await dbDisconnect()
     })
+
+    after(async () => await dbDisconnect())
   })
+
+  context('auth token expired', () => {
+    it(TestTitle.Authentication.throwsError, async () => {
+      // Arrange
+      await dbConnect()
+      const roomId = 'room1'
+      MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
+      const endUser = await new EndUserBuilder()
+        .expiredToken()
+        .buildAndPersist()
+
+      // Act
+      const fn = () => roomQuery(roomId, endUser, false)
+
+      // Assert
+      await expect(fn()).to.be.rejected
+    })
+
+    after(async () => await dbDisconnect())
+  })
+
+  context(
+    'authorization cookies are defined, ' + TestTitle.ScheduleNotFound.context,
+    () => {
+      it(TestTitle.ScheduleNotFound.throwsError, async () => {
+        // Arrange
+        await dbConnect()
+        const roomId = 'room1'
+        MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
+        const endUser = await new EndUserBuilder()
+          .authenticate()
+          .buildAndPersist()
+
+        // Act
+        const fn = () =>
+          roomQueryWithCookie(roomId, { access: endUser.token }, false)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          ErrorMessage.scheduleNotFound(roomId),
+        )
+      })
+
+      after(async () => await dbDisconnect())
+    },
+  )
 
   context(TestTitle.ScheduleNotFound.context, () => {
     it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-
+      MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
       const endUser = await new EndUserBuilder()
         .authenticate()
         .buildAndPersist()
@@ -103,11 +160,12 @@ describe('roomResolver.Room', () => {
       await expect(fn()).to.be.rejectedWith(
         ErrorMessage.scheduleNotFound(roomId),
       )
-      await dbDisconnect()
     })
+
+    after(async () => await dbDisconnect())
   })
 
-  context('1 student, 1 xapi event', () => {
+  context('1 student, 1 xapi "score" event', () => {
     const roomId = 'room1'
     let endUser: EndUser
     let gqlRoom: GqlRoom | undefined | null
@@ -116,6 +174,7 @@ describe('roomResolver.Room', () => {
     let xapiRecord: XAPIRecord
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
+    const score = { min: 0, max: 2, raw: 1 }
 
     before(async () => {
       // Arrange
@@ -146,6 +205,8 @@ describe('roomResolver.Room', () => {
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
         .withH5pType(xapiContentType)
+        .withScore(score)
+        .withResponse(undefined)
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
@@ -178,19 +239,18 @@ describe('roomResolver.Room', () => {
     })
 
     it('returns expected room.scores[0].user', async () => {
-      const score = gqlRoom?.scores?.[0]
-      const gqlStudent = score?.user
-      const expectedStudent: FindConditions<GqlUser> = {
+      const actual = gqlRoom?.scores?.[0]?.user
+      const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
         given_name: student.givenName,
         family_name: student.familyName,
       }
-      expect(gqlStudent).to.deep.equal(expectedStudent)
+      expect(actual).to.deep.equal(expected)
     })
 
     it('returns expected room.scores[0].content', async () => {
-      const gqlContent = gqlRoom?.scores?.[0]?.content
-      const expectedContent: FindConditions<GqlContent> = {
+      const actual = gqlRoom?.scores?.[0]?.content
+      const expected: FindConditions<GqlContent> = {
         content_id: lessonMaterial.contentId,
         subcontent_id: lessonMaterial.subcontentId ?? null,
         h5p_id: lessonMaterial.h5pId,
@@ -198,14 +258,14 @@ describe('roomResolver.Room', () => {
         type: xapiContentType,
         fileType: FileType[FileType.H5P],
       }
-      expect(gqlContent).to.deep.equal(expectedContent)
+      expect(actual).to.deep.equal(expected)
     })
 
     it('returns expected room.scores[0].score', async () => {
-      const gqlScore = gqlRoom?.scores?.[0]?.score
-      const expectedScore: FindConditions<GqlScoreSummary> = {
-        max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-        min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+      const actual = gqlRoom?.scores?.[0]?.score
+      const expected: FindConditions<GqlScoreSummary> = {
+        max: score.raw,
+        min: score.raw,
         mean: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
         median: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
         medians: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
@@ -213,7 +273,7 @@ describe('roomResolver.Room', () => {
         scores: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
         sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
       }
-      expect(gqlScore).to.deep.include(expectedScore)
+      expect(actual).to.deep.include(expected)
     })
 
     it('returns room.scores[0].score.answers with length of 1', async () => {
@@ -222,10 +282,10 @@ describe('roomResolver.Room', () => {
     })
 
     it('returns expected room.scores[0].score.answers', async () => {
-      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
-      const expectedAnswers: FindConditions<GqlAnswer>[] = [
+      const actual = gqlRoom?.scores?.[0]?.score?.answers
+      const expected: FindConditions<GqlAnswer>[] = [
         {
-          answer: xapiRecord.xapi?.data?.statement?.result?.response,
+          answer: null,
           date: xapiRecord.xapi?.clientTimestamp,
           maximumPossibleScore:
             xapiRecord.xapi?.data?.statement?.result?.score?.max,
@@ -234,35 +294,42 @@ describe('roomResolver.Room', () => {
           score: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
         },
       ]
-      expect(gqlAnswers).to.deep.equal(expectedAnswers)
+      expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
     })
 
     it('DB: adds 1 Room entry', async () => {
-      const dbRooms = await roomRepo().find()
-      expect(dbRooms).to.have.lengthOf(1)
+      const dbRooms = await roomRepo().count()
+      expect(dbRooms).to.equal(1)
     })
 
     it('DB: Room has expected values', async () => {
-      const dbRoom = await roomRepo().findOneOrFail()
-
+      const actual = await roomRepo().findOneOrFail()
       const expected: FindConditions<Room> = {
         roomId: roomId,
         startTime: null,
         endTime: null,
         recalculate: false,
       }
-
-      expect(dbRoom).to.deep.include(expected)
+      expect(actual).to.deep.include(expected)
     })
 
     it('DB: adds 1 UserContentScore entry', async () => {
-      const dbUserContentScores = await userContentScoreRepo().find()
-      expect(dbUserContentScores).to.have.lengthOf(1)
+      const dbUserContentScores = await userContentScoreRepo().count()
+      expect(dbUserContentScores).to.equal(1)
     })
 
     it('DB: UserContentScore has expected values', async () => {
-      const dbUserContentScore = await userContentScoreRepo().findOneOrFail()
-
+      const actual = await userContentScoreRepo().findOneOrFail()
       const expected: FindConditions<UserContentScore> = {
         roomId: roomId,
         studentId: student.userId,
@@ -275,20 +342,739 @@ describe('roomResolver.Room', () => {
         scoreFrequency: 1,
         seen: true,
       }
-
-      expect(dbUserContentScore).to.deep.include(expected)
+      expect(actual).to.deep.include(expected)
     })
 
     it('DB: adds 0 Answer entries', async () => {
-      const dbAnswers = await answerRepo().find()
-      expect(dbAnswers).to.have.lengthOf(0)
+      const dbAnswers = await answerRepo().count()
+      expect(dbAnswers).to.equal(0)
+    })
+
+    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+  })
+
+  context('1 student, 1 xapi "answer" event', () => {
+    const roomId = 'room1'
+    let endUser: EndUser
+    let gqlRoom: GqlRoom | undefined | null
+    let student: User
+    let lessonMaterial: Content
+    let xapiRecord: XAPIRecord
+    const xapiContentName = 'My H5P Name'
+    const xapiContentType = 'Flashcards'
+    const response = 'Badanamu'
+
+    before(async () => {
+      // Arrange
+      await dbConnect()
+      const xapiRepository = Substitute.for<XAPIRepository>()
+      MutableContainer.set(XAPIRepository, xapiRepository)
+
+      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
+      student = await new UserBuilder().buildAndPersist()
+      const endUserAttendance = await new AttendanceBuilder()
+        .withroomId(roomId)
+        .withUserId(endUser.userId)
+        .buildAndPersist()
+      const studentAttendance = await new AttendanceBuilder()
+        .withroomId(roomId)
+        .withUserId(student.userId)
+        .buildAndPersist()
+      lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+      const lessonPlan = await new LessonPlanBuilder()
+        .addMaterialId(lessonMaterial.contentId)
+        .buildAndPersist()
+      const schedule = await new ScheduleBuilder()
+        .withRoomId(roomId)
+        .withLessonPlanId(lessonPlan.contentId)
+        .buildAndPersist()
+      xapiRecord = new XAPIRecordBuilder()
+        .withUserId(student.userId)
+        .withH5pId(lessonMaterial.h5pId)
+        .withH5pName(xapiContentName)
+        .withH5pType(xapiContentType)
+        .withScore(undefined)
+        .withResponse(response)
+        .build()
+      xapiRepository
+        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .returns(Promise.resolve<XAPIRecord[]>([]))
+      xapiRepository
+        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .returns(
+          Promise.resolve<XAPIRecord[]>([xapiRecord]),
+        )
+
+      gqlRoom = await roomQuery(roomId, endUser)
+    })
+
+    after(async () => await dbDisconnect())
+
+    it('returns room with expected id', async () => {
+      expect(gqlRoom).to.not.be.null
+      expect(gqlRoom).to.not.be.undefined
+      expect(gqlRoom?.room_id).to.equal(roomId)
+    })
+
+    it('returns room.scores with length of 1', async () => {
+      const gqlScores = gqlRoom?.scores
+      expect(gqlScores).to.have.lengthOf(1)
+    })
+
+    it('returns room.scores[0].teacherScores with length of 0', async () => {
+      const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
+      expect(gqlTeacherScores).to.have.lengthOf(0)
+    })
+
+    it('returns expected room.scores[0].user', async () => {
+      const actual = gqlRoom?.scores?.[0]?.user
+      const expected: FindConditions<GqlUser> = {
+        user_id: student.userId,
+        given_name: student.givenName,
+        family_name: student.familyName,
+      }
+      expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns expected room.scores[0].content', async () => {
+      const actual = gqlRoom?.scores?.[0]?.content
+      const expected: FindConditions<GqlContent> = {
+        content_id: lessonMaterial.contentId,
+        subcontent_id: lessonMaterial.subcontentId ?? null,
+        h5p_id: lessonMaterial.h5pId,
+        name: xapiContentName,
+        type: xapiContentType,
+        fileType: FileType[FileType.H5P],
+      }
+      expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns expected room.scores[0].score', async () => {
+      const actual = gqlRoom?.scores?.[0]?.score
+      const expected: FindConditions<GqlScoreSummary> = {
+        max: null,
+        min: null,
+        mean: null,
+        median: null,
+        medians: [],
+        scoreFrequency: 0,
+        scores: [],
+        sum: 0,
+      }
+      expect(actual).to.deep.include(expected)
+    })
+
+    it('returns room.scores[0].score.answers with length of 1', async () => {
+      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+      expect(gqlAnswers).to.have.lengthOf(1)
+    })
+
+    it('returns expected room.scores[0].score.answers', async () => {
+      const actual = gqlRoom?.scores?.[0]?.score?.answers
+      const expected: FindConditions<GqlAnswer>[] = [
+        {
+          answer: response,
+          date: xapiRecord.xapi?.clientTimestamp,
+          maximumPossibleScore: null,
+          minimumPossibleScore: null,
+          score: null,
+        },
+      ]
+      expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('DB: adds 1 Room entry', async () => {
+      const dbRooms = await roomRepo().count()
+      expect(dbRooms).to.equal(1)
+    })
+
+    it('DB: Room has expected values', async () => {
+      const actual = await roomRepo().findOneOrFail()
+      const expected: FindConditions<Room> = {
+        roomId: roomId,
+        startTime: null,
+        endTime: null,
+        recalculate: false,
+      }
+      expect(actual).to.deep.include(expected)
+    })
+
+    it('DB: adds 1 UserContentScore entry', async () => {
+      const dbUserContentScores = await userContentScoreRepo().count()
+      expect(dbUserContentScores).to.equal(1)
+    })
+
+    it('DB: UserContentScore has expected values', async () => {
+      const actual = await userContentScoreRepo().findOneOrFail()
+      const expected: FindConditions<UserContentScore> = {
+        roomId: roomId,
+        studentId: student.userId,
+        contentKey: lessonMaterial.contentId,
+        contentName: xapiContentName,
+        contentType: xapiContentType,
+        max: null,
+        min: null,
+        sum: 0,
+        scoreFrequency: 0,
+        seen: true,
+      }
+      expect(actual).to.deep.include(expected)
+    })
+
+    it('DB: adds 0 Answer entries', async () => {
+      const dbAnswers = await answerRepo().count()
+      expect(dbAnswers).to.equal(0)
+    })
+
+    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+  })
+
+  context('1 student, 1 xapi "attempted" event', () => {
+    const roomId = 'room1'
+    let endUser: EndUser
+    let gqlRoom: GqlRoom | undefined | null
+    let student: User
+    let lessonMaterial: Content
+    let xapiRecord: XAPIRecord
+    const xapiContentName = 'My H5P Name'
+    const xapiContentType = 'Flashcards'
+    const eventVerb = 'attempted'
+
+    before(async () => {
+      // Arrange
+      await dbConnect()
+      const xapiRepository = Substitute.for<XAPIRepository>()
+      MutableContainer.set(XAPIRepository, xapiRepository)
+
+      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
+      student = await new UserBuilder().buildAndPersist()
+      const endUserAttendance = await new AttendanceBuilder()
+        .withroomId(roomId)
+        .withUserId(endUser.userId)
+        .buildAndPersist()
+      const studentAttendance = await new AttendanceBuilder()
+        .withroomId(roomId)
+        .withUserId(student.userId)
+        .buildAndPersist()
+      lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+      const lessonPlan = await new LessonPlanBuilder()
+        .addMaterialId(lessonMaterial.contentId)
+        .buildAndPersist()
+      const schedule = await new ScheduleBuilder()
+        .withRoomId(roomId)
+        .withLessonPlanId(lessonPlan.contentId)
+        .buildAndPersist()
+      xapiRecord = new XAPIRecordBuilder()
+        .withUserId(student.userId)
+        .withH5pId(lessonMaterial.h5pId)
+        .withH5pName(xapiContentName)
+        .withH5pType(xapiContentType)
+        .withVerb(eventVerb)
+        .withScore(undefined)
+        .withResponse(undefined)
+        .build()
+      xapiRepository
+        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .returns(Promise.resolve<XAPIRecord[]>([]))
+      xapiRepository
+        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .returns(
+          Promise.resolve<XAPIRecord[]>([xapiRecord]),
+        )
+
+      gqlRoom = await roomQuery(roomId, endUser)
+    })
+
+    after(async () => await dbDisconnect())
+
+    it('returns room with expected id', async () => {
+      expect(gqlRoom).to.not.be.null
+      expect(gqlRoom).to.not.be.undefined
+      expect(gqlRoom?.room_id).to.equal(roomId)
+    })
+
+    it('returns room.scores with length of 1', async () => {
+      const gqlScores = gqlRoom?.scores
+      expect(gqlScores).to.have.lengthOf(1)
+    })
+
+    it('returns room.scores[0].teacherScores with length of 0', async () => {
+      const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
+      expect(gqlTeacherScores).to.have.lengthOf(0)
+    })
+
+    it('returns expected room.scores[0].user', async () => {
+      const actual = gqlRoom?.scores?.[0]?.user
+      const expected: FindConditions<GqlUser> = {
+        user_id: student.userId,
+        given_name: student.givenName,
+        family_name: student.familyName,
+      }
+      expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns expected room.scores[0].content', async () => {
+      const actual = gqlRoom?.scores?.[0]?.content
+      const expected: FindConditions<GqlContent> = {
+        content_id: lessonMaterial.contentId,
+        subcontent_id: lessonMaterial.subcontentId ?? null,
+        h5p_id: lessonMaterial.h5pId,
+        name: xapiContentName,
+        type: xapiContentType,
+        fileType: FileType[FileType.H5P],
+      }
+      expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns expected room.scores[0].score', async () => {
+      const actual = gqlRoom?.scores?.[0]?.score
+      const expected: FindConditions<GqlScoreSummary> = {
+        max: null,
+        min: null,
+        mean: null,
+        median: null,
+        medians: [],
+        scoreFrequency: 0,
+        scores: [],
+        sum: 0,
+      }
+      expect(actual).to.deep.include(expected)
+    })
+
+    it('returns room.scores[0].score.answers with length of 0', async () => {
+      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+      expect(gqlAnswers).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('DB: adds 1 Room entry', async () => {
+      const dbRooms = await roomRepo().count()
+      expect(dbRooms).to.equal(1)
+    })
+
+    it('DB: Room has expected values', async () => {
+      const actual = await roomRepo().findOneOrFail()
+      const expected: FindConditions<Room> = {
+        roomId: roomId,
+        startTime: null,
+        endTime: null,
+        recalculate: false,
+      }
+      expect(actual).to.deep.include(expected)
+    })
+
+    it('DB: adds 1 UserContentScore entry', async () => {
+      const dbUserContentScores = await userContentScoreRepo().count()
+      expect(dbUserContentScores).to.equal(1)
+    })
+
+    it('DB: UserContentScore has expected values', async () => {
+      const actual = await userContentScoreRepo().findOneOrFail()
+      const expected: FindConditions<UserContentScore> = {
+        roomId: roomId,
+        studentId: student.userId,
+        contentKey: lessonMaterial.contentId,
+        contentName: xapiContentName,
+        contentType: xapiContentType,
+        max: null,
+        min: null,
+        sum: 0,
+        scoreFrequency: 0,
+        seen: true,
+      }
+      expect(actual).to.deep.include(expected)
+    })
+
+    it('DB: adds 0 Answer entries', async () => {
+      const dbAnswers = await answerRepo().count()
+      expect(dbAnswers).to.equal(0)
     })
 
     // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
   })
 
   context(
-    '1 student, 1 xapi event, 3 overlapping attendance sessions with same id',
+    '1 student, 1 xapi "score" event for subcontent1, 1 xapi "score" event for subcontent2',
+    () => {
+      const roomId = 'room1'
+      let endUser: EndUser
+      let gqlRoom: GqlRoom | undefined | null
+      let student: User
+      let lessonMaterial: Content
+      let xapiRecord1: XAPIRecord
+      let xapiRecord2: XAPIRecord
+      const xapiContentName = 'My H5P Name'
+      const xapiContentType = 'Flashcards'
+      const subcontent1Id = v4()
+      const subcontent2Id = v4()
+
+      before(async () => {
+        // Arrange
+        await dbConnect()
+        const xapiRepository = Substitute.for<XAPIRepository>()
+        MutableContainer.set(XAPIRepository, xapiRepository)
+
+        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
+        student = await new UserBuilder().buildAndPersist()
+        const endUserAttendance = await new AttendanceBuilder()
+          .withroomId(roomId)
+          .withUserId(endUser.userId)
+          .buildAndPersist()
+        const studentAttendance = await new AttendanceBuilder()
+          .withroomId(roomId)
+          .withUserId(student.userId)
+          .buildAndPersist()
+        lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+        const lessonPlan = await new LessonPlanBuilder()
+          .addMaterialId(lessonMaterial.contentId)
+          .buildAndPersist()
+        const schedule = await new ScheduleBuilder()
+          .withRoomId(roomId)
+          .withLessonPlanId(lessonPlan.contentId)
+          .buildAndPersist()
+        xapiRecord1 = new XAPIRecordBuilder()
+          .withUserId(student.userId)
+          .withH5pId(lessonMaterial.h5pId)
+          .withH5pSubId(subcontent1Id)
+          .withH5pName(xapiContentName)
+          .withH5pType(xapiContentType)
+          .withScore({ min: 0, max: 2, raw: 1 })
+          .build()
+        xapiRecord2 = new XAPIRecordBuilder()
+          .withUserId(student.userId)
+          .withH5pId(lessonMaterial.h5pId)
+          .withH5pSubId(subcontent2Id)
+          .withH5pName(xapiContentName)
+          .withH5pType(xapiContentType)
+          .withScore({ min: 0, max: 2, raw: 1 })
+          .build()
+        xapiRepository
+          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .returns(Promise.resolve<XAPIRecord[]>([]))
+        xapiRepository
+          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .returns(
+            Promise.resolve<XAPIRecord[]>([xapiRecord1, xapiRecord2]),
+          )
+
+        gqlRoom = await roomQuery(roomId, endUser)
+      })
+
+      after(async () => await dbDisconnect())
+
+      it('returns room with expected id', async () => {
+        expect(gqlRoom).to.not.be.null
+        expect(gqlRoom).to.not.be.undefined
+        expect(gqlRoom?.room_id).to.equal(roomId)
+      })
+
+      it('returns room.scores with length of 3', async () => {
+        const gqlScores = gqlRoom?.scores
+        expect(gqlScores).to.have.lengthOf(3)
+      })
+
+      it('returns room.scores[0].teacherScores with length of 0', async () => {
+        const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
+        expect(gqlTeacherScores).to.have.lengthOf(0)
+      })
+
+      it('returns expected room.scores[0].user', async () => {
+        const actual = gqlRoom?.scores?.[0]?.user
+        const expected: FindConditions<GqlUser> = {
+          user_id: student.userId,
+          given_name: student.givenName,
+          family_name: student.familyName,
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[1].user', async () => {
+        const actual = gqlRoom?.scores?.[1]?.user
+        const expected: FindConditions<GqlUser> = {
+          user_id: student.userId,
+          given_name: student.givenName,
+          family_name: student.familyName,
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[2].user', async () => {
+        const actual = gqlRoom?.scores?.[2]?.user
+        const expected: FindConditions<GqlUser> = {
+          user_id: student.userId,
+          given_name: student.givenName,
+          family_name: student.familyName,
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[0].content', async () => {
+        const actual = gqlRoom?.scores?.[0]?.content
+        const expected: FindConditions<GqlContent> = {
+          content_id: lessonMaterial.contentId,
+          subcontent_id: null,
+          h5p_id: lessonMaterial.h5pId,
+          name: lessonMaterial.name,
+          type: FileType[FileType.H5P],
+          fileType: FileType[FileType.H5P],
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[1].content', async () => {
+        const actual = gqlRoom?.scores?.[1]?.content
+        const expected: FindConditions<GqlContent> = {
+          content_id: lessonMaterial.contentId,
+          subcontent_id: subcontent1Id,
+          h5p_id: lessonMaterial.h5pId,
+          name: xapiContentName,
+          type: xapiContentType,
+          fileType: FileType[FileType.H5P],
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[2].content', async () => {
+        const actual = gqlRoom?.scores?.[2]?.content
+        const expected: FindConditions<GqlContent> = {
+          content_id: lessonMaterial.contentId,
+          subcontent_id: subcontent2Id,
+          h5p_id: lessonMaterial.h5pId,
+          name: xapiContentName,
+          type: xapiContentType,
+          fileType: FileType[FileType.H5P],
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[0].score', async () => {
+        const actual = gqlRoom?.scores?.[0]?.score
+        const expected: FindConditions<GqlScoreSummary> = {
+          max: null,
+          min: null,
+          mean: null,
+          median: null,
+          medians: [],
+          scoreFrequency: 0,
+          scores: [],
+          sum: 0,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('returns expected room.scores[1].score', async () => {
+        const actual = gqlRoom?.scores?.[1]?.score
+        const expected: FindConditions<GqlScoreSummary> = {
+          max: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+          min: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+          mean: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+          median: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+          medians: [xapiRecord1.xapi?.data?.statement?.result?.score?.raw],
+          scoreFrequency: 1,
+          scores: [xapiRecord1.xapi?.data?.statement?.result?.score?.raw],
+          sum: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('returns expected room.scores[2].score', async () => {
+        const actual = gqlRoom?.scores?.[2]?.score
+        const expected: FindConditions<GqlScoreSummary> = {
+          max: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+          min: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+          mean: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+          median: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+          medians: [xapiRecord2.xapi?.data?.statement?.result?.score?.raw],
+          scoreFrequency: 1,
+          scores: [xapiRecord2.xapi?.data?.statement?.result?.score?.raw],
+          sum: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('returns room.scores[0].score.answers with length of 0', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+        expect(gqlAnswers).to.have.lengthOf(0)
+      })
+
+      it('returns room.scores[1].score.answers with length of 1', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[1]?.score?.answers
+        expect(gqlAnswers).to.have.lengthOf(1)
+      })
+
+      it('returns room.scores[2].score.answers with length of 1', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[2]?.score?.answers
+        expect(gqlAnswers).to.have.lengthOf(1)
+      })
+
+      it('returns expected room.scores[1].score.answers', async () => {
+        const actual = gqlRoom?.scores?.[1]?.score?.answers
+        const expected: FindConditions<GqlAnswer>[] = [
+          {
+            answer: null,
+            date: xapiRecord1.xapi?.clientTimestamp,
+            maximumPossibleScore:
+              xapiRecord1.xapi?.data?.statement?.result?.score?.max,
+            minimumPossibleScore:
+              xapiRecord1.xapi?.data?.statement?.result?.score?.min,
+            score: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+          },
+        ]
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[2].score.answers', async () => {
+        const actual = gqlRoom?.scores?.[2]?.score?.answers
+        const expected: FindConditions<GqlAnswer>[] = [
+          {
+            answer: null,
+            date: xapiRecord2.xapi?.clientTimestamp,
+            maximumPossibleScore:
+              xapiRecord2.xapi?.data?.statement?.result?.score?.max,
+            minimumPossibleScore:
+              xapiRecord2.xapi?.data?.statement?.result?.score?.min,
+            score: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+          },
+        ]
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('DB: adds 1 Room entry', async () => {
+        const dbRooms = await roomRepo().find()
+        expect(dbRooms).to.have.lengthOf(1)
+      })
+
+      it('DB: Room has expected values', async () => {
+        const actual = await roomRepo().findOneOrFail()
+        const expected: FindConditions<Room> = {
+          roomId: roomId,
+          startTime: null,
+          endTime: null,
+          recalculate: false,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: adds 3 UserContentScore entries', async () => {
+        const count = await userContentScoreRepo().count()
+        expect(count).to.equal(3)
+      })
+
+      it('DB: UserContentScore (root content) has expected values', async () => {
+        const actual = await userContentScoreRepo().findOne({
+          where: {
+            contentKey: lessonMaterial.contentId,
+          },
+        })
+        const expected: FindConditions<UserContentScore> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          contentName: null, // TODO: Will change after FieldResolver is added.
+          contentType: null, // TODO: Will change after FieldResolver is added.
+          max: null,
+          min: null,
+          sum: 0,
+          scoreFrequency: 0,
+          seen: false,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: UserContentScore (subcontent1) has expected values', async () => {
+        const actual = await userContentScoreRepo().findOne({
+          where: {
+            contentKey: ContentKey.construct(
+              lessonMaterial.contentId,
+              subcontent1Id,
+            ),
+          },
+        })
+        const expected: FindConditions<UserContentScore> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: ContentKey.construct(
+            lessonMaterial.contentId,
+            subcontent1Id,
+          ),
+          contentName: xapiContentName,
+          contentType: xapiContentType,
+          max: xapiRecord1.xapi?.data?.statement?.result?.score?.max,
+          min: xapiRecord1.xapi?.data?.statement?.result?.score?.min,
+          sum: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
+          scoreFrequency: 1,
+          seen: true,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: UserContentScore (subcontent2) has expected values', async () => {
+        const actual = await userContentScoreRepo().findOne({
+          where: {
+            contentKey: ContentKey.construct(
+              lessonMaterial.contentId,
+              subcontent2Id,
+            ),
+          },
+        })
+        const expected: FindConditions<UserContentScore> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: ContentKey.construct(
+            lessonMaterial.contentId,
+            subcontent2Id,
+          ),
+          contentName: xapiContentName,
+          contentType: xapiContentType,
+          max: xapiRecord2.xapi?.data?.statement?.result?.score?.max,
+          min: xapiRecord2.xapi?.data?.statement?.result?.score?.min,
+          sum: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
+          scoreFrequency: 1,
+          seen: true,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: adds 0 Answer entries', async () => {
+        const dbAnswers = await answerRepo().find()
+        expect(dbAnswers).to.have.lengthOf(0)
+      })
+
+      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+    },
+  )
+
+  context(
+    '1 student, 1 xapi "score" event, 3 overlapping attendance sessions with same id',
     () => {
       const roomId = 'room1'
       let endUser: EndUser
@@ -347,6 +1133,7 @@ describe('roomResolver.Room', () => {
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
           .withH5pType(xapiContentType)
+          .withScore({ min: 0, max: 2, raw: 1 })
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
@@ -405,8 +1192,8 @@ describe('roomResolver.Room', () => {
       it('returns expected room.scores[0].score', async () => {
         const gqlScore = gqlRoom?.scores?.[0]?.score
         const expectedScore: FindConditions<GqlScoreSummary> = {
-          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+          max: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          min: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           mean: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           median: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           medians: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
@@ -426,7 +1213,7 @@ describe('roomResolver.Room', () => {
         const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
         const expectedAnswers: FindConditions<GqlAnswer>[] = [
           {
-            answer: xapiRecord.xapi?.data?.statement?.result?.response,
+            answer: null,
             date: xapiRecord.xapi?.clientTimestamp,
             maximumPossibleScore:
               xapiRecord.xapi?.data?.statement?.result?.score?.max,
@@ -436,6 +1223,16 @@ describe('roomResolver.Room', () => {
           },
         ]
         expect(gqlAnswers).to.deep.equal(expectedAnswers)
+      })
+
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
       })
 
       it('DB: adds 1 Room entry', async () => {
@@ -490,7 +1287,7 @@ describe('roomResolver.Room', () => {
   )
 
   context(
-    '1 student, 1 xapi event for 2nd material, 1 xapi event for 1st material (in that order)',
+    '1 student, 1 xapi "score" event for 2nd material, 1 xapi "score" event for 1st material (in that order)',
     () => {
       const roomId = 'room1'
       let endUser: EndUser
@@ -664,7 +1461,7 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[0]?.score?.answers
         const expected: FindConditions<GqlAnswer>[] = [
           {
-            answer: xapiRecord1.xapi?.data?.statement?.result?.response,
+            answer: null,
             date: xapiRecord1.xapi?.clientTimestamp,
             maximumPossibleScore:
               xapiRecord1.xapi?.data?.statement?.result?.score?.max,
@@ -685,7 +1482,7 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[1]?.score?.answers
         const expected: FindConditions<GqlAnswer>[] = [
           {
-            answer: xapiRecord2.xapi?.data?.statement?.result?.response,
+            answer: null,
             date: xapiRecord2.xapi?.clientTimestamp,
             maximumPossibleScore:
               xapiRecord2.xapi?.data?.statement?.result?.score?.max,
@@ -695,6 +1492,16 @@ describe('roomResolver.Room', () => {
           },
         ]
         expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
       })
 
       it('DB: adds 1 Room entry', async () => {
@@ -767,7 +1574,7 @@ describe('roomResolver.Room', () => {
     },
   )
 
-  context('1 student, 2 xapi events', () => {
+  context('1 student, 2 xapi "score" events', () => {
     const roomId = 'room1'
     let endUser: EndUser
     let gqlRoom: GqlRoom | undefined | null
@@ -897,6 +1704,16 @@ describe('roomResolver.Room', () => {
       expect(answer2).to.equal(expectedAnswer2)
     })
 
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
     it('DB: adds 1 Room entry', async () => {
       const roomCount = await roomRepo().count()
       expect(roomCount).to.equal(1)
@@ -948,7 +1765,7 @@ describe('roomResolver.Room', () => {
   })
 
   context(
-    '1 student, 1 xapi event which is not part of the lesson plan',
+    '1 student, 1 xapi "score" event which is not part of the lesson plan',
     () => {
       const roomId = 'room1'
       let endUser: EndUser
@@ -1064,6 +1881,16 @@ describe('roomResolver.Room', () => {
         expect(gqlAnswers).to.have.lengthOf(0)
       })
 
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
       it('DB: adds 1 Room entry', async () => {
         const count = await roomRepo().count()
         expect(count).to.equal(1)
@@ -1109,7 +1936,7 @@ describe('roomResolver.Room', () => {
     },
   )
 
-  context('student1 0 xapi events; student2 1 xapi event', () => {
+  context('student1 0 xapi events; student2 1 xapi "score" event', () => {
     const roomId = 'room1'
     let endUser: EndUser
     let gqlRoom: GqlRoom | undefined | null
@@ -1154,6 +1981,7 @@ describe('roomResolver.Room', () => {
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
         .withH5pType(xapiContentType)
+        .withScore({ min: 0, max: 2, raw: 1 })
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
@@ -1252,8 +2080,8 @@ describe('roomResolver.Room', () => {
     it('returns expected room.scores[1].score', async () => {
       const gqlScore = gqlRoom?.scores?.[1]?.score
       const expectedScore: FindConditions<GqlScoreSummary> = {
-        max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-        min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+        max: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+        min: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
         mean: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
         median: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
         medians: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
@@ -1278,7 +2106,7 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[1]?.score?.answers
       const expected: FindConditions<GqlAnswer>[] = [
         {
-          answer: xapiRecord.xapi?.data?.statement?.result?.response,
+          answer: null,
           date: xapiRecord.xapi?.clientTimestamp,
           maximumPossibleScore:
             xapiRecord.xapi?.data?.statement?.result?.score?.max,
@@ -1288,6 +2116,16 @@ describe('roomResolver.Room', () => {
         },
       ]
       expect(actual).to.deep.equal(expected)
+    })
+
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
     })
 
     it('DB: adds 1 Room entry', async () => {
@@ -1466,6 +2304,16 @@ describe('roomResolver.Room', () => {
       expect(gqlAnswers).to.have.lengthOf(0)
     })
 
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
     it('DB: adds 1 Room entry', async () => {
       const dbRooms = await roomRepo().find()
       expect(dbRooms).to.have.lengthOf(1)
@@ -1619,6 +2467,16 @@ describe('roomResolver.Room', () => {
       expect(gqlAnswers).to.have.lengthOf(0)
     })
 
+    it('returns room.teacherComments with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherComments
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
+    it('returns room.teacherCommentsByStudent with length of 0', async () => {
+      const gqlComments = gqlRoom?.teacherCommentsByStudent
+      expect(gqlComments).to.have.lengthOf(0)
+    })
+
     it('DB: adds 1 Room entry', async () => {
       const dbRooms = await roomRepo().find()
       expect(dbRooms).to.have.lengthOf(1)
@@ -1710,6 +2568,7 @@ describe('roomResolver.Room', () => {
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
           .withH5pType(xapiContentType)
+          .withScore({ min: 0, max: 2, raw: 1 })
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
@@ -1758,14 +2617,52 @@ describe('roomResolver.Room', () => {
           date: teacherComment.date.getTime(),
           lastUpdated: teacherComment.lastUpdated.getTime(),
           comment: teacherComment.comment,
-          // Skip checking student, and teacher for now. Not the focus of this test.
+          student: {
+            user_id: student.userId,
+            given_name: student.givenName,
+            family_name: student.familyName,
+          },
+          teacher: {
+            user_id: endUser.userId,
+            given_name: endUser.givenName,
+            family_name: endUser.familyName,
+          },
         }
         expect(actual).to.deep.include(expected)
       })
 
-      it('returns room.scores with length of 1', async () => {
-        const gqlScores = gqlRoom?.scores
-        expect(gqlScores).to.have.lengthOf(1)
+      it('returns room.teacherCommentsByStudent with length of 1', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(1)
+      })
+
+      it('returns expected room.teacherCommentsByStudent[0]', async () => {
+        const actual = gqlRoom?.teacherCommentsByStudent?.[0]
+        const expected: FindConditions<GqlTeacherCommentsByStudent> = {
+          student: {
+            user_id: student.userId,
+            given_name: student.givenName,
+            family_name: student.familyName,
+          },
+          teacherComments: [
+            {
+              date: teacherComment.date.getTime(),
+              lastUpdated: teacherComment.lastUpdated.getTime(),
+              comment: teacherComment.comment,
+              student: {
+                user_id: student.userId,
+                given_name: student.givenName,
+                family_name: student.familyName,
+              },
+              teacher: {
+                user_id: endUser.userId,
+                given_name: endUser.givenName,
+                family_name: endUser.familyName,
+              },
+            },
+          ],
+        }
+        expect(actual).to.deep.include(expected)
       })
 
       it('returns room.scores[0].teacherScores with length of 1', async () => {
@@ -1779,9 +2676,31 @@ describe('roomResolver.Room', () => {
           date: teacherScore.date.getTime(),
           lastUpdated: teacherScore.lastUpdated.getTime(),
           score: 1,
-          // Skip checking content, student, and teacher for now. Not the focus of this test.
+          student: {
+            user_id: student.userId,
+            given_name: student.givenName,
+            family_name: student.familyName,
+          },
+          teacher: {
+            user_id: endUser.userId,
+            given_name: endUser.givenName,
+            family_name: endUser.familyName,
+          },
+          content: {
+            content_id: lessonMaterial.contentId,
+            subcontent_id: lessonMaterial.subcontentId ?? null,
+            h5p_id: lessonMaterial.h5pId,
+            name: xapiContentName,
+            type: xapiContentType,
+            fileType: FileType[FileType.H5P],
+          },
         }
         expect(actual).to.deep.include(expected)
+      })
+
+      it('returns room.scores with length of 1', async () => {
+        const gqlScores = gqlRoom?.scores
+        expect(gqlScores).to.have.lengthOf(1)
       })
 
       it('returns expected room.scores[0].user', async () => {
@@ -1811,8 +2730,8 @@ describe('roomResolver.Room', () => {
       it('returns expected room.scores[0].score', async () => {
         const gqlScore = gqlRoom?.scores?.[0]?.score
         const expectedScore: FindConditions<GqlScoreSummary> = {
-          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+          max: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          min: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           mean: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           median: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           medians: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
@@ -1832,7 +2751,7 @@ describe('roomResolver.Room', () => {
         const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
         const expectedAnswers: FindConditions<GqlAnswer>[] = [
           {
-            answer: xapiRecord.xapi?.data?.statement?.result?.response,
+            answer: null,
             date: xapiRecord.xapi?.clientTimestamp,
             maximumPossibleScore:
               xapiRecord.xapi?.data?.statement?.result?.score?.max,
@@ -1965,7 +2884,12 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withResponse(undefined)
         xapiRecords = [
-          xapiRecordBuilder.withVerb('attempted').withScore(undefined).build(),
+          xapiRecordBuilder.withVerb('attempted').build(),
+          // xapiRecordBuilder
+          //   .withVerb('answered')
+          //   .withScore(undefined)
+          //   .withResponse('[x]')
+          //   .build(),
           xapiRecordBuilder
             .withVerb('answered')
             .withScore({ min: 0, max: 3, raw: 1 })
@@ -2073,6 +2997,16 @@ describe('roomResolver.Room', () => {
         expect(gqlAnswers).to.deep.equal(expectedAnswers)
       })
 
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
       it('DB: adds 1 Room entry', async () => {
         const dbRooms = await roomRepo().find()
         expect(dbRooms).to.have.lengthOf(1)
@@ -2165,6 +3099,7 @@ describe('roomResolver.Room', () => {
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
           .withH5pType(xapiContentType)
+          .withScore({ min: 0, max: 2, raw: 1 })
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
@@ -2231,8 +3166,8 @@ describe('roomResolver.Room', () => {
       it('returns expected room.scores[0].score', async () => {
         const gqlScore = gqlRoom?.scores?.[0]?.score
         const expectedScore: FindConditions<GqlScoreSummary> = {
-          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
+          max: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
+          min: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           mean: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           median: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
           medians: [xapiRecord.xapi?.data?.statement?.result?.score?.raw],
@@ -2252,7 +3187,7 @@ describe('roomResolver.Room', () => {
         const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
         const expectedAnswers: FindConditions<GqlAnswer>[] = [
           {
-            answer: xapiRecord.xapi?.data?.statement?.result?.response,
+            answer: null,
             date: xapiRecord.xapi?.clientTimestamp,
             maximumPossibleScore:
               xapiRecord.xapi?.data?.statement?.result?.score?.max,
@@ -2262,6 +3197,16 @@ describe('roomResolver.Room', () => {
           },
         ]
         expect(gqlAnswers).to.deep.equal(expectedAnswers)
+      })
+
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
       })
 
       it('DB: adds 1 Room entry', async () => {

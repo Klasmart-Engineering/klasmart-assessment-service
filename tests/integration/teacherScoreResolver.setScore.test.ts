@@ -70,7 +70,7 @@ describe('teacherScoreResolver.setScore', function () {
   })
 
   context(
-    'existing UserContentScore matching provided student/content, but different room',
+    '1 UserContentScore matching provided student/content, but different room',
     () => {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
@@ -115,7 +115,7 @@ describe('teacherScoreResolver.setScore', function () {
   )
 
   context(
-    'existing UserContentScore matching provided room/content, but different student',
+    '1 UserContentScore matching provided room/content, but different student',
     () => {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
@@ -161,7 +161,7 @@ describe('teacherScoreResolver.setScore', function () {
   )
 
   context(
-    'existing UserContentScore matching provided room/student, but different content',
+    '1 UserContentScore matching provided room/student, but different content',
     () => {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
@@ -179,6 +179,45 @@ describe('teacherScoreResolver.setScore', function () {
           .withroomId(roomId)
           .withStudentId(student.userId)
           .withContentKey(lessonMaterial.contentId)
+          .buildAndPersist()
+
+        // Act
+        const fn = () =>
+          setTeacherScoreMutation(
+            roomId,
+            student.userId,
+            providedContentId,
+            1,
+            endUser,
+            false,
+          )
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          ErrorMessage.unknownUserContentScore(
+            roomId,
+            student.userId,
+            providedContentId,
+          ),
+        )
+      })
+
+      after(async () => await dbDisconnect())
+    },
+  )
+
+  context(
+    '0 UserContentScores, 0 TeacherScores, provided contentId does not exist',
+    () => {
+      it('throws unknown UserContentScore error', async () => {
+        // Arrange
+        await dbConnect()
+        const roomId = 'room1'
+        const student = await new UserBuilder().buildAndPersist()
+        const providedContentId = v4()
+
+        const endUser = await new EndUserBuilder()
+          .authenticate()
           .buildAndPersist()
 
         // Act

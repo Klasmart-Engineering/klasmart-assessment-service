@@ -12,10 +12,8 @@ import { InjectManager } from 'typeorm-typedi-extensions'
 
 import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
-import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { ILogger, Logger } from '../helpers/logger'
 import { UserID } from '../auth/context'
 
@@ -33,10 +31,6 @@ export default class RoomResolver {
   constructor(
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
-    @InjectManager(USERS_CONNECTION_NAME)
-    private readonly userDB: EntityManager,
-    @InjectManager(CMS_CONNECTION_NAME)
-    private readonly cmsDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
@@ -91,12 +85,12 @@ export default class RoomResolver {
     const scoresByContent: Map<string, ContentScores> = new Map()
 
     for (const userContentScore of await room.scores) {
-      const contentScores = scoresByContent.get(userContentScore.studentId)
+      const contentScores = scoresByContent.get(userContentScore.contentKey)
       if (contentScores) {
         contentScores.scores.push(userContentScore)
       } else {
         scoresByContent.set(
-          userContentScore.studentId,
+          userContentScore.contentKey,
           new ContentScores(
             userContentScore.contentKey,
             [userContentScore],

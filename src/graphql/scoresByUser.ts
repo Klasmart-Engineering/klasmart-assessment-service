@@ -8,7 +8,7 @@ export class UserScores {
   @Field(() => [UserContentScore])
   public readonly scores: UserContentScore[]
 
-  constructor(userId: string, scores: UserContentScore[] = []) {
+  constructor(userId: string, scores: UserContentScore[]) {
     this.userId = userId
     this.scores = scores
   }
