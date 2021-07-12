@@ -4,13 +4,15 @@ import {
   ExpressContext,
 } from 'apollo-server-express'
 import { GraphQLSchema } from 'graphql'
-import { Container } from 'typedi'
-import { checkToken } from '../auth/auth'
+import { checkToken, TokenDecoder } from '../auth/auth'
 import { Context } from '../auth/context'
 import { ErrorMessage } from './errorMessages'
 import { Logger } from './logger'
 
-export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
+export const createApolloServer = (
+  schema: GraphQLSchema,
+  tokenDecoder: TokenDecoder,
+): ApolloServer => {
   return new ApolloServer({
     schema,
     playground: true,
@@ -22,17 +24,11 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
       }
       return err
     },
-    context: async ({
-      req,
-      connection,
-    }: ExpressContext): Promise<Context | undefined> => {
+    context: async ({ req }: ExpressContext): Promise<Context | undefined> => {
       try {
-        if (connection) {
-          return connection.context
-        }
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
-        const encodedToken = req.headers.authorization || req.cookies?.access
-        const token = await checkToken(encodedToken)
+        const encodedToken = req.headers.authorization || req.cookies.access
+        const token = await checkToken(encodedToken, tokenDecoder)
         return { token, ip, userId: token?.id }
       } catch (e) {
         Logger.get().error(e)

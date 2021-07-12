@@ -24,15 +24,24 @@ export default class LessonMaterialBuilder extends ContentBuilder {
     return this
   }
 
+  public withUndefinedH5pId(): this {
+    this.fileType = FileType.H5P
+    this.sourceId = undefined
+    return this
+  }
+
   public build(): Content {
     const entity = super.build()
     entity.h5pId = this.fileType === FileType.H5P ? this.sourceId : undefined
     const mutableEntity: Mutable<Content> = entity
-    mutableEntity.data = JSON.parse(
-      `{"source": "${
-        this.sourceId
-      }", "file_type": ${this.fileType.valueOf()}, "input_source": 1}`,
-    )
+    if (this.isDataDefined) {
+      const data: any = {
+        source: this.sourceId,
+        file_type: this.fileType.valueOf(),
+        input_source: 1,
+      }
+      mutableEntity.data = data
+    }
     return entity
   }
 

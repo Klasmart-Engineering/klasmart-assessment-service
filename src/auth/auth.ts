@@ -57,11 +57,20 @@ FwIDAQAB
   ],
 ])
 
-export async function checkToken(token?: string): Promise<IToken | undefined> {
+export class TokenDecoder {
+  public decode(token: string): null | { [key: string]: unknown } | string {
+    return decode(token)
+  }
+}
+
+export async function checkToken(
+  token: string | undefined,
+  tokenDecoder: TokenDecoder,
+): Promise<IToken | undefined> {
   if (!token) {
     return
   }
-  const payload = decode(token)
+  const payload = tokenDecoder.decode(token)
   if (!payload || typeof payload === 'string') {
     return
   }

@@ -13,7 +13,7 @@ import { Logger } from './logger'
 export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   cmsDbConnection: Connection,
   assessmentDbConnection: Connection,
-  readOnlyRun = true,
+  readOnlyRun: boolean,
 ): Promise<void> {
   const contentRepo = cmsDbConnection.getRepository(Content)
   const scheduleRepo = cmsDbConnection.getRepository(Schedule)

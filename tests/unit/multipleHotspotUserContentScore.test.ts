@@ -1,0 +1,64 @@
+import { expect } from 'chai'
+import { v4 } from 'uuid'
+import { MultipleHotspotUserContentScore } from '../../src/db/assessments/entities/multipleHotspotUserContentScore'
+import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
+import { AnswerBuilder } from '../builders'
+
+describe('multipleHotspotUserContentScore', () => {
+  context('1 answer with undefined score', () => {
+    it('updates the score of the existing answer to be 1', async () => {
+      const roomId = v4()
+      const studentId = v4()
+      const contentKey = v4()
+      const xapiRecord: ParsedXapiEvent = {
+        userId: studentId,
+        h5pId: v4(),
+        timestamp: Date.now(),
+        verb: 'answered',
+        score: { min: 0, max: 5, raw: 1 },
+      }
+      const sut = new MultipleHotspotUserContentScore(
+        roomId,
+        studentId,
+        contentKey,
+      )
+      const answer = new AnswerBuilder(sut).withScore(undefined).build()
+      sut.answers = Promise.resolve([answer])
+
+      // Act
+      await sut.applyEvent(xapiRecord)
+
+      // Assert
+      expect(answer.score).to.equal(1)
+      const updatedAnswers = await sut.answers
+      expect(updatedAnswers).to.have.lengthOf(1)
+    })
+  })
+
+  context('0 answers', () => {
+    it('answers remain empty', async () => {
+      const roomId = v4()
+      const studentId = v4()
+      const contentKey = v4()
+      const xapiRecord: ParsedXapiEvent = {
+        userId: studentId,
+        h5pId: v4(),
+        timestamp: Date.now(),
+        verb: 'interacted',
+        score: undefined,
+      }
+      const sut = new MultipleHotspotUserContentScore(
+        roomId,
+        studentId,
+        contentKey,
+      )
+
+      // Act
+      await sut.applyEvent(xapiRecord)
+
+      // Assert
+      const answers = await sut.answers
+      expect(answers).to.be.empty
+    })
+  })
+})

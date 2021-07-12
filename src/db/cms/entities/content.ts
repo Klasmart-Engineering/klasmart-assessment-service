@@ -44,9 +44,12 @@ export class Content {
   @AfterLoad()
   populateH5pId(): void {
     const typedData = (this.data as unknown) as IMaterial
-    this.fileType = typedData?.file_type
+    if (typedData == null) {
+      return
+    }
+    this.fileType = typedData.file_type
     if (this.fileType === FileType.H5P) {
-      this.h5pId = typedData?.source
+      this.h5pId = typedData.source
     }
   }
 }

@@ -25,12 +25,12 @@ export default class UserContentScoreBuilder {
     return this
   }
 
-  public withContentType(value: string): this {
+  public withContentType(value?: string): this {
     this.contentType = value
     return this
   }
 
-  public withContentName(value: string): this {
+  public withContentName(value?: string): this {
     this.contentName = value
     return this
   }

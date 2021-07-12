@@ -13,7 +13,7 @@ export class ContentScores {
 
   constructor(
     contentKey: string,
-    scores: UserContentScore[] = [],
+    scores: UserContentScore[],
     contentType: string | undefined | null,
     contentName: string | undefined | null,
   ) {

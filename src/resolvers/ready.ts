@@ -6,7 +6,7 @@ import { Resolver, Query } from 'type-graphql'
 import { Service } from 'typedi'
 
 @Service()
-@Resolver((of) => Boolean)
+@Resolver()
 export class ReadyResolver {
   @Query((returns: any) => Boolean)
   ready(): boolean {

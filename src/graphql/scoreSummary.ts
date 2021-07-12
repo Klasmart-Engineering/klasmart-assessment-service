@@ -69,11 +69,9 @@ export class ScoreSummary {
     }
   }
 
-  constructor(answers?: Answer[]) {
-    if (answers) {
-      for (const answer of answers) {
-        this.addAnswer(answer)
-      }
+  constructor(answers: Answer[]) {
+    for (const answer of answers) {
+      this.addAnswer(answer)
     }
   }
 

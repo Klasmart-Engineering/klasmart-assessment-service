@@ -34,7 +34,7 @@ export class LessonPlan {
       const current = q.shift()
       if (current) {
         current.next?.forEach((x) => q.push(x))
-        this.materialIds.push(current?.materialId)
+        this.materialIds.push(current.materialId)
       }
     }
   }
@@ -42,5 +42,5 @@ export class LessonPlan {
 
 interface ILessonMaterialNode {
   materialId: string
-  next: ILessonMaterialNode[]
+  next?: ILessonMaterialNode[]
 }

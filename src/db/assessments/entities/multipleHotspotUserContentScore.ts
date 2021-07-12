@@ -10,6 +10,10 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
       this.startNewAttempt()
       return
     }
+    const score = xapiEvent.score?.raw
+    if (score == null) {
+      return
+    }
 
     const answers = await this.answers
 
@@ -17,7 +21,6 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
       this.newAttemptSignalReceived = false
       await super.applyEvent(xapiEvent)
     } else {
-      const score = xapiEvent.score?.raw
       this.updateAnswer(score, answers[answers.length - 1])
       this.updateMinMax(xapiEvent)
     }
@@ -27,12 +30,9 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
     this.newAttemptSignalReceived = true
   }
 
-  private updateAnswer(score: number | undefined, answer: Answer) {
-    if (score === undefined) {
-      return
-    }
+  private updateAnswer(score: number, answer: Answer) {
     this.sum -= answer.score ?? 0
     answer.score = score
-    this.sum += answer.score ?? 0
+    this.sum += score
   }
 }

@@ -32,6 +32,24 @@ export async function roomQuery(
   return res.data?.Room as GqlRoom
 }
 
+export async function roomQueryWithCookie(
+  roomId: string,
+  cookies?: { access?: string },
+  logErrors = true,
+): Promise<GqlRoom | null | undefined> {
+  const { query } = testClient
+
+  const operation = () =>
+    query({
+      query: ROOM,
+      variables: { roomId: roomId },
+      cookies: cookies,
+    })
+
+  const res = await gqlTry(operation, logErrors)
+  return res.data?.Room as GqlRoom
+}
+
 export const ROOM = `
 query Room($roomId: String) {
   Room(room_id: $roomId) {
@@ -49,6 +67,6 @@ export interface GqlRoom {
   scores?: GqlScore[]
   teacherComments?: GqlTeacherComment[]
   scoresByUser?: GqlScoresByUser[]
-  scoresByContentQuery?: GqlScoresByContent[]
+  scoresByContent?: GqlScoresByContent[]
   teacherCommentsByStudent?: GqlTeacherCommentsByStudent[]
 }

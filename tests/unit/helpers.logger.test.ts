@@ -3,6 +3,13 @@ import { expect } from 'chai'
 import { ConsoleLogger, ILogger, Logger } from '../../src/helpers/logger'
 
 describe('helpers.logger', () => {
+  before(() => Logger.reset())
+  after(() => {
+    Logger.reset()
+    Logger.register(() => Substitute.for<ILogger>())
+  })
+  afterEach(() => Logger.reset())
+
   context('ConsoleLogger', () => {
     it('executes the 4 log levels without throwing', () => {
       const consoleLogger = new ConsoleLogger('UnitTest')
@@ -35,6 +42,11 @@ describe('helpers.logger', () => {
       const logger1 = Logger.get('Logger')
       const logger2 = Logger.get('Logger')
       expect(logger1).equal(logger2)
+    })
+
+    it('default logger is of type ConsoleLogger', () => {
+      const logger = Logger.get('Logger')
+      expect(logger).instanceOf(ConsoleLogger)
     })
   })
 })
