@@ -270,26 +270,9 @@ describe('roomResolver.Room', () => {
       expect(dbUserContentScore).to.deep.include(expected)
     })
 
-    it('DB: adds 1 Answer entry', async () => {
+    it('DB: adds 0 Answer entries', async () => {
       const dbAnswers = await answerRepo().find()
-      expect(dbAnswers).to.have.lengthOf(1)
-    })
-
-    it('DB: Answer has expected values', async () => {
-      const dbAnswer = await answerRepo().findOneOrFail()
-
-      const expected: FindConditions<Answer> = {
-        roomId: roomId,
-        studentId: student.userId,
-        fullContentId: lessonMaterial.contentId,
-        answer: xapiRecord.xapi?.data?.statement?.result?.response,
-        date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
-        maximumPossibleScore: 1,
-        minimumPossibleScore: 1,
-        score: 1,
-      }
-
-      expect(dbAnswer).to.deep.include(expected)
+      expect(dbAnswers).to.have.lengthOf(0)
     })
   })
 
@@ -466,38 +449,9 @@ describe('roomResolver.Room', () => {
       expect(dbUserContentScore).to.deep.include(expected)
     })
 
-    it('DB: adds 2 Answer entries', async () => {
+    it('DB: adds 0 Answer entries', async () => {
       const answerCount = await answerRepo().count()
-      expect(answerCount).to.equal(2)
-    })
-
-    it('DB: Answer has expected values', async () => {
-      const dbAnswers = await answerRepo().find()
-
-      const expected: FindConditions<Answer>[] = [
-        {
-          roomId: roomId,
-          studentId: student.userId,
-          fullContentId: lessonMaterial.contentId,
-          answer: xapiRecord.xapi?.data?.statement?.result?.response,
-          date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
-          maximumPossibleScore: 3,
-          minimumPossibleScore: 0,
-          score: 0,
-        },
-        {
-          roomId: roomId,
-          studentId: student.userId,
-          fullContentId: lessonMaterial.contentId,
-          answer: xapiRecord2.xapi?.data?.statement?.result?.response,
-          date: new Date(xapiRecord2.xapi?.clientTimestamp ?? 0),
-          maximumPossibleScore: 3,
-          minimumPossibleScore: 0,
-          score: 2,
-        },
-      ]
-
-      expect(dbAnswers).to.deep.equal(expected)
+      expect(answerCount).to.equal(0)
     })
   })
 })

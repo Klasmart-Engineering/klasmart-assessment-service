@@ -34,7 +34,7 @@ export class UserContentScore {
   @OneToMany(
     () => Answer, //Useless comment due to linter bug
     (answer) => answer.userContentScore,
-    { lazy: true, cascade: true },
+    { lazy: true, cascade: false },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
@@ -57,7 +57,7 @@ export class UserContentScore {
   public teacherScores!: Promise<TeacherScore[]>
 
   @Field(() => Boolean)
-  @Column()
+  @Column({ type: 'bool', default: false })
   public seen!: boolean
 
   private resetMultipleHotspots = false
@@ -129,6 +129,7 @@ export class UserContentScore {
     this.roomId = roomId
     this.studentId = studentId
     this.contentId = fullContentId
+    this.seen = false
   }
 
   public static new(
