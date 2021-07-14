@@ -66,14 +66,6 @@ export class UserContentScore {
     return new ScoreSummary(await this.answers)
   }
 
-  @Column({ type: 'int4', nullable: true })
-  public min?: number | null
-  @Column({ type: 'int4', nullable: true })
-  public max?: number | null
-  @Column({ type: 'int4', default: 0 })
-  public sum = 0
-  @Column({ type: 'int4', default: 0 })
-  public scoreFrequency = 0
   @Column({ type: 'varchar', nullable: true })
   public contentType?: string | null
   @Column({ type: 'varchar', nullable: true })
@@ -87,7 +79,6 @@ export class UserContentScore {
       return
     }
     await this.addAnswer(xapiEvent)
-    this.updateMinMax(xapiEvent)
   }
 
   constructor(roomId: string, studentId: string, contentKey: string) {
@@ -127,19 +118,6 @@ export class UserContentScore {
     const score = xapiEvent.score?.raw
     if (score === undefined) {
       return
-    }
-    this.sum += score
-    this.scoreFrequency += 1
-  }
-
-  protected updateMinMax(xapiEvent: ParsedXapiEvent): void {
-    const min = xapiEvent.score?.min
-    if (min !== undefined) {
-      this.min = min
-    }
-    const max = xapiEvent.score?.max
-    if (max !== undefined) {
-      this.max = max
     }
   }
 }

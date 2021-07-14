@@ -336,10 +336,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: xapiContentName,
         contentType: xapiContentType,
-        max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-        min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
-        sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
-        scoreFrequency: 1,
         seen: true,
       }
       expect(actual).to.deep.include(expected)
@@ -522,10 +518,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: xapiContentName,
         contentType: xapiContentType,
-        max: null,
-        min: null,
-        sum: 0,
-        scoreFrequency: 0,
         seen: true,
       }
       expect(actual).to.deep.include(expected)
@@ -695,10 +687,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: xapiContentName,
         contentType: xapiContentType,
-        max: null,
-        min: null,
-        sum: 0,
-        scoreFrequency: 0,
         seen: true,
       }
       expect(actual).to.deep.include(expected)
@@ -1001,10 +989,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial.contentId,
           contentName: null, // TODO: Will change after FieldResolver is added.
           contentType: null, // TODO: Will change after FieldResolver is added.
-          max: null,
-          min: null,
-          sum: 0,
-          scoreFrequency: 0,
           seen: false,
         }
         expect(actual).to.deep.include(expected)
@@ -1028,10 +1012,6 @@ describe('roomResolver.Room', () => {
           ),
           contentName: xapiContentName,
           contentType: xapiContentType,
-          max: xapiRecord1.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord1.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
         expect(actual).to.deep.include(expected)
@@ -1055,10 +1035,6 @@ describe('roomResolver.Room', () => {
           ),
           contentName: xapiContentName,
           contentType: xapiContentType,
-          max: xapiRecord2.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord2.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
         expect(actual).to.deep.include(expected)
@@ -1267,10 +1243,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial.contentId,
           contentName: xapiContentName,
           contentType: xapiContentType,
-          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
 
@@ -1535,10 +1507,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial1.contentId,
           contentName: xapiContent1Name,
           contentType: xapiContent1Type,
-          max: xapiRecord1.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord1.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord1.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
 
@@ -1555,10 +1523,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial2.contentId,
           contentName: xapiContent2Name,
           contentType: xapiContent2Type,
-          max: xapiRecord2.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord2.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord2.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
 
@@ -1746,10 +1710,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: xapiContentName,
         contentType: xapiContentType,
-        max: 3,
-        min: 0,
-        sum: 2,
-        scoreFrequency: 2,
         seen: true,
       }
 
@@ -1918,10 +1878,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial2.contentId,
           contentName: null,
           contentType: null,
-          max: null,
-          min: null,
-          sum: 0,
-          scoreFrequency: 0,
           seen: false,
         }
         expect(actual).to.deep.include(expected)
@@ -2160,10 +2116,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: xapiContentName,
         contentType: xapiContentType,
-        max: null,
-        min: null,
-        sum: 0,
-        scoreFrequency: 0,
         seen: false,
       }
 
@@ -2181,10 +2133,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: xapiContentName,
         contentType: xapiContentType,
-        max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-        min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
-        sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
-        scoreFrequency: 1,
         seen: true,
       }
 
@@ -2344,10 +2292,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: null, // The gql result uses the cms content name as fallback.
         contentType: null, // The gql result uses the cms FileType as fallback.
-        max: null,
-        min: null,
-        sum: 0,
-        scoreFrequency: 0,
         seen: false,
       }
 
@@ -2507,10 +2451,6 @@ describe('roomResolver.Room', () => {
         contentKey: lessonMaterial.contentId,
         contentName: null, // The gql result uses the cms content name as fallback.
         contentType: null, // The gql result uses the cms FileType as fallback.
-        max: null,
-        min: null,
-        sum: 0,
-        scoreFrequency: 0,
         seen: false,
       }
 
@@ -2793,10 +2733,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial.contentId,
           contentName: xapiContentName,
           contentType: xapiContentType,
-          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
 
@@ -3037,10 +2973,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial.contentId,
           contentName: xapiContentName,
           contentType: xapiContentType,
-          max: 3,
-          min: 0,
-          sum: 2,
-          scoreFrequency: 2,
           seen: true,
         }
 
@@ -3239,10 +3171,6 @@ describe('roomResolver.Room', () => {
           contentKey: lessonMaterial.h5pId, // should still be using h5pId. otherwise the migration script will run into conflicts
           contentName: xapiContentName,
           contentType: xapiContentType,
-          max: xapiRecord.xapi?.data?.statement?.result?.score?.max,
-          min: xapiRecord.xapi?.data?.statement?.result?.score?.min,
-          sum: xapiRecord.xapi?.data?.statement?.result?.score?.raw,
-          scoreFrequency: 1,
           seen: true,
         }
 

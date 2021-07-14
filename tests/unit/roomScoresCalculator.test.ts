@@ -90,10 +90,6 @@ describe('roomScoresCalculator', () => {
         studentId: studentId,
         contentKey: material.contentId,
         seen: true,
-        min: 0,
-        max: 2,
-        scoreFrequency: 1,
-        sum: 1,
         contentName: undefined,
         contentType: undefined,
       }
@@ -187,8 +183,6 @@ describe('roomScoresCalculator', () => {
           studentId: studentId,
           contentKey: material.contentId,
           seen: false,
-          scoreFrequency: 0,
-          sum: 0,
           contentName: undefined,
           contentType: undefined,
         }
