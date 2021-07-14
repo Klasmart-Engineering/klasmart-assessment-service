@@ -22,7 +22,6 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
       await super.applyEvent(xapiEvent)
     } else {
       this.updateAnswer(score, answers[answers.length - 1])
-      this.updateMinMax(xapiEvent)
     }
   }
 
@@ -31,8 +30,6 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
   }
 
   private updateAnswer(score: number, answer: Answer) {
-    this.sum -= answer.score ?? 0
     answer.score = score
-    this.sum += score
   }
 }
