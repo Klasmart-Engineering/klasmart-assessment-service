@@ -24,6 +24,7 @@ import {
   dbDisconnect,
   dbSynchronize,
 } from '../utils/globalIntegrationTestHooks'
+import { throwExpression } from '../utils/throwExpression'
 
 describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   const contentKeyRelationColumnName = 'userContentScoreContentKey'
@@ -44,7 +45,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+        .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
@@ -120,7 +121,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+        .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
@@ -291,7 +292,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+          .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
           .buildAndPersist()
         const answer = await new AnswerBuilder(
           userContentScore,
@@ -380,7 +381,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+          .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
           .buildAndPersist()
         const answer = await new AnswerBuilder(
           userContentScore,
@@ -467,7 +468,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+        .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
@@ -550,12 +551,12 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         const userContentScore1 = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+          .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
           .buildAndPersist()
         const userContentScore2 = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student2.userId)
-          .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+          .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
           .buildAndPersist()
         const answer = await new AnswerBuilder(
           userContentScore1,
@@ -653,7 +654,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
-        .withContentKey(lessonMaterial.h5pId!) // content ID is currently set as the h5p ID.
+        .withContentKey(lessonMaterial.h5pId) // content ID is currently set as the h5p ID.
         .buildAndPersist()
       const answer = await new AnswerBuilder(userContentScore).buildAndPersist()
       const teacherScore = await new TeacherScoreBuilder(
@@ -739,7 +740,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
 
       // The content id column is currently set as h5pId|subcontentId.
       const oldContentKey = ContentKey.construct(
-        lessonMaterial.h5pId!,
+        lessonMaterial.h5pId ?? throwExpression('h5pId cannot be undefined'),
         lessonMaterial.subcontentId,
       )
       const newContentKey = ContentKey.construct(

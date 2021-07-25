@@ -16,6 +16,7 @@ import httpMocks, {
   RequestOptions,
   ResponseOptions,
   Headers,
+  Cookies,
 } from 'node-mocks-http'
 
 type StringOrAst = string | DocumentNode
@@ -46,7 +47,7 @@ type Query = {
   }
   operationName?: string
   headers?: Headers
-  cookies?: any
+  cookies?: Cookies
 }
 
 /** A mutation must not come with a query */
@@ -58,7 +59,7 @@ type Mutation = {
   }
   operationName?: string
   headers?: Headers
-  cookies?: any
+  cookies?: Cookies
 }
 
 /**

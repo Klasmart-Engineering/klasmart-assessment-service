@@ -265,7 +265,7 @@ describe('teacherScoreResolver.setScore', function () {
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withContentKey(lessonMaterial.h5pId!) // using h5pId instead of contentId
+          .withContentKey(lessonMaterial.h5pId) // using h5pId instead of contentId
           .withContentType(xapiContentType)
           .withContentName(xapiContentName)
           .buildAndPersist()

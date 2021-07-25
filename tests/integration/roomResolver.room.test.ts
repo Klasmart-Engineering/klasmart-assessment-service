@@ -1546,6 +1546,7 @@ describe('roomResolver.Room', () => {
     let lessonMaterial: Content
     let xapiRecord: XAPIRecord
     let xapiRecord2: XAPIRecord
+    const xapiTimestamp1 = Date.now()
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
 
@@ -1579,14 +1580,16 @@ describe('roomResolver.Room', () => {
         .withH5pName(xapiContentName)
         .withH5pType(xapiContentType)
         .withScore({ raw: 0, min: 0, max: 3 })
+        .withServerTimestamp(xapiTimestamp1)
+        .withClientTimestamp(xapiTimestamp1)
         .build()
       xapiRecord2 = new XAPIRecordBuilder()
         .withUserId(student.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
         .withH5pType(xapiContentType)
-        .withServerTimestamp(xapiRecord.serverTimestamp! + 10)
-        .withClientTimestamp(xapiRecord.xapi?.clientTimestamp! + 10)
+        .withServerTimestamp(xapiTimestamp1 + 10)
+        .withClientTimestamp(xapiTimestamp1 + 10)
         .withScore({ raw: 2, min: 0, max: 3 })
         .build()
       xapiRepository
@@ -1659,9 +1662,9 @@ describe('roomResolver.Room', () => {
     })
 
     it('returns expected room.scores[0].score.answers', async () => {
-      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers!
-      const answer1 = gqlAnswers[0].score
-      const answer2 = gqlAnswers[1].score
+      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+      const answer1 = gqlAnswers?.[0].score
+      const answer2 = gqlAnswers?.[1].score
       const expectedAnswer1 = 0
       const expectedAnswer2 = 2
       expect(answer1).to.equal(expectedAnswer1)
@@ -3044,7 +3047,7 @@ describe('roomResolver.Room', () => {
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
-          .withContentKey(lessonMaterial.h5pId!) // using h5pId instead of contentId
+          .withContentKey(lessonMaterial.h5pId) // using h5pId instead of contentId
           .withContentType(xapiContentType)
           .withContentName(xapiContentName)
           .buildAndPersist()

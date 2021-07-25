@@ -10,6 +10,7 @@ import {
   h5pIdToCmsContentIdCache,
 } from '../../src/helpers/getContent'
 import { FileType } from '../../src/db/cms/enums'
+import { throwExpression } from '../utils/throwExpression'
 
 describe('createH5pIdToCmsContentIdCache', function () {
   before(async () => await dbConnect())
@@ -43,9 +44,9 @@ describe('createH5pIdToCmsContentIdCache', function () {
 
         // Assert
         expect(h5pIdToCmsContentIdCache).to.have.lengthOf(1)
-        expect(h5pIdToCmsContentIdCache).to.have.all.keys(
-          lessonMaterial2.h5pId!,
-        )
+        const h5pId =
+          lessonMaterial2.h5pId ?? throwExpression('h5pId cannot be undefined')
+        expect(h5pIdToCmsContentIdCache).to.have.all.keys(h5pId)
       })
     },
   )

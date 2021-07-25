@@ -2,6 +2,7 @@ import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { checkToken, IToken, TokenDecoder } from '../../src/auth/auth'
 import EndUserBuilder from '../builders/endUserBuilder'
+import { throwExpression } from '../utils/throwExpression'
 
 describe('auth.checkToken', () => {
   context(`token decoder returns null`, () => {
@@ -69,7 +70,8 @@ describe('auth.checkToken', () => {
     it('returns a valid decoded token', async () => {
       const tokenDecoder = Substitute.for<TokenDecoder>()
       const endUser = new EndUserBuilder().authenticate().build()
-      const encodedToken = endUser.token!
+      const encodedToken =
+        endUser.token ?? throwExpression('token cannot be undefined')
       const decoderReturnValue: { [key: string]: unknown } = {
         iss: 'calmid-debug',
       }

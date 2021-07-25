@@ -19,15 +19,6 @@ export class RoomAttendanceProvider {
       attendances,
     )
 
-    // TODO: Return a userIdToAttendancesMap?
-    const userIdToAttendancesMap = attendances.reduce(
-      (rv: Map<string, Attendance[]>, x: Attendance) => {
-        ;(rv.get(x.userId) || []).push(x)
-        return rv
-      },
-      new Map<string, Attendance[]>(),
-    )
-
     return [...attendances.values()]
   }
 

@@ -20,7 +20,8 @@ export default class UserContentScoreBuilder {
     return this
   }
 
-  public withContentKey(value: string): this {
+  public withContentKey(value?: string): this {
+    if (!value) throw new Error('contentKey cannot be undefined')
     this.contentKey = value
     return this
   }
