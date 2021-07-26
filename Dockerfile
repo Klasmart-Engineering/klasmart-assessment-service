@@ -19,6 +19,7 @@ WORKDIR /root/app
 # expose port and define CMD
 ENV PORT=8080
 ENV NODE_ENV=production
+ENV HUSKY=0
 EXPOSE 8080
 # install production node_modules
 COPY ./package*.json ./
