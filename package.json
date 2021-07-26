@@ -6,9 +6,10 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint . --ext .ts",
-    "lint-and-fix": "eslint . --ext .ts --fix",
-    "prettier-format": "prettier --config .prettierrc **/*.ts --write",
+    "lint": "eslint \"{src,tests}/**/*.ts\" --ext .ts",
+    "lint-and-fix": "eslint \"{src,tests}/**/*.ts\" --ext .ts --fix",
+    "format:check": "prettier --check \"{src,tests}/**/*.ts\"",
+    "format": "prettier --write \"{src,tests}/**/*.ts\"",
     "start": "ts-node src/index.ts",
     "build": "tsc -p . --outDir ./dist",
     "dev": "nodemon --config nodemon.json src/index.ts",
@@ -18,9 +19,15 @@
     "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
     "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
     "test:single": "mocha --require ts-node/register --grep \"tests.unit.stub\" tests/**/*.test.ts",
-    "test:file": "mocha --require ts-node/register tests/integration/roomResolver.room.test.ts --timeout 8000"
+    "test:file": "mocha --require ts-node/register tests/integration/roomResolver.room.test.ts --timeout 8000",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.ts": ["eslint", "prettier --check"]
   },
   "devDependencies": {
+    "@commitlint/config-conventional": "^13.1.0",
     "@fluffy-spoon/substitute": "^1.208.0",
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
@@ -38,12 +45,15 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "codecov": "^3.8.2",
+    "commitlint": "^13.1.0",
     "dotenv": "^10.0.0",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.2.0",
     "eslint-plugin-prettier": "^3.4.0",
     "gql-query-builder": "^3.5.5",
     "graphql-upload": "^12.0.0",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.1",
     "mocha": "^8.4.0",
     "node-mocks-http": "^1.10.1",
     "nodemon": "^2.0.7",
