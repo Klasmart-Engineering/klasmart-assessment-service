@@ -40,14 +40,17 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
 
   const totalUcs = ucsList.length
   let ucsReqUpdateCount = 0
-  const updates: {
-    roomId: string
-    oldContentKey: string
-    newContentKey: string
-  }[] = []
+  const updateMap = new Map<
+    string,
+    {
+      roomId: string
+      oldContentKey: string
+      newContentKey: string
+    }
+  >()
 
   const roomIdToLessonMaterialIdsCache = new Map<string, string[]>()
-  const cache = new Set<string>()
+  const contentKeysNotIncludedInLessonPlan = new Set<string>()
 
   for (const ucs of ucsList) {
     const roomId = ucs.roomId
@@ -91,7 +94,7 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
       //   'a content id was found but it does not match any of the lesson plan content ids',
       //   oldContentId,
       // )
-      cache.add(oldContentKey)
+      contentKeysNotIncludedInLessonPlan.add(oldContentKey)
       const publishedContent = realContentIds.find(
         (x) => x.publishStatus === 'published',
       )
@@ -99,21 +102,25 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
     }
 
     const newContentKey = ContentKey.construct(newContentId, subcontentId)
-    updates.push({
+    const mapKey = `${roomId}|${oldContentKey}|${newContentKey}`
+    updateMap.set(mapKey, {
       roomId,
       oldContentKey,
       newContentKey,
     })
   }
 
-  logger.info(`# of ids that don't match lesson plan: ${cache.size}`)
+  logger.info(
+    `# of ids that don't match lesson plan: ${contentKeysNotIncludedInLessonPlan.size}`,
+  )
   logger.info(`ucsReqUpdateCount: ${ucsReqUpdateCount}/${totalUcs}`)
 
   if (readOnlyRun) {
     return
   }
   await getManager(assessmentDbConnection.name).transaction(async (manager) => {
-    for (const { roomId, oldContentKey, newContentKey } of updates) {
+    await manager.query(`DROP TABLE IF EXISTS assessment_xapi_answer`)
+    for (const { roomId, oldContentKey, newContentKey } of updateMap.values()) {
       await Promise.all([
         manager.update(
           UserContentScore,
@@ -122,11 +129,6 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         ),
         manager.update(
           TeacherScore,
-          { roomId: roomId, contentKey: oldContentKey },
-          { contentKey: newContentKey },
-        ),
-        manager.update(
-          Answer,
           { roomId: roomId, contentKey: oldContentKey },
           { contentKey: newContentKey },
         ),

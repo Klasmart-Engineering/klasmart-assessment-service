@@ -34,7 +34,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   afterEach(async () => await dbSynchronize())
 
   context('contentId columns are set as h5pId, schedule not found', () => {
-    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are not modified', async () => {
+    it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
       const roomId = 'room1'
       const student = await new UserBuilder().buildAndPersist()
@@ -56,6 +56,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
       expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+      // Before
+      let answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         getConnection(CMS_CONNECTION_NAME),
@@ -64,6 +72,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       )
 
       // Assert
+      answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
       const dbUserContentScore = await getRepository(
         UserContentScore,
         ASSESSMENTS_CONNECTION_NAME,
@@ -86,23 +101,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         },
       })
 
-      const dbAnswer = await getRepository(
-        Answer,
-        ASSESSMENTS_CONNECTION_NAME,
-      ).findOneOrFail({
-        where: {
-          roomId: roomId,
-          studentId: student.userId,
-          contentKey: lessonMaterial.h5pId, // should not change
-        },
-      })
-
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-        .createQueryBuilder()
-        .where(`"${contentKeyRelationColumnName}" = '${lessonMaterial.h5pId}'`)
-        .getOneOrFail()
-
-      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(`"${contentKeyRelationColumnName}" = '${lessonMaterial.h5pId}'`)
         .getOneOrFail()
@@ -110,7 +109,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   })
 
   context('contentId columns are set as h5pId, lesson plan not found', () => {
-    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are not modified', async () => {
+    it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
       const roomId = 'room1'
       const student = await new UserBuilder().buildAndPersist()
@@ -132,6 +131,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
       expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+      // Before
+      let answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         getConnection(CMS_CONNECTION_NAME),
@@ -140,6 +147,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       )
 
       // Assert
+      answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
       const dbUserContentScore = await getRepository(
         UserContentScore,
         ASSESSMENTS_CONNECTION_NAME,
@@ -162,23 +176,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         },
       })
 
-      const dbAnswer = await getRepository(
-        Answer,
-        ASSESSMENTS_CONNECTION_NAME,
-      ).findOneOrFail({
-        where: {
-          roomId: roomId,
-          studentId: student.userId,
-          contentKey: lessonMaterial.h5pId, // should not change
-        },
-      })
-
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-        .createQueryBuilder()
-        .where(`"${contentKeyRelationColumnName}" = '${lessonMaterial.h5pId}'`)
-        .getOneOrFail()
-
-      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(`"${contentKeyRelationColumnName}" = '${lessonMaterial.h5pId}'`)
         .getOneOrFail()
@@ -188,7 +186,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context(
     'contentId columns are set as contentId, material h5p id is undefined',
     () => {
-      it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are not modified', async () => {
+      it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
         // Arrange
         const roomId = 'room1'
         const student = await new UserBuilder().buildAndPersist()
@@ -218,6 +216,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         expect(answer.contentKey).to.equal(lessonMaterial.contentId)
         expect(teacherScore.contentKey).to.equal(lessonMaterial.contentId)
 
+        // Before
+        let answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
         // Act
         await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
           getConnection(CMS_CONNECTION_NAME),
@@ -226,6 +232,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         )
 
         // Assert
+        answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
         const dbUserContentScore = await getRepository(
           UserContentScore,
           ASSESSMENTS_CONNECTION_NAME,
@@ -248,25 +261,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
           },
         })
 
-        const dbAnswer = await getRepository(
-          Answer,
-          ASSESSMENTS_CONNECTION_NAME,
-        ).findOneOrFail({
-          where: {
-            roomId: roomId,
-            studentId: student.userId,
-            contentKey: lessonMaterial.contentId, // should not change
-          },
-        })
-
         await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-          .createQueryBuilder()
-          .where(
-            `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
-          )
-          .getOneOrFail()
-
-        await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
           .createQueryBuilder()
           .where(
             `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
@@ -279,7 +274,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context(
     'contentId columns are set as h5pId, but material is not included in the lesson plan',
     () => {
-      it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId', async () => {
+      it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
         // Arrange
         const roomId = 'room1'
         const student = await new UserBuilder().buildAndPersist()
@@ -305,6 +300,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
         expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+        // Before
+        let answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
         // Act
         await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
           getConnection(CMS_CONNECTION_NAME),
@@ -313,6 +316,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         )
 
         // Assert
+        answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
         const dbUserContentScore = await getRepository(
           UserContentScore,
           ASSESSMENTS_CONNECTION_NAME,
@@ -335,25 +345,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
           },
         })
 
-        const dbAnswer = await getRepository(
-          Answer,
-          ASSESSMENTS_CONNECTION_NAME,
-        ).findOneOrFail({
-          where: {
-            roomId: roomId,
-            studentId: student.userId,
-            contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
-          },
-        })
-
         await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-          .createQueryBuilder()
-          .where(
-            `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
-          )
-          .getOneOrFail()
-
-        await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
           .createQueryBuilder()
           .where(
             `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
@@ -366,7 +358,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context(
     'contentId columns are set as h5pId, but material is not included in the lesson plan, publish status is "hidden"',
     () => {
-      it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId', async () => {
+      it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
         // Arrange
         const roomId = 'room1'
         const student = await new UserBuilder().buildAndPersist()
@@ -394,6 +386,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
         expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+        // Before
+        let answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
         // Act
         await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
           getConnection(CMS_CONNECTION_NAME),
@@ -402,6 +402,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         )
 
         // Assert
+        answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
         const dbUserContentScore = await getRepository(
           UserContentScore,
           ASSESSMENTS_CONNECTION_NAME,
@@ -424,25 +431,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
           },
         })
 
-        const dbAnswer = await getRepository(
-          Answer,
-          ASSESSMENTS_CONNECTION_NAME,
-        ).findOneOrFail({
-          where: {
-            roomId: roomId,
-            studentId: student.userId,
-            contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
-          },
-        })
-
         await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-          .createQueryBuilder()
-          .where(
-            `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
-          )
-          .getOneOrFail()
-
-        await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
           .createQueryBuilder()
           .where(
             `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
@@ -453,7 +442,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   )
 
   context('contentId columns are set as h5pId, read-only run', () => {
-    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are not modified', async () => {
+    it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
       const roomId = 'room1'
       const student = await new UserBuilder().buildAndPersist()
@@ -479,6 +468,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
       expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+      // Before
+      let answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         getConnection(CMS_CONNECTION_NAME),
@@ -487,6 +484,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       )
 
       // Assert
+      answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
       const dbUserContentScore = await getRepository(
         UserContentScore,
         ASSESSMENTS_CONNECTION_NAME,
@@ -509,23 +513,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         },
       })
 
-      const dbAnswer = await getRepository(
-        Answer,
-        ASSESSMENTS_CONNECTION_NAME,
-      ).findOneOrFail({
-        where: {
-          roomId: roomId,
-          studentId: student.userId,
-          contentKey: lessonMaterial.h5pId, // should not change
-        },
-      })
-
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-        .createQueryBuilder()
-        .where(`"${contentKeyRelationColumnName}" = '${lessonMaterial.h5pId}'`)
-        .getOneOrFail()
-
-      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(`"${contentKeyRelationColumnName}" = '${lessonMaterial.h5pId}'`)
         .getOneOrFail()
@@ -535,7 +523,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context(
     'contentId columns are set as h5pId, 2 content scores with same room id',
     () => {
-      it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId', async () => {
+      it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
         // Arrange
         const roomId = 'room1'
         const student = await new UserBuilder().buildAndPersist()
@@ -569,6 +557,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
         expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+        // Before
+        let answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
         // Act
         await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
           getConnection(CMS_CONNECTION_NAME),
@@ -577,6 +573,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         )
 
         // Assert
+        answerTableQueryResult = await getConnection(
+          ASSESSMENTS_CONNECTION_NAME,
+        ).query(
+          "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+        )
+        expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
         const dbUserContentScore = await getRepository(
           UserContentScore,
           ASSESSMENTS_CONNECTION_NAME,
@@ -610,25 +613,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
           },
         })
 
-        const dbAnswer = await getRepository(
-          Answer,
-          ASSESSMENTS_CONNECTION_NAME,
-        ).findOneOrFail({
-          where: {
-            roomId: roomId,
-            studentId: student.userId,
-            contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
-          },
-        })
-
         await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-          .createQueryBuilder()
-          .where(
-            `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
-          )
-          .getOneOrFail()
-
-        await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
           .createQueryBuilder()
           .where(
             `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
@@ -639,7 +624,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   )
 
   context('contentId columns are set as h5pId', () => {
-    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId', async () => {
+    it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
       // Arrange
       const roomId = 'room1'
       const student = await new UserBuilder().buildAndPersist()
@@ -665,6 +650,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       expect(answer.contentKey).to.equal(lessonMaterial.h5pId)
       expect(teacherScore.contentKey).to.equal(lessonMaterial.h5pId)
 
+      // Before
+      let answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         getConnection(CMS_CONNECTION_NAME),
@@ -673,6 +666,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       )
 
       // Assert
+      answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
       const dbUserContentScore = await getRepository(
         UserContentScore,
         ASSESSMENTS_CONNECTION_NAME,
@@ -695,25 +695,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         },
       })
 
-      const dbAnswer = await getRepository(
-        Answer,
-        ASSESSMENTS_CONNECTION_NAME,
-      ).findOneOrFail({
-        where: {
-          roomId: roomId,
-          studentId: student.userId,
-          contentKey: lessonMaterial.contentId, // now it should be set as the cms content ID
-        },
-      })
-
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-        .createQueryBuilder()
-        .where(
-          `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
-        )
-        .getOneOrFail()
-
-      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(
           `"${contentKeyRelationColumnName}" = '${lessonMaterial.contentId}'`,
@@ -723,7 +705,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   })
 
   context('contentId columns are set as h5pId|subcontentId', () => {
-    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are set to contentId|subcontentId', async () => {
+    it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId|subcontentId', async () => {
       // Arrange
       const roomId = 'room1'
       const student = await new UserBuilder().buildAndPersist()
@@ -762,6 +744,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       expect(answer.contentKey).to.equal(oldContentKey)
       expect(teacherScore.contentKey).to.equal(oldContentKey)
 
+      // Before
+      let answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         getConnection(CMS_CONNECTION_NAME),
@@ -770,6 +760,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       )
 
       // Assert
+      answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
       const dbUserContentScore = await getRepository(
         UserContentScore,
         ASSESSMENTS_CONNECTION_NAME,
@@ -792,23 +789,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         },
       })
 
-      const dbAnswer = await getRepository(
-        Answer,
-        ASSESSMENTS_CONNECTION_NAME,
-      ).findOneOrFail({
-        where: {
-          roomId: roomId,
-          studentId: student.userId,
-          contentKey: newContentKey, // now it should be set as the contentId|subcontentId
-        },
-      })
-
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-        .createQueryBuilder()
-        .where(`"${contentKeyRelationColumnName}" = '${newContentKey}'`)
-        .getOneOrFail()
-
-      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(`"${contentKeyRelationColumnName}" = '${newContentKey}'`)
         .getOneOrFail()
@@ -816,7 +797,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   })
 
   context('contentId columns are set as contentId|subcontentId', () => {
-    it('contentId columns for tables (UserContentScore, TeacherScore, Answer) are not modified', async () => {
+    it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
       const roomId = 'room1'
       const student = await new UserBuilder().buildAndPersist()
@@ -850,6 +831,14 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       expect(answer.contentKey).to.equal(contentKey)
       expect(teacherScore.contentKey).to.equal(contentKey)
 
+      // Before
+      let answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE tablename = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(1)
+
       // Act
       await migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
         getConnection(CMS_CONNECTION_NAME),
@@ -858,6 +847,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       )
 
       // Assert
+      answerTableQueryResult = await getConnection(
+        ASSESSMENTS_CONNECTION_NAME,
+      ).query(
+        "SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'assessment_xapi_answer'",
+      )
+      expect(Number(answerTableQueryResult[0].count)).to.equal(0)
+
       const dbUserContentScore = await getRepository(
         UserContentScore,
         ASSESSMENTS_CONNECTION_NAME,
@@ -880,23 +876,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         },
       })
 
-      const dbAnswer = await getRepository(
-        Answer,
-        ASSESSMENTS_CONNECTION_NAME,
-      ).findOneOrFail({
-        where: {
-          roomId: roomId,
-          studentId: student.userId,
-          contentKey: contentKey, // should not change
-        },
-      })
-
       await getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
-        .createQueryBuilder()
-        .where(`"${contentKeyRelationColumnName}" = '${contentKey}'`)
-        .getOneOrFail()
-
-      await getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
         .createQueryBuilder()
         .where(`"${contentKeyRelationColumnName}" = '${contentKey}'`)
         .getOneOrFail()
