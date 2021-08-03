@@ -1,6 +1,7 @@
 # Assessment Service
 
-[![codecov](https://codecov.io/bb/calmisland/kidsloop-assessment-service/branch/master/graph/badge.svg?token=HMADF4LC8H)](https://codecov.io/bb/calmisland/kidsloop-assessment-service)
+[![codecov](https://codecov.io/bb/calmisland/kidsloop-assessment-service/branch/master/graph/badge.svg?token=HMADF4LC8H)](https://codecov.io/bb/calmisland/kidsloop-assessment-service) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+
 
 [TOC]
 
@@ -12,7 +13,7 @@ Consumed by the [cms-backend-service](https://bitbucket.org/calmisland/cms-backe
 
 Branching model: `feature/fix/etc` -> `master` -> `alpha` -> `production`
 
-Contributing: Follow the specification covered in [CONTRIBUTING.md](contributing)
+Contributing: Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### External KidsLoop dependencies
 

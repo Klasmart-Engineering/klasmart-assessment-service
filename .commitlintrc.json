@@ -1,3 +1,4 @@
 {
-  "extends": ["@commitlint/config-conventional"]
+  "extends": ["@commitlint/config-conventional"],
+  "helpUrl": "📢 Use the 'npx cz' command for an easy-to-follow commit wizard. 📢"
 }

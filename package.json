@@ -23,8 +23,16 @@
     "prepare": "husky install",
     "pre-commit": "lint-staged"
   },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
   "lint-staged": {
-    "*.ts": ["eslint", "prettier --check"]
+    "*.ts": [
+      "eslint",
+      "prettier --check"
+    ]
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^13.1.0",
@@ -46,6 +54,7 @@
     "chai-as-promised": "^7.1.1",
     "codecov": "^3.8.2",
     "commitlint": "^13.1.0",
+    "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^10.0.0",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.2.0",
