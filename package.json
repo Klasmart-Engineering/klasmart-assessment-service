@@ -11,7 +11,7 @@
     "format:check": "prettier --check \"{src,tests}/**/*.ts\"",
     "format": "prettier --write \"{src,tests}/**/*.ts\"",
     "start": "ts-node src/index.ts",
-    "build": "tsc -p . --outDir ./dist",
+    "build": "tsc -p tsconfig-build.json --outDir ./dist",
     "dev": "nodemon --config nodemon.json src/index.ts",
     "test": "npm run test:unit && npm run test:integration",
     "test:coverage": "nyc --reporter=lcov --report-dir ./test-results/coverage.lcov npm run test",
