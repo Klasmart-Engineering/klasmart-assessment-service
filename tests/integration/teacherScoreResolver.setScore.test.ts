@@ -319,6 +319,7 @@ describe('teacherScoreResolver.setScore', function () {
           content_id: lessonMaterial.contentId,
           subcontent_id: lessonMaterial.subcontentId ?? null,
           h5p_id: lessonMaterial.h5pId,
+          parent_id: null,
           name: xapiContentName,
           type: xapiContentType,
           fileType: FileType[FileType.H5P],
@@ -419,6 +420,7 @@ describe('teacherScoreResolver.setScore', function () {
         content_id: lessonMaterial.contentId,
         subcontent_id: lessonMaterial.subcontentId ?? null,
         h5p_id: lessonMaterial.h5pId,
+        parent_id: null,
         name: xapiContentName,
         type: xapiContentType,
         fileType: FileType[FileType.H5P],
@@ -476,6 +478,7 @@ describe('teacherScoreResolver.setScore', function () {
         .withContentKey(contentKey)
         .withContentType(xapiContentType)
         .withContentName(xapiContentName)
+        .withContentParentId(lessonMaterial.h5pId)
         .buildAndPersist()
 
       // Act
@@ -525,6 +528,7 @@ describe('teacherScoreResolver.setScore', function () {
         content_id: lessonMaterial.contentId,
         subcontent_id: lessonMaterial.subcontentId,
         h5p_id: lessonMaterial.h5pId,
+        parent_id: lessonMaterial.h5pId,
         name: xapiContentName,
         type: xapiContentType,
         fileType: FileType[FileType.H5P],

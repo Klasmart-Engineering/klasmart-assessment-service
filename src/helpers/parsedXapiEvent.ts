@@ -15,6 +15,7 @@ export class ParsedXapiEvent {
   public readonly h5pSubId?: string
   public readonly h5pType?: string
   public readonly h5pName?: string
+  public readonly h5pParentId?: string
   public readonly verb?: string
   public readonly score?: XapiScore
   public readonly response?: string
@@ -49,6 +50,16 @@ export class ParsedXapiEvent {
       h5pType = (results && results[1]) || undefined
     }
 
+    // For some reason, the 1st level subcontent doesn't include a parentId.
+    let h5pParentId: string | undefined
+    const fullParentId = statement.context?.contextActivities?.parent?.[0]?.id
+    if (fullParentId) {
+      const parentIdStartIndex = fullParentId.indexOf('=') + 1
+      h5pParentId = fullParentId.substr(parentIdStartIndex)
+    } else if (h5pSubId !== undefined) {
+      h5pParentId = h5pId
+    }
+
     const h5pName = statement.object.definition.name?.['en-US']
     const verb = statement.verb?.display?.['en-US']
     const response = statement.result?.response
@@ -60,6 +71,7 @@ export class ParsedXapiEvent {
       h5pSubId,
       h5pType,
       h5pName,
+      h5pParentId,
       score,
       response,
       verb,

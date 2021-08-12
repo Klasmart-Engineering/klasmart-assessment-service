@@ -16,6 +16,7 @@ type Content {
   fileType: FileType
   h5p_id: String
   name: String
+  parent_id: String
   subcontent_id: String
   type: String
 }

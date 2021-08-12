@@ -96,6 +96,7 @@ export default class RoomResolver {
             [userContentScore],
             userContentScore.contentType,
             userContentScore.contentName,
+            userContentScore.contentParentId,
           ),
         )
       }

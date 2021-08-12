@@ -8,6 +8,7 @@ import { ContentType } from '../../src/db/cms/enums/contentType'
 export default class ContentBuilder {
   private contentId = v4()
   private subcontentId?: string
+  private parentId?: string
   private contentType = ContentType.LessonMaterial
   private name = 'Default Content Name'
   private author = v4()
@@ -46,6 +47,11 @@ export default class ContentBuilder {
     return this
   }
 
+  public withParentId(value?: string): this {
+    this.parentId = value
+    return this
+  }
+
   public withPublishStatus(value: 'published' | 'hidden' | 'draft'): this {
     this.publishStatus = value
     return this
@@ -61,6 +67,7 @@ export default class ContentBuilder {
     const mutableEntity: Mutable<Content> = entity
     mutableEntity.contentId = this.contentId
     mutableEntity.subcontentId = this.subcontentId
+    mutableEntity.parentId = this.parentId
     mutableEntity.contentType = this.contentType
     mutableEntity.name = this.name
     mutableEntity.author = this.author

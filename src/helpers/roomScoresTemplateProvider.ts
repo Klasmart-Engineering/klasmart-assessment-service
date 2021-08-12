@@ -115,10 +115,12 @@ export class RoomScoresTemplateProvider {
     )
     let h5pType: string | undefined
     let h5pName: string | undefined
+    let h5pParentId: string | undefined
     if (material.h5pId) {
       const h5pKey = ContentKey.construct(material.h5pId, subcontentId)
       h5pType = h5pKeyToXapiEventMap.get(h5pKey)?.h5pType
       h5pName = h5pKeyToXapiEventMap.get(h5pKey)?.h5pName
+      h5pParentId = h5pKeyToXapiEventMap.get(h5pKey)?.h5pParentId
     }
     mapKeyToUserContentScoreMap.set(
       mapKey,
@@ -128,6 +130,7 @@ export class RoomScoresTemplateProvider {
         contentKey,
         h5pType,
         h5pName,
+        h5pParentId,
       ),
     )
   }

@@ -68,8 +68,12 @@ export class UserContentScore {
 
   @Column({ type: 'varchar', nullable: true })
   public contentType?: string | null
+
   @Column({ type: 'varchar', nullable: true })
   public contentName?: string | null
+
+  @Column({ type: 'varchar', nullable: true })
+  public contentParentId?: string | null
 
   public async applyEvent(xapiEvent: ParsedXapiEvent): Promise<void> {
     this.seen = true
@@ -94,10 +98,12 @@ export class UserContentScore {
     contentKey: string,
     contentType: string | undefined,
     contentName?: string,
+    contentParentId?: string | null,
   ): UserContentScore {
     const userContentScore = new UserContentScore(roomId, studentId, contentKey)
     userContentScore.contentType = contentType
     userContentScore.contentName = contentName
+    userContentScore.contentParentId = contentParentId
 
     return userContentScore
   }

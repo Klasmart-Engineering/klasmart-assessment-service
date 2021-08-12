@@ -37,6 +37,7 @@ export default class UserContentScoreResolver {
       source.contentKey,
       source.contentType,
       source.contentName,
+      source.contentParentId,
       this.contentRepository,
     )
   }

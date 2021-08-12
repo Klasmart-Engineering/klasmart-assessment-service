@@ -368,6 +368,105 @@ describe('parsedXapiEvent', () => {
     },
   )
 
+  context(
+    'event.xapi.data.statement.object.definition.extensions.subContentId is defined',
+    () => {
+      it('h5pParentId is set as h5pId', async () => {
+        // Arrange
+        const roomId = 'room1'
+
+        const rawXapiEvent: XAPIRecord = {
+          userId: v4(),
+          serverTimestamp: Date.now(),
+          xapi: {
+            clientTimestamp: Date.now(),
+            data: {
+              statement: {
+                context: {
+                  contextActivities: {
+                    category: [
+                      {
+                        id: 'http://h5p.org/libraries/H5P.Flashcards-1.2',
+                      },
+                    ],
+                  },
+                },
+                object: {
+                  definition: {
+                    extensions: {
+                      'http://h5p.org/x-api/h5p-local-content-id': v4(),
+                      'http://h5p.org/x-api/h5p-subContentId': v4(),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+
+        // Act
+        const resultEvent = ParsedXapiEvent.parseRawEvent(roomId, rawXapiEvent)
+
+        // Assert
+        expect(resultEvent).to.not.be.null
+        expect(resultEvent?.h5pType).to.not.be.undefined
+        expect(resultEvent?.h5pParentId).to.equal(resultEvent?.h5pId)
+      })
+    },
+  )
+
+  context(
+    'event.xapi.data.statement.context.contextActivities.parent.id is defined',
+    () => {
+      it('h5pParentId is set as h5pId', async () => {
+        // Arrange
+        const roomId = 'room1'
+        const depth0Id = v4()
+        const depth1Id = v4()
+        const depth2Id = v4()
+
+        const rawXapiEvent: XAPIRecord = {
+          userId: v4(),
+          serverTimestamp: Date.now(),
+          xapi: {
+            clientTimestamp: Date.now(),
+            data: {
+              statement: {
+                context: {
+                  contextActivities: {
+                    parent: [
+                      {
+                        id: `undefined?subContentId=${depth1Id}`,
+                      },
+                    ],
+                  },
+                },
+                object: {
+                  definition: {
+                    extensions: {
+                      'http://h5p.org/x-api/h5p-local-content-id': depth0Id,
+                      'http://h5p.org/x-api/h5p-subContentId': depth2Id,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+
+        // Act
+        const resultEvent = ParsedXapiEvent.parseRawEvent(roomId, rawXapiEvent)
+
+        // Assert
+        expect(resultEvent).to.not.be.null
+        expect(resultEvent?.h5pType).to.be.undefined
+        expect(resultEvent?.h5pId).to.equal(depth0Id)
+        expect(resultEvent?.h5pSubId).to.equal(depth2Id)
+        expect(resultEvent?.h5pParentId).to.equal(depth1Id)
+      })
+    },
+  )
+
   context('event.xapi.data.statement.verb is undefined', () => {
     it('returns non-null value', async () => {
       // Arrange
