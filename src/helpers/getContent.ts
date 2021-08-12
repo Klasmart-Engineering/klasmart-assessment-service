@@ -4,6 +4,7 @@ import { Content } from '../db/cms/entities/content'
 import { ContentType } from '../db/cms/enums/contentType'
 import ContentKey from './contentKey'
 
+// TODO: Remove after content_id migration.
 export const h5pIdToCmsContentIdCache = new Map<string, string>()
 
 export async function createH5pIdToCmsContentIdCache(): Promise<void> {
@@ -25,6 +26,7 @@ export default async function getContent(
   contentKey: string,
   contentType: string | undefined | null,
   contentName: string | undefined | null,
+  contentParentId: string | undefined | null,
   contentRepository: Repository<Content>,
 ): Promise<Content | null> {
   const { contentId, subcontentId } = ContentKey.deconstruct(contentKey)
@@ -37,11 +39,13 @@ export default async function getContent(
     content.subcontentId = subcontentId
     content.type = contentType
     content.name = contentName ?? content.name
+    content.parentId = contentParentId
   }
 
   return content
 }
 
+// TODO: Remove after content_id migration.
 async function findCmsContentUsingH5pId(
   contentRepository: Repository<Content>,
   h5pId: string,

@@ -8,18 +8,20 @@ export class UserContentScoreFactory {
     roomId: string,
     studentId: string,
     contentKey: string,
-    activityType?: string,
-    activityName?: string,
+    contentType?: string,
+    contentName?: string,
+    contentParentId?: string,
   ): UserContentScore {
-    switch (activityType) {
+    switch (contentType) {
       case 'ImageMultipleHotspotQuestion': {
         const result = new MultipleHotspotUserContentScore(
           roomId,
           studentId,
           contentKey,
         )
-        result.contentType = activityType
-        result.contentName = activityName
+        result.contentType = contentType
+        result.contentName = contentName
+        result.contentParentId = contentParentId
         return result
       }
       default:
@@ -27,8 +29,9 @@ export class UserContentScoreFactory {
           roomId,
           studentId,
           contentKey,
-          activityType,
-          activityName,
+          contentType,
+          contentName,
+          contentParentId,
         )
     }
   }

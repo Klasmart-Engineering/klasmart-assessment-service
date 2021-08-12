@@ -21,6 +21,7 @@ export default class ContentScoresResolver {
       source.contentKey,
       source.contentType,
       source.contentName,
+      source.parentId,
       this.contentRepository,
     )
   }

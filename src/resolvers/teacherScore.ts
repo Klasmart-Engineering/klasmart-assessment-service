@@ -133,10 +133,12 @@ export default class TeacherScoreResolver {
     })
     const contentType = userContentScore?.contentType
     const contentName = userContentScore?.contentName
+    const contentParentId = userContentScore?.contentParentId
     return await getContent(
       source.contentKey,
       contentType,
       contentName,
+      contentParentId,
       this.contentRepository,
     )
   }

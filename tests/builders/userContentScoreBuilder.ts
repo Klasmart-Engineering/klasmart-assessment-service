@@ -9,6 +9,7 @@ export default class UserContentScoreBuilder {
   private contentKey = v4()
   private contentType?: string
   private contentName?: string
+  private contentParentId?: string | null
 
   public withroomId(value: string): this {
     this.roomId = value
@@ -35,6 +36,11 @@ export default class UserContentScoreBuilder {
     return this
   }
 
+  public withContentParentId(value?: string | null): this {
+    this.contentParentId = value
+    return this
+  }
+
   public build(): UserContentScore {
     const entity = UserContentScore.new(
       this.roomId,
@@ -42,6 +48,7 @@ export default class UserContentScoreBuilder {
       this.contentKey,
       this.contentType,
       this.contentName,
+      this.contentParentId,
     )
     return entity
   }

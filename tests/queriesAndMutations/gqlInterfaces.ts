@@ -17,6 +17,7 @@ export const CONTENT = `
 content {
   content_id
   subcontent_id
+  parent_id
   type
   name
   h5p_id
@@ -29,6 +30,7 @@ export interface GqlContent {
   type?: string | null
   name?: string
   h5p_id?: string | null
+  parent_id?: string | null
   fileType?: string
 }
 

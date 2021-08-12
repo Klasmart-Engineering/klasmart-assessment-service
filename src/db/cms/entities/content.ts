@@ -14,6 +14,9 @@ export class Content {
   @Field({ name: 'subcontent_id', nullable: true })
   subcontentId?: string
 
+  @Field(() => String, { name: 'parent_id', nullable: true })
+  parentId?: string | null
+
   @Field({ name: 'h5p_id', nullable: true })
   h5pId?: string
 

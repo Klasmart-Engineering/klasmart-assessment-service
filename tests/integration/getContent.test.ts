@@ -20,12 +20,14 @@ describe('getContent', function () {
         const contentKey = v4()
         const contentType = undefined
         const contentName = undefined
+        const contentParentId = undefined
 
         // Act
         const result = await getContent(
           contentKey,
           contentType,
           contentName,
+          contentParentId,
           getRepository(Content, CMS_CONNECTION_NAME),
         )
 
@@ -47,6 +49,7 @@ describe('getContent', function () {
         const contentId = v4()
         const contentType = undefined
         const contentName = undefined
+        const contentParentId = undefined
         h5pIdToCmsContentIdCache.set(contentKey, contentId)
 
         // Act
@@ -54,6 +57,7 @@ describe('getContent', function () {
           contentKey,
           contentType,
           contentName,
+          contentParentId,
           getRepository(Content, CMS_CONNECTION_NAME),
         )
 
@@ -74,6 +78,7 @@ describe('getContent', function () {
         const contentKey = v4()
         const contentType = undefined
         const contentName = undefined
+        const contentParentId = undefined
         const material = await new LessonMaterialBuilder()
           .withPublishStatus('hidden')
           .withSource(FileType.H5P, contentKey)
@@ -84,6 +89,7 @@ describe('getContent', function () {
           contentKey,
           contentType,
           contentName,
+          contentParentId,
           getRepository(Content, CMS_CONNECTION_NAME),
         )
 
