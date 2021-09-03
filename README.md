@@ -13,7 +13,7 @@ Consumed by the [cms-backend-service](https://bitbucket.org/calmisland/cms-backe
 
 Branching model: `feature/fix/etc` -> `master` -> `alpha` -> `production`
 
-Contributing: Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md)
+📢 Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md) 📢
 
 ### External KidsLoop dependencies
 
