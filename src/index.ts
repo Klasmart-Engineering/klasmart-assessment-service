@@ -10,10 +10,11 @@ import { connectToCmsDatabase } from './db/cms/connectToCmsDatabase'
 import { connectToUserDatabase } from './db/users/connectToUserDatabase'
 import { createApolloServer } from './helpers/createApolloServer'
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
+import { connectToXApiDatabase } from './db/xapi/sql/connectToXApiDatabase'
 import { buildDefaultSchema } from './helpers/buildDefaultSchema'
 import { createH5pIdToCmsContentIdCache } from './helpers/getContent'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { XAPIRepository } from './db/xapi/repo'
+import { XApiDynamodbRepository } from './db/xapi/dynamodb/repo'
 import { TokenDecoder } from './auth/auth'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
@@ -21,8 +22,7 @@ const routePrefix = process.env.ROUTE_PREFIX || ''
 useContainer(Container)
 
 async function main() {
-  registerXAPIRepositoryDependencies()
-  await connectToDatabases()
+  await registerAndConnectToDataSources()
   await createH5pIdToCmsContentIdCache()
 
   const schema = await buildDefaultSchema()
@@ -48,43 +48,53 @@ async function main() {
 
 // *** Restrict all environment variable access to be done here at the entry point. ***
 
-function registerXAPIRepositoryDependencies() {
-  const dynamodbTableName = process.env.DYNAMODB_TABLE_NAME
-  if (!dynamodbTableName) {
-    throw new Error(
-      `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
-    )
-  }
-  MutableContainer.set(
-    XAPIRepository.DYNAMODB_TABLE_NAME_DI_KEY,
-    dynamodbTableName,
-  )
-  MutableContainer.set(
-    XAPIRepository.DYNAMODB_DOC_CLIENT_DI_KEY,
-    new DocumentClient({
-      apiVersion: '2012-08-10',
-    }),
-  )
-}
+async function registerAndConnectToDataSources() {
+  const connectionPromises: Promise<void>[] = []
 
-async function connectToDatabases() {
   const cmsDatabaseUrl = process.env.CMS_DATABASE_URL
   if (!cmsDatabaseUrl) {
     throw new Error('Please specify a value for CMS_DATABASE_URL')
   }
-  await connectToCmsDatabase(cmsDatabaseUrl)
+  connectionPromises.push(connectToCmsDatabase(cmsDatabaseUrl))
 
   const userDatabaseUrl = process.env.USER_DATABASE_URL
   if (!userDatabaseUrl) {
     throw new Error('Please specify a value for USER_DATABASE_URL')
   }
-  await connectToUserDatabase(userDatabaseUrl)
+  connectionPromises.push(connectToUserDatabase(userDatabaseUrl))
 
   const assessmentDatabaseUrl = process.env.ASSESSMENT_DATABASE_URL
   if (!assessmentDatabaseUrl) {
     throw new Error('Please specify a value for ASSESSMENT_DATABASE_URL')
   }
-  await connectToAssessmentDatabase(assessmentDatabaseUrl)
+  connectionPromises.push(connectToAssessmentDatabase(assessmentDatabaseUrl))
+
+  if (process.env.USE_XAPI_SQL_DATABASE_FLAG === '1') {
+    const xapiEventsDatabaseUrl = process.env.XAPI_DATABASE_URL
+    if (!xapiEventsDatabaseUrl) {
+      throw new Error('Please specify a value for XAPI_DATABASE_URL')
+    }
+    connectionPromises.push(connectToXApiDatabase(xapiEventsDatabaseUrl))
+  } else {
+    const dynamodbTableName = process.env.DYNAMODB_TABLE_NAME
+    if (!dynamodbTableName) {
+      throw new Error(
+        `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
+      )
+    }
+    MutableContainer.set(
+      XApiDynamodbRepository.DYNAMODB_TABLE_NAME_DI_KEY,
+      dynamodbTableName,
+    )
+    MutableContainer.set(
+      XApiDynamodbRepository.DYNAMODB_DOC_CLIENT_DI_KEY,
+      new DocumentClient({
+        apiVersion: '2012-08-10',
+      }),
+    )
+  }
+
+  await Promise.all(connectionPromises)
 }
 
 main().catch((e) => {

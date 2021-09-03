@@ -1,11 +1,11 @@
 import { Service } from 'typedi'
 import { Attendance } from '../db/users/entities'
-import { XAPIRecord, XAPIRepository } from '../db/xapi/repo'
+import { XApiRecord, XApiRepository } from '../db/xapi'
 import { ParsedXapiEvent } from './parsedXapiEvent'
 
 @Service()
 export class RoomEventsProvider {
-  constructor(private readonly xapiRepository: XAPIRepository) {}
+  constructor(private readonly xapiRepository: XApiRepository) {}
 
   public async getEvents(
     roomId: string,
@@ -25,7 +25,7 @@ export class RoomEventsProvider {
 
   private parseEvents(
     roomId: string,
-    rawXapiEvents: XAPIRecord[],
+    rawXapiEvents: XApiRecord[],
   ): ParsedXapiEvent[] {
     const parsedXapiEvents: ParsedXapiEvent[] = []
     for (const rawXapiEvent of rawXapiEvents) {

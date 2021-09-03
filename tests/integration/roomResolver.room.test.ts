@@ -2,8 +2,8 @@ import expect from '../utils/chaiAsPromisedSetup'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import { TestTitle } from '../utils/testTitles'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import { XAPIRepository } from '../../src/db/xapi/repo'
-import { XAPIRecord } from '../../src/db/xapi/repo'
+import { XApiRepository } from '../../src/db/xapi'
+import { XApiRecord } from '../../src/db/xapi'
 import { Container as MutableContainer } from 'typedi'
 import '../utils/globalIntegrationTestHooks'
 import EndUser from '../entities/endUser'
@@ -36,7 +36,7 @@ import {
   TeacherScoreBuilder,
   UserBuilder,
   UserContentScoreBuilder,
-  XAPIRecordBuilder,
+  XApiRecordBuilder,
 } from '../builders'
 import {
   Answer,
@@ -82,7 +82,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
+      MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
       const endUser = await new EndUserBuilder()
         .dontAuthenticate()
         .buildAndPersist()
@@ -102,7 +102,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
+      MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
       const endUser = await new EndUserBuilder()
         .expiredToken()
         .buildAndPersist()
@@ -124,7 +124,7 @@ describe('roomResolver.Room', () => {
         // Arrange
         await dbConnect()
         const roomId = 'room1'
-        MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
+        MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
         const endUser = await new EndUserBuilder()
           .authenticate()
           .buildAndPersist()
@@ -148,7 +148,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set(XAPIRepository, Substitute.for<XAPIRepository>())
+      MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
       const endUser = await new EndUserBuilder()
         .authenticate()
         .buildAndPersist()
@@ -171,7 +171,7 @@ describe('roomResolver.Room', () => {
     let gqlRoom: GqlRoom | undefined | null
     let student: User
     let lessonMaterial: Content
-    let xapiRecord: XAPIRecord
+    let xapiRecord: XApiRecord
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
     const score = { min: 0, max: 2, raw: 1 }
@@ -179,8 +179,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -200,7 +200,7 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .buildAndPersist()
-      xapiRecord = new XAPIRecordBuilder()
+      xapiRecord = new XApiRecordBuilder()
         .withUserId(student.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
@@ -210,11 +210,11 @@ describe('roomResolver.Room', () => {
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .returns(
-          Promise.resolve<XAPIRecord[]>([xapiRecord]),
+          Promise.resolve<XApiRecord[]>([xapiRecord]),
         )
 
       gqlRoom = await roomQuery(roomId, endUser)
@@ -356,7 +356,7 @@ describe('roomResolver.Room', () => {
     let gqlRoom: GqlRoom | undefined | null
     let student: User
     let lessonMaterial: Content
-    let xapiRecord: XAPIRecord
+    let xapiRecord: XApiRecord
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
     const response = 'Badanamu'
@@ -364,8 +364,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -385,7 +385,7 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .buildAndPersist()
-      xapiRecord = new XAPIRecordBuilder()
+      xapiRecord = new XApiRecordBuilder()
         .withUserId(student.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
@@ -395,11 +395,11 @@ describe('roomResolver.Room', () => {
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .returns(
-          Promise.resolve<XAPIRecord[]>([xapiRecord]),
+          Promise.resolve<XApiRecord[]>([xapiRecord]),
         )
 
       gqlRoom = await roomQuery(roomId, endUser)
@@ -539,7 +539,7 @@ describe('roomResolver.Room', () => {
     let gqlRoom: GqlRoom | undefined | null
     let student: User
     let lessonMaterial: Content
-    let xapiRecord: XAPIRecord
+    let xapiRecord: XApiRecord
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
     const eventVerb = 'attempted'
@@ -547,8 +547,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -568,7 +568,7 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .buildAndPersist()
-      xapiRecord = new XAPIRecordBuilder()
+      xapiRecord = new XApiRecordBuilder()
         .withUserId(student.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
@@ -579,11 +579,11 @@ describe('roomResolver.Room', () => {
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .returns(
-          Promise.resolve<XAPIRecord[]>([xapiRecord]),
+          Promise.resolve<XApiRecord[]>([xapiRecord]),
         )
 
       gqlRoom = await roomQuery(roomId, endUser)
@@ -711,8 +711,8 @@ describe('roomResolver.Room', () => {
       let gqlRoom: GqlRoom | undefined | null
       let student: User
       let lessonMaterial: Content
-      let xapiRecord1: XAPIRecord
-      let xapiRecord2: XAPIRecord
+      let xapiRecord1: XApiRecord
+      let xapiRecord2: XApiRecord
       const xapiContentName = 'My H5P Name'
       const xapiContentType = 'Flashcards'
       const subcontent1Id = v4()
@@ -721,8 +721,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -742,7 +742,7 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        xapiRecord1 = new XAPIRecordBuilder()
+        xapiRecord1 = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial.h5pId)
           .withH5pSubId(subcontent1Id)
@@ -750,7 +750,7 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
-        xapiRecord2 = new XAPIRecordBuilder()
+        xapiRecord2 = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial.h5pId)
           .withH5pSubId(subcontent2Id)
@@ -760,11 +760,11 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .returns(
-            Promise.resolve<XAPIRecord[]>([xapiRecord1, xapiRecord2]),
+            Promise.resolve<XApiRecord[]>([xapiRecord1, xapiRecord2]),
           )
 
         gqlRoom = await roomQuery(roomId, endUser)
@@ -1063,15 +1063,15 @@ describe('roomResolver.Room', () => {
       let gqlRoom: GqlRoom | undefined | null
       let student: User
       let lessonMaterial: Content
-      let xapiRecord: XAPIRecord
+      let xapiRecord: XApiRecord
       const xapiContentName = 'My H5P Name'
       const xapiContentType = 'Flashcards'
 
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1110,7 +1110,7 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        xapiRecord = new XAPIRecordBuilder()
+        xapiRecord = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
@@ -1119,11 +1119,11 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .returns(
-            Promise.resolve<XAPIRecord[]>([xapiRecord]),
+            Promise.resolve<XApiRecord[]>([xapiRecord]),
           )
 
         gqlRoom = await roomQuery(roomId, endUser)
@@ -1274,8 +1274,8 @@ describe('roomResolver.Room', () => {
       let student: User
       let lessonMaterial1: Content
       let lessonMaterial2: Content
-      let xapiRecord1: XAPIRecord
-      let xapiRecord2: XAPIRecord
+      let xapiRecord1: XApiRecord
+      let xapiRecord2: XApiRecord
       const xapiContent1Name = 'Material 1'
       const xapiContent1Type = 'Flashcards'
       const xapiContent2Name = 'Material 2'
@@ -1284,8 +1284,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1311,14 +1311,14 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        xapiRecord1 = new XAPIRecordBuilder()
+        xapiRecord1 = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial1.h5pId)
           .withH5pName(xapiContent1Name)
           .withH5pType(xapiContent1Type)
           .withScore({ min: 0, max: 10, raw: 5 })
           .build()
-        xapiRecord2 = new XAPIRecordBuilder()
+        xapiRecord2 = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial2.h5pId)
           .withH5pName(xapiContent2Name)
@@ -1327,11 +1327,11 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .returns(
-            Promise.resolve<XAPIRecord[]>([xapiRecord2, xapiRecord1]),
+            Promise.resolve<XApiRecord[]>([xapiRecord2, xapiRecord1]),
           )
 
         gqlRoom = await roomQuery(roomId, endUser)
@@ -1553,8 +1553,8 @@ describe('roomResolver.Room', () => {
     let gqlRoom: GqlRoom | undefined | null
     let student: User
     let lessonMaterial: Content
-    let xapiRecord: XAPIRecord
-    let xapiRecord2: XAPIRecord
+    let xapiRecord: XApiRecord
+    let xapiRecord2: XApiRecord
     const xapiTimestamp1 = Date.now()
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
@@ -1562,8 +1562,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -1583,7 +1583,7 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .buildAndPersist()
-      xapiRecord = new XAPIRecordBuilder()
+      xapiRecord = new XApiRecordBuilder()
         .withUserId(student.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
@@ -1592,7 +1592,7 @@ describe('roomResolver.Room', () => {
         .withServerTimestamp(xapiTimestamp1)
         .withClientTimestamp(xapiTimestamp1)
         .build()
-      xapiRecord2 = new XAPIRecordBuilder()
+      xapiRecord2 = new XApiRecordBuilder()
         .withUserId(student.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
@@ -1603,11 +1603,11 @@ describe('roomResolver.Room', () => {
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .returns(
-          Promise.resolve<XAPIRecord[]>([xapiRecord, xapiRecord2]),
+          Promise.resolve<XApiRecord[]>([xapiRecord, xapiRecord2]),
         )
     })
 
@@ -1746,15 +1746,15 @@ describe('roomResolver.Room', () => {
       let student: User
       let lessonMaterial1: Content
       let lessonMaterial2: Content
-      let xapiRecord: XAPIRecord
+      let xapiRecord: XApiRecord
       const xapiContentName = 'My H5P Name'
       const xapiContentType = 'Flashcards'
 
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1775,7 +1775,7 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        xapiRecord = new XAPIRecordBuilder()
+        xapiRecord = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial1.h5pId)
           .withH5pName(xapiContentName)
@@ -1783,11 +1783,11 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .returns(
-            Promise.resolve<XAPIRecord[]>([xapiRecord]),
+            Promise.resolve<XApiRecord[]>([xapiRecord]),
           )
 
         gqlRoom = await roomQuery(roomId, endUser)
@@ -1913,15 +1913,15 @@ describe('roomResolver.Room', () => {
     let student1: User
     let student2: User
     let lessonMaterial: Content
-    let xapiRecord: XAPIRecord
+    let xapiRecord: XApiRecord
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
 
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student1 = await new UserBuilder().buildAndPersist()
@@ -1946,7 +1946,7 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .buildAndPersist()
-      xapiRecord = new XAPIRecordBuilder()
+      xapiRecord = new XApiRecordBuilder()
         .withUserId(student2.userId)
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
@@ -1955,14 +1955,14 @@ describe('roomResolver.Room', () => {
         .build()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student1.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student2.userId, Arg.any(), Arg.any())
         .returns(
-          Promise.resolve<XAPIRecord[]>([xapiRecord]),
+          Promise.resolve<XApiRecord[]>([xapiRecord]),
         )
 
       gqlRoom = await roomQuery(roomId, endUser)
@@ -2175,8 +2175,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -2198,10 +2198,10 @@ describe('roomResolver.Room', () => {
         .buildAndPersist()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
 
       gqlRoom = await roomQuery(roomId, endUser)
     })
@@ -2333,8 +2333,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XAPIRepository>()
-      MutableContainer.set(XAPIRepository, xapiRepository)
+      const xapiRepository = Substitute.for<XApiRepository>()
+      MutableContainer.set(XApiRepository, xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -2358,10 +2358,10 @@ describe('roomResolver.Room', () => {
         .buildAndPersist()
       xapiRepository
         .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-        .returns(Promise.resolve<XAPIRecord[]>([]))
+        .returns(Promise.resolve<XApiRecord[]>([]))
 
       gqlRoom = await roomQuery(roomId, endUser)
     })
@@ -2491,7 +2491,7 @@ describe('roomResolver.Room', () => {
       let gqlRoom: GqlRoom | undefined | null
       let student: User
       let lessonMaterial: Content
-      let xapiRecord: XAPIRecord
+      let xapiRecord: XApiRecord
       let teacherScore: TeacherScore
       let teacherComment: TeacherComment
       const xapiContentName = 'My H5P Name'
@@ -2500,8 +2500,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -2521,7 +2521,7 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        xapiRecord = new XAPIRecordBuilder()
+        xapiRecord = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
@@ -2530,11 +2530,11 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .returns(
-            Promise.resolve<XAPIRecord[]>([xapiRecord]),
+            Promise.resolve<XApiRecord[]>([xapiRecord]),
           )
         const room = await new RoomBuilder()
           .withRoomId(roomId)
@@ -2805,15 +2805,15 @@ describe('roomResolver.Room', () => {
       let gqlRoom: GqlRoom | undefined | null
       let student: User
       let lessonMaterial: Content
-      let xapiRecords: XAPIRecord[]
+      let xapiRecords: XApiRecord[]
       const xapiContentName = 'My Multiple Hotspots'
       const xapiContentType = 'ImageMultipleHotspotQuestion'
 
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -2833,7 +2833,7 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        const xapiRecordBuilder = new XAPIRecordBuilder()
+        const xapiRecordBuilder = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
@@ -2862,10 +2862,10 @@ describe('roomResolver.Room', () => {
         ]
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>(xapiRecords))
+          .returns(Promise.resolve<XApiRecord[]>(xapiRecords))
 
         gqlRoom = await roomQuery(roomId, endUser)
       })
@@ -3019,15 +3019,15 @@ describe('roomResolver.Room', () => {
       let gqlRoom: GqlRoom | undefined | null
       let student: User
       let lessonMaterial: Content
-      let xapiRecord: XAPIRecord
+      let xapiRecord: XApiRecord
       const xapiContentName = 'My H5P Name'
       const xapiContentType = 'Flashcards'
 
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XAPIRepository>()
-        MutableContainer.set(XAPIRepository, xapiRepository)
+        const xapiRepository = Substitute.for<XApiRepository>()
+        MutableContainer.set(XApiRepository, xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -3047,7 +3047,7 @@ describe('roomResolver.Room', () => {
           .withRoomId(roomId)
           .withLessonPlanId(lessonPlan.contentId)
           .buildAndPersist()
-        xapiRecord = new XAPIRecordBuilder()
+        xapiRecord = new XApiRecordBuilder()
           .withUserId(student.userId)
           .withH5pId(lessonMaterial.h5pId)
           .withH5pName(xapiContentName)
@@ -3056,11 +3056,11 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XAPIRecord[]>([]))
+          .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .returns(
-            Promise.resolve<XAPIRecord[]>([xapiRecord]),
+            Promise.resolve<XApiRecord[]>([xapiRecord]),
           )
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)

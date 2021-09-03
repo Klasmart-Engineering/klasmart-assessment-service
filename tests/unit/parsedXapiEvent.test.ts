@@ -1,15 +1,15 @@
 import { expect } from 'chai'
-import { XAPIRecordBuilder } from '../builders'
+import { XApiRecordBuilder } from '../builders'
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import { v4 } from 'uuid'
-import { XAPIRecord } from '../../src/db/xapi/repo'
+import { XApiRecord } from '../../src/db/xapi'
 
 describe('parsedXapiEvent', () => {
   context('event is undefined', () => {
     it('returns null', async () => {
       // Arrange
       const roomId = 'room1'
-      const rawXapiEvent: XAPIRecord | undefined | null = undefined
+      const rawXapiEvent: XApiRecord | undefined | null = undefined
 
       // Act
       const resultEvent = ParsedXapiEvent.parseRawEvent(roomId, rawXapiEvent)
@@ -25,7 +25,7 @@ describe('parsedXapiEvent', () => {
       const roomId = 'room1'
       const userId: string | undefined = undefined
 
-      const rawXapiEvent = new XAPIRecordBuilder().withUserId(userId).build()
+      const rawXapiEvent = new XApiRecordBuilder().withUserId(userId).build()
 
       // Act
       const resultEvent = ParsedXapiEvent.parseRawEvent(roomId, rawXapiEvent)
@@ -40,7 +40,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: undefined,
@@ -59,7 +59,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: { clientTimestamp: undefined, data: undefined },
@@ -78,7 +78,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: { clientTimestamp: Date.now(), data: undefined },
@@ -97,7 +97,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: { clientTimestamp: Date.now(), data: { statement: undefined } },
@@ -116,7 +116,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: {
@@ -138,7 +138,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: {
@@ -162,7 +162,7 @@ describe('parsedXapiEvent', () => {
         // Arrange
         const roomId = 'room1'
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -198,7 +198,7 @@ describe('parsedXapiEvent', () => {
         // Arrange
         const roomId = 'room1'
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -222,7 +222,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: {
@@ -257,7 +257,7 @@ describe('parsedXapiEvent', () => {
         // Arrange
         const roomId = 'room1'
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -293,7 +293,7 @@ describe('parsedXapiEvent', () => {
         // Arrange
         const roomId = 'room1'
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -329,7 +329,7 @@ describe('parsedXapiEvent', () => {
         // Arrange
         const roomId = 'room1'
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -375,7 +375,7 @@ describe('parsedXapiEvent', () => {
         // Arrange
         const roomId = 'room1'
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -425,7 +425,7 @@ describe('parsedXapiEvent', () => {
         const depth1Id = v4()
         const depth2Id = v4()
 
-        const rawXapiEvent: XAPIRecord = {
+        const rawXapiEvent: XApiRecord = {
           userId: v4(),
           serverTimestamp: Date.now(),
           xapi: {
@@ -472,7 +472,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: {
@@ -505,7 +505,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: {
@@ -538,7 +538,7 @@ describe('parsedXapiEvent', () => {
       // Arrange
       const roomId = 'room1'
 
-      const rawXapiEvent: XAPIRecord = {
+      const rawXapiEvent: XApiRecord = {
         userId: v4(),
         serverTimestamp: Date.now(),
         xapi: {

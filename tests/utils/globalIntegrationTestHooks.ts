@@ -52,6 +52,15 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
   ) {
     await connection.query('CREATE DATABASE test_assessment_db;')
   }
+  if (
+    (
+      await connection.query(
+        "SELECT datname FROM pg_catalog.pg_database WHERE datname = 'test_xapi_db';",
+      )
+    ).length == 0
+  ) {
+    await connection.query('CREATE DATABASE test_xapi_db;')
+  }
 
   await queryRunner.release()
   await connection.close()

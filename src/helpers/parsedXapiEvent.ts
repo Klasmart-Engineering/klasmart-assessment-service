@@ -1,4 +1,4 @@
-import { XAPIRecord } from '../db/xapi/repo'
+import { XApiRecord } from '../db/xapi'
 import { ILogger, Logger } from './logger'
 
 type XapiScore = {
@@ -22,7 +22,7 @@ export class ParsedXapiEvent {
 
   public static parseRawEvent(
     roomId: string,
-    rawXapiEvent?: XAPIRecord,
+    rawXapiEvent?: XApiRecord,
   ): ParsedXapiEvent | null {
     const userId = rawXapiEvent?.userId
     const timestamp = rawXapiEvent?.xapi?.clientTimestamp

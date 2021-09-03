@@ -1,7 +1,10 @@
-import { XAPIRecord } from '../../src/db/xapi/repo'
+import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
+import { XApiRecordSql } from '../../src/db/xapi/sql/entities'
+import { XAPI_CONNECTION_NAME } from '../../src/db/xapi/sql/connectToXApiDatabase'
+import { XApiRecord } from '../../src/db/xapi'
 
-export default class XAPIRecordBuilder {
+export default class XApiRecordBuilder {
   private userId?: string = v4()
   private serverTimestamp: number = Date.now()
   private clientTimestamp?: number = Date.now()
@@ -71,7 +74,7 @@ export default class XAPIRecordBuilder {
     return this
   }
 
-  public build(): XAPIRecord {
+  public build(): XApiRecord {
     let h5pTypeUrl: string | undefined
     if (this.h5pType) {
       h5pTypeUrl = `http://h5p.org/libraries/H5P.${this.h5pType}-1.2`
@@ -111,4 +114,11 @@ export default class XAPIRecordBuilder {
       },
     }
   }
+
+  // public async buildAndPersist(): Promise<XApiRecordSql> {
+  //   console.log('XApiSqlRecordBuilder ===> start', { this: this })
+  //   const entity = this.build()
+  //   console.log({ entity })
+  //   return await getRepository(XApiRecordSql, XAPI_CONNECTION_NAME).save(entity)
+  // }
 }

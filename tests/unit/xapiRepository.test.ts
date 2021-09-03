@@ -4,16 +4,17 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { PromiseResult } from 'aws-sdk/lib/request'
 import { expect } from 'chai'
 import { v4 } from 'uuid'
-import { XAPIRecord, XAPIRepository } from '../../src/db/xapi/repo'
+import { XApiRecord } from '../../src/db/xapi'
+import { XApiDynamodbRepository } from '../../src/db/xapi/dynamodb/repo'
 
-describe('xapiRepository.searchXapiEvents', () => {
+describe('XApiDynamodbRepository.searchXapiEvents', () => {
   context('dynamodb client returns list containing 1 xapi record', () => {
     it('returns a list containing 1 xapi record', async () => {
       const documentClient = Substitute.for<DocumentClient>()
       const transientResult = Substitute.for<
         Request<DocumentClient.QueryOutput, AWSError>
       >()
-      const record1: XAPIRecord = {
+      const record1: XApiRecord = {
         serverTimestamp: Date.now(),
         userId: v4(),
         xapi: {
@@ -31,7 +32,7 @@ describe('xapiRepository.searchXapiEvents', () => {
       transientResult.promise().resolves(promiseResult)
       documentClient.query(Arg.any()).returns(transientResult)
 
-      const sut = new XAPIRepository('table-name', documentClient)
+      const sut = new XApiDynamodbRepository('table-name', documentClient)
       const rawXapiRecords = await sut.searchXApiEvents(
         'user1',
         Arg.any(),
@@ -49,7 +50,7 @@ describe('xapiRepository.searchXapiEvents', () => {
         const transientResult = Substitute.for<
           Request<DocumentClient.QueryOutput, AWSError>
         >()
-        const record1: XAPIRecord = {
+        const record1: XApiRecord = {
           serverTimestamp: Date.now(),
           userId: v4(),
           xapi: {
@@ -67,7 +68,7 @@ describe('xapiRepository.searchXapiEvents', () => {
         transientResult.promise().resolves(promiseResult)
         documentClient.query(Arg.any()).returns(transientResult)
 
-        const sut = new XAPIRepository('table-name', documentClient)
+        const sut = new XApiDynamodbRepository('table-name', documentClient)
         const rawXapiRecords = await sut.searchXApiEvents('user1') // Dont specify to and from.
         expect(rawXapiRecords).to.have.lengthOf(1)
       })
@@ -80,7 +81,7 @@ describe('xapiRepository.searchXapiEvents', () => {
       const transientResult = Substitute.for<
         Request<DocumentClient.QueryOutput, AWSError>
       >()
-      const record1: XAPIRecord = {
+      const record1: XApiRecord = {
         serverTimestamp: Date.now(),
         userId: v4(),
         xapi: {
@@ -98,7 +99,7 @@ describe('xapiRepository.searchXapiEvents', () => {
       transientResult.promise().resolves(promiseResult)
       documentClient.query(Arg.any()).returns(transientResult)
 
-      const sut = new XAPIRepository('table-name', documentClient)
+      const sut = new XApiDynamodbRepository('table-name', documentClient)
       const rawXapiRecords = await sut.searchXApiEvents(
         'user1',
         Arg.any(),

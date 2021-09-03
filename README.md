@@ -21,6 +21,7 @@ Contributing: Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING
 - User database for access to data such as class attendance, user info, and organization memberships
 - CMS Database for access to data such as the content library and class schedules
 - DynamoDB XAPI table ([H5P library](https://bitbucket.org/calmisland/kidsloop-h5p-library/src/3d34fbc7f25c13b4b42f40bc3fb7c6726019aee1/src/xapi-uploader.ts?at=feature%2Fdocker-token) sends XAPI events, via the [uploader](https://bitbucket.org/calmisland/h5p-xapi-uploader), to the [XAPI server](https://bitbucket.org/calmisland/h5p-xapi-server), which in turn sends them to DynamoDB for us to be able to query here)
+- ***Upcoming***: XAPI database deployed in Postgres
 
 ---
 
@@ -53,7 +54,7 @@ docker run -d --name=assessments-mysql -p 3316:3306 -e MYSQL_ROOT_PASSWORD=asses
 Create assessment database
 
 ```
-docker container exec -it assessments-postgres psql -U postgres -c "create database assessment_db;"
+docker container exec -it assessments-postgres psql -U postgres -c "create database assessment_db; create database xapi_db;"
 ```
 
 ### Running
