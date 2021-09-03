@@ -23,7 +23,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "@commitlint/cz-commitlint"
     }
   },
   "lint-staged": {
@@ -33,7 +33,9 @@
     ]
   },
   "devDependencies": {
+    "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
+    "@commitlint/cz-commitlint": "^13.1.0",
     "@fluffy-spoon/substitute": "^1.208.0",
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
@@ -51,8 +53,7 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "codecov": "^3.8.2",
-    "commitlint": "^13.1.0",
-    "cz-conventional-changelog": "^3.3.0",
+    "commitizen": "^4.2.4",
     "dotenv": "^10.0.0",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.2.0",
@@ -60,6 +61,7 @@
     "gql-query-builder": "^3.5.5",
     "graphql-upload": "^12.0.0",
     "husky": "^7.0.1",
+    "inquirer": "^8.1.2",
     "lint-staged": "^11.1.1",
     "mocha": "^8.4.0",
     "node-mocks-http": "^1.10.1",
