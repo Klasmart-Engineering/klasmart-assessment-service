@@ -61,6 +61,11 @@ pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
       - step: *build-and-test
+      - step:
+          name: 'Conventional Commits check'
+          image: node:lts
+          script:
+            - /bin/bash commitlint-pipeline-check.sh
 
   branches:
     master:
