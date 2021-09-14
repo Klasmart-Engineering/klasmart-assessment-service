@@ -19,7 +19,6 @@ export const createTestConnections = (): Promise<Connection>[] => {
     createAssessmentDbConnection(),
     createUserDbConnection(),
     createCmsDbConnection(),
-    createXApiDbConnection(),
   ]
 }
 

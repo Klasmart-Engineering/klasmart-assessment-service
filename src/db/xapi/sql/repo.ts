@@ -1,3 +1,5 @@
+import { XApiRecord } from '..'
+import { IXApiRepository } from '../repo'
 import {
   Repository,
   Between,
@@ -6,15 +8,11 @@ import {
   MoreThanOrEqual,
 } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
-import { Service } from 'typedi'
 import { XApiRecordSql } from './entities'
-import { XApiRecord } from '../interfaces'
 import { XAPI_CONNECTION_NAME } from './connectToXApiDatabase'
 
-@Service()
-export class XApiSqlRepository {
+export class XApiSqlRepository implements IXApiRepository {
   constructor(
-    @InjectRepository(XApiRecordSql, XAPI_CONNECTION_NAME)
     private readonly xapiEventRepository: Repository<XApiRecordSql>,
   ) {}
 

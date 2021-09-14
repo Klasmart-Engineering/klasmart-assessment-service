@@ -1,15 +1,11 @@
+import { XApiRecord } from '..'
+import { IXApiRepository } from '../repo'
 import { DocumentClient, QueryOutput } from 'aws-sdk/clients/dynamodb'
-import { Inject, Service } from 'typedi'
-import { XApiRecord } from '../interfaces'
+import { Inject } from 'typedi'
 
-@Service()
-export class XApiDynamodbRepository {
-  public static readonly DYNAMODB_TABLE_NAME_DI_KEY = 'dynamodb-table-name'
-  public static readonly DYNAMODB_DOC_CLIENT_DI_KEY = 'dynamodb-doc-client'
+export class XApiDynamodbRepository implements IXApiRepository {
   constructor(
-    @Inject(XApiDynamodbRepository.DYNAMODB_TABLE_NAME_DI_KEY)
     private readonly tableName: string,
-    @Inject(XApiDynamodbRepository.DYNAMODB_DOC_CLIENT_DI_KEY)
     private readonly docClient: DocumentClient,
   ) {}
 

@@ -5,9 +5,13 @@ import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
 import { XApiRecord } from '../../src/db/xapi'
 import { XApiSqlRepository } from '../../src/db/xapi/sql/repo'
 import { Container } from 'typeorm-typedi-extensions'
+import { createXApiDbConnection } from '../utils/testConnection'
+import { Connection } from 'typeorm'
+import { XApiRecordSql } from '../../src/db/xapi/sql/entities'
 
 describe('xApi SQL database interface', () => {
   context('1 student, 1 xapi "score" event', () => {
+    let dbConnection: Connection
     let xapiRecord: XApiRecord
     let xapiRecords: XApiRecord[]
     const xapiContentName = 'My H5P Name'
@@ -18,7 +22,7 @@ describe('xApi SQL database interface', () => {
 
     before(async () => {
       // Arrange
-      await dbConnect()
+      dbConnection = await createXApiDbConnection()
       xapiRecord = await new XApiSqlRecordBuilder()
         .withUserId(studentId)
         .withH5pId(lessonMaterialH5pId)
@@ -28,11 +32,12 @@ describe('xApi SQL database interface', () => {
         .withResponse(undefined)
         .buildAndPersist()
 
-      const xapiRepository = Container.get(XApiSqlRepository)
-      xapiRecords = await xapiRepository.searchXApiEvents(studentId)
+      const typeOrmRepository = dbConnection.getRepository(XApiRecordSql)
+      const sut = new XApiSqlRepository(typeOrmRepository)
+      xapiRecords = await sut.searchXApiEvents(studentId)
     })
 
-    after(async () => await dbDisconnect())
+    after(async () => await dbConnection?.close())
 
     it('returns xapiRecords with length of 1', async () => {
       expect(xapiRecords).to.not.be.null

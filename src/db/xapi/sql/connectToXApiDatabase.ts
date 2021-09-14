@@ -1,5 +1,5 @@
 import path from 'path'
-import { ConnectionOptions, createConnection } from 'typeorm'
+import { Connection, ConnectionOptions, createConnection } from 'typeorm'
 import { Logger } from '../../../helpers/logger'
 
 export const XAPI_CONNECTION_NAME = 'xapi'
@@ -26,11 +26,14 @@ export function getXApiDatabaseConnectionOptions(
   }
 }
 
-export async function connectToXApiDatabase(url: string): Promise<void> {
+export async function connectToXApiDatabase(url: string): Promise<Connection> {
   console.log('attempting connection')
   try {
-    await createConnection(getXApiDatabaseConnectionOptions(url))
+    const connection = await createConnection(
+      getXApiDatabaseConnectionOptions(url),
+    )
     Logger.get().info('🐘 Connected to postgres: XApi database')
+    return connection
   } catch (e) {
     Logger.get().error(
       '❌ Failed to connect or initialize postgres: XApi database',

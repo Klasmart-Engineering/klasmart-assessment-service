@@ -16,6 +16,8 @@ import { createH5pIdToCmsContentIdCache } from './helpers/getContent'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { XApiDynamodbRepository } from './db/xapi/dynamodb/repo'
 import { TokenDecoder } from './auth/auth'
+import { XApiSqlRepository } from './db/xapi/sql/repo'
+import { XApiRecordSql } from './db/xapi/sql/entities'
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
@@ -74,7 +76,9 @@ async function registerAndConnectToDataSources() {
     if (!xapiEventsDatabaseUrl) {
       throw new Error('Please specify a value for XAPI_DATABASE_URL')
     }
-    connectionPromises.push(connectToXApiDatabase(xapiEventsDatabaseUrl))
+    const sqlConnection = await connectToXApiDatabase(xapiEventsDatabaseUrl)
+    const repository = sqlConnection.getRepository(XApiRecordSql)
+    MutableContainer.set('IXApiRepository', repository)
   } else {
     const dynamodbTableName = process.env.DYNAMODB_TABLE_NAME
     if (!dynamodbTableName) {
@@ -82,15 +86,12 @@ async function registerAndConnectToDataSources() {
         `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
       )
     }
+    const docClient = new DocumentClient({
+      apiVersion: '2012-08-10',
+    })
     MutableContainer.set(
-      XApiDynamodbRepository.DYNAMODB_TABLE_NAME_DI_KEY,
-      dynamodbTableName,
-    )
-    MutableContainer.set(
-      XApiDynamodbRepository.DYNAMODB_DOC_CLIENT_DI_KEY,
-      new DocumentClient({
-        apiVersion: '2012-08-10',
-      }),
+      'IXApiRepository',
+      new XApiDynamodbRepository(dynamodbTableName, docClient),
     )
   }
 

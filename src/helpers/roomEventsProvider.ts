@@ -1,11 +1,15 @@
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
 import { Attendance } from '../db/users/entities'
-import { XApiRecord, XApiRepository } from '../db/xapi'
+import { XApiRecord } from '../db/xapi'
+import { IXApiRepository } from '../db/xapi/repo'
 import { ParsedXapiEvent } from './parsedXapiEvent'
 
 @Service()
 export class RoomEventsProvider {
-  constructor(private readonly xapiRepository: XApiRepository) {}
+  constructor(
+    @Inject('IXApiRepository')
+    private readonly xapiRepository: IXApiRepository,
+  ) {}
 
   public async getEvents(
     roomId: string,

@@ -2,7 +2,6 @@ import expect from '../utils/chaiAsPromisedSetup'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import { TestTitle } from '../utils/testTitles'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import { XApiRepository } from '../../src/db/xapi'
 import { XApiRecord } from '../../src/db/xapi'
 import { Container as MutableContainer } from 'typedi'
 import '../utils/globalIntegrationTestHooks'
@@ -49,6 +48,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 import TeacherCommentBuilder from '../builders/teacherCommentBuilder'
 import { v4 } from 'uuid'
 import ContentKey from '../../src/helpers/contentKey'
+import { IXApiRepository } from '../../src/db/xapi/repo'
 
 /**
  * - scores 0 the first time
@@ -82,7 +82,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
+      MutableContainer.set('IXApiRepository', Substitute.for<IXApiRepository>())
       const endUser = await new EndUserBuilder()
         .dontAuthenticate()
         .buildAndPersist()
@@ -102,7 +102,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
+      MutableContainer.set('IXApiRepository', Substitute.for<IXApiRepository>())
       const endUser = await new EndUserBuilder()
         .expiredToken()
         .buildAndPersist()
@@ -124,7 +124,10 @@ describe('roomResolver.Room', () => {
         // Arrange
         await dbConnect()
         const roomId = 'room1'
-        MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
+        MutableContainer.set(
+          'IXApiRepository',
+          Substitute.for<IXApiRepository>(),
+        )
         const endUser = await new EndUserBuilder()
           .authenticate()
           .buildAndPersist()
@@ -148,7 +151,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set(XApiRepository, Substitute.for<XApiRepository>())
+      MutableContainer.set('IXApiRepository', Substitute.for<IXApiRepository>())
       const endUser = await new EndUserBuilder()
         .authenticate()
         .buildAndPersist()
@@ -179,8 +182,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -364,8 +367,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -547,8 +550,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -721,8 +724,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1070,8 +1073,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1284,8 +1287,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1562,8 +1565,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -1753,8 +1756,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -1920,8 +1923,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student1 = await new UserBuilder().buildAndPersist()
@@ -2175,8 +2178,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -2333,8 +2336,8 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<XApiRepository>()
-      MutableContainer.set(XApiRepository, xapiRepository)
+      const xapiRepository = Substitute.for<IXApiRepository>()
+      MutableContainer.set('IXApiRepository', xapiRepository)
 
       endUser = await new EndUserBuilder().authenticate().buildAndPersist()
       student = await new UserBuilder().buildAndPersist()
@@ -2500,8 +2503,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -2812,8 +2815,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()
@@ -3026,8 +3029,8 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<XApiRepository>()
-        MutableContainer.set(XApiRepository, xapiRepository)
+        const xapiRepository = Substitute.for<IXApiRepository>()
+        MutableContainer.set('IXApiRepository', xapiRepository)
 
         endUser = await new EndUserBuilder().authenticate().buildAndPersist()
         student = await new UserBuilder().buildAndPersist()

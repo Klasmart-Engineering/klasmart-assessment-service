@@ -31,7 +31,7 @@ describe('connectToDatabases', () => {
   const xapiSqlDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_xapi_db`
   const mysqlPort = Number(process.env.TEST_MYSQL_PORT) || 3316
   const mysqlUrl = `mysql://root:assessments@${host}:${mysqlPort}/test_cms_db`
-  console.log({ asessmentDbUrl, userDbUrl, mysqlUrl, xapiSqlDbUrl })
+  //console.log({ asessmentDbUrl, userDbUrl, mysqlUrl, xapiSqlDbUrl })
 
   before(() => Logger.reset())
   after(() => {

@@ -3,7 +3,7 @@ import { v4 } from 'uuid'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { RoomEventsProvider } from '../../src/helpers/roomEventsProvider'
 import { AttendanceBuilder, XApiRecordBuilder } from '../builders'
-import { XApiRepository } from '../../src/db/xapi/repo'
+import { IXApiRepository } from '../../src/db/xapi/repo'
 
 describe('roomEventsProvider', () => {
   context(
@@ -25,7 +25,7 @@ describe('roomEventsProvider', () => {
           .withClientTimestamp(undefined)
           .build()
 
-        const xapiRepository = Substitute.for<XApiRepository>()
+        const xapiRepository = Substitute.for<IXApiRepository>()
         xapiRepository
           .searchXApiEvents(studentId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
