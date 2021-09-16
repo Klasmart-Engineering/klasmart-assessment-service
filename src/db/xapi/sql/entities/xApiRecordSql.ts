@@ -3,7 +3,7 @@ import { XApiObject } from '../../interfaces'
 
 @Entity({ name: 'xapi_record' })
 export class XApiRecordSql {
-  @PrimaryColumn({ name: 'user_id' })
+  @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   public userId!: string
 
   @PrimaryColumn({
@@ -16,6 +16,36 @@ export class XApiRecordSql {
   })
   serverTimestamp!: number
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   public xapi?: XApiObject
+
+  @Column({ name: 'ip_hash' })
+  ipHash!: string
+
+  private constructor(
+    userId: string,
+    serverTimestamp: number,
+    xapi?: XApiObject,
+    ipHash?: string,
+  ) {
+    this.userId = userId
+    this.serverTimestamp = serverTimestamp
+    this.xapi = xapi
+    this.ipHash = ipHash || ''
+  }
+
+  public static new(
+    userId: string,
+    serverTimestamp: number,
+    xapi?: XApiObject,
+    ipHash?: string,
+  ): XApiRecordSql {
+    const xapiRecordObject = new XApiRecordSql(
+      userId,
+      serverTimestamp,
+      xapi,
+      ipHash,
+    )
+    return xapiRecordObject
+  }
 }

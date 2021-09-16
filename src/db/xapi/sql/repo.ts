@@ -7,9 +7,7 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
 } from 'typeorm'
-import { InjectRepository } from 'typeorm-typedi-extensions'
 import { XApiRecordSql } from './entities'
-import { XAPI_CONNECTION_NAME } from './connectToXApiDatabase'
 
 export class XApiSqlRepository implements IXApiRepository {
   constructor(

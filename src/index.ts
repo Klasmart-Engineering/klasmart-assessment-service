@@ -72,14 +72,19 @@ async function registerAndConnectToDataSources() {
   connectionPromises.push(connectToAssessmentDatabase(assessmentDatabaseUrl))
 
   if (process.env.USE_XAPI_SQL_DATABASE_FLAG === '1') {
+    console.log('CONFIG: Using Postgres as XApi storage solution')
     const xapiEventsDatabaseUrl = process.env.XAPI_DATABASE_URL
     if (!xapiEventsDatabaseUrl) {
       throw new Error('Please specify a value for XAPI_DATABASE_URL')
     }
-    const sqlConnection = await connectToXApiDatabase(xapiEventsDatabaseUrl)
-    const repository = sqlConnection.getRepository(XApiRecordSql)
-    MutableContainer.set('IXApiRepository', repository)
+    const conn = await connectToXApiDatabase(xapiEventsDatabaseUrl)
+    const sqlRepository = conn.getRepository(XApiRecordSql)
+    MutableContainer.set(
+      'IXApiRepository',
+      new XApiSqlRepository(sqlRepository),
+    )
   } else {
+    console.log('CONFIG: Using DynamoDB as XApi storage solution')
     const dynamodbTableName = process.env.DYNAMODB_TABLE_NAME
     if (!dynamodbTableName) {
       throw new Error(

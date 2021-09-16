@@ -160,3 +160,12 @@ Once you're granted access to the above account, head to the [service task list]
 
 - [Jira and Bitbucket](https://marketplace.visualstudio.com/items?itemName=Atlassian.atlascode)
 - [Mocha Test Explorer](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-mocha-test-adapter)
+
+
+## Miscellaneous
+
+Scan entire dynamoDb table and count items:
+
+```sh
+aws dynamodb scan --region ap-northeast-2 --table-name kidsloop-alpha-xapi-ace-ray --select "COUNT"
+```

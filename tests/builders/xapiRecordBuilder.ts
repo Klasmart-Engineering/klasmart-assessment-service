@@ -8,6 +8,7 @@ export default class XApiRecordBuilder {
   private userId?: string = v4()
   private serverTimestamp: number = Date.now()
   private clientTimestamp?: number = Date.now()
+  private ipHash?: string = 'xyz'
   private response: string | undefined
   private score: { min: number; max: number; raw: number } | undefined
   private h5pId?: string = v4()
@@ -23,6 +24,11 @@ export default class XApiRecordBuilder {
 
   public withServerTimestamp(value: number): this {
     this.serverTimestamp = value
+    return this
+  }
+
+  public withIpHash(value?: string): this {
+    this.ipHash = value
     return this
   }
 
@@ -82,6 +88,7 @@ export default class XApiRecordBuilder {
     return {
       userId: this.userId,
       serverTimestamp: this.serverTimestamp,
+      ipHash: this.ipHash,
       xapi: {
         clientTimestamp: this.clientTimestamp,
         data: {
