@@ -19,6 +19,8 @@ import { UserContentScoreFactory } from './userContentScoreFactory'
  */
 @Service()
 export class RoomScoresTemplateProvider {
+  private roomIdToContentKeyUsesH5pIdMap = new Map<string, boolean>()
+
   constructor(
     private readonly roomAttendanceProvider: RoomAttendanceProvider,
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
@@ -104,6 +106,8 @@ export class RoomScoresTemplateProvider {
     // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
     //const contentKey = ContentKey.construct(material.contentId)
     const contentKey = await this.getCompatContentKey(
+      roomId,
+      userId,
       material.contentId,
       material.h5pId,
       subcontentId,
@@ -137,6 +141,8 @@ export class RoomScoresTemplateProvider {
 
   // TODO: Delete this method after the content_id migration.
   public async getCompatContentKey(
+    roomId: string,
+    studentId: string,
     contentId: string,
     h5pId: string | undefined,
     h5pSubId: string | undefined,
@@ -144,15 +150,24 @@ export class RoomScoresTemplateProvider {
     if (!h5pId) {
       return ContentKey.construct(contentId, h5pSubId)
     }
+    let contentKey = ContentKey.construct(h5pId, h5pSubId)
+    const contentKeyUsesH5pId = this.roomIdToContentKeyUsesH5pIdMap.get(roomId)
+    if (contentKeyUsesH5pId === true) {
+      return contentKey
+    } else if (contentKeyUsesH5pId === false) {
+      return ContentKey.construct(contentId, h5pSubId)
+    }
     // If we find a content_id entry that's still using the h5pId, it means we haven't
     // run the migration script yet. So keep using the h5pId, for now.
-    let contentKey = ContentKey.construct(h5pId, h5pSubId)
-    const existingUserContentScoreUsingH5pId = await this.userContentScoreRepository.findOne(
-      {
-        where: { contentKey: contentKey },
-      },
-    )
-    if (!existingUserContentScoreUsingH5pId) {
+    const userContentScoreUsingH5pId = (await this.userContentScoreRepository.manager.query(
+      `SELECT EXISTS(SELECT * FROM assessment_xapi_user_content_score WHERE room_id = $1 AND student_id = $2 AND content_id = $3)`,
+      [roomId, studentId, contentKey],
+    )) as [{ exists: boolean }]
+
+    if (userContentScoreUsingH5pId[0].exists === true) {
+      this.roomIdToContentKeyUsesH5pIdMap.set(roomId, true)
+    } else {
+      this.roomIdToContentKeyUsesH5pIdMap.set(roomId, false)
       contentKey = ContentKey.construct(contentId, h5pSubId)
     }
     return contentKey
