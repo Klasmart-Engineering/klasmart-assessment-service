@@ -63,7 +63,13 @@ describe('roomScoresCalculator', () => {
       materialsProvider.getMaterials(roomId).resolves([material])
       eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
       scoresTemplateProvider
-        .getCompatContentKey(material.contentId, material.h5pId, undefined)
+        .getCompatContentKey(
+          roomId,
+          studentId,
+          material.contentId,
+          material.h5pId,
+          undefined,
+        )
         .resolves(material.contentId)
       scoresTemplateProvider
         .getTemplate(roomId, teacherId, [material], [attendance], [xapiRecord])
@@ -150,7 +156,13 @@ describe('roomScoresCalculator', () => {
         materialsProvider.getMaterials(roomId).resolves([material])
         eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
         scoresTemplateProvider
-          .getCompatContentKey(material.contentId, material.h5pId, undefined)
+          .getCompatContentKey(
+            roomId,
+            studentId,
+            material.contentId,
+            material.h5pId,
+            undefined,
+          )
           .resolves(material.contentId)
         scoresTemplateProvider
           .getTemplate(

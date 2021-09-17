@@ -86,6 +86,8 @@ export class RoomScoresCalculator {
       // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
       //const contentKey = ContentKey.construct(contentId, xapiEvent.h5pSubId)
       const contentKey = await this.roomScoresTemplateProvider.getCompatContentKey(
+        roomId,
+        xapiEvent.userId,
         contentId,
         xapiEvent.h5pId,
         xapiEvent.h5pSubId,
