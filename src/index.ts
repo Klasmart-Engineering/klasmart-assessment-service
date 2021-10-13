@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import 'newrelic'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import compression from 'compression'
