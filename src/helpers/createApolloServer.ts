@@ -1,3 +1,4 @@
+import newrelicApolloServerPlugin from '@newrelic/apollo-server-plugin'
 import {
   ApolloServer,
   AuthenticationError,
@@ -30,9 +31,13 @@ export const createApolloServer = (
         const encodedToken = req.headers.authorization || req.cookies.access
         const token = await checkToken(encodedToken, tokenDecoder)
         return { token, ip, userId: token?.id }
-      } catch (e) {
-        Logger.get().error(e)
+      } catch (e: unknown) {
+        Logger.get().error(e as string)
       }
     },
+    plugins: [
+      // Note: New Relic plugin should always be listed last
+      newrelicApolloServerPlugin,
+    ],
   })
 }
