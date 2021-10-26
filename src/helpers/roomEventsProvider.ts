@@ -9,7 +9,7 @@ export class RoomEventsProvider {
   constructor(
     @Inject('IXApiRepository')
     private readonly xapiRepository: IXApiRepository,
-  ) {}
+  ) { }
 
   public async getEvents(
     roomId: string,

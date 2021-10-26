@@ -9,7 +9,7 @@ export class RoomAttendanceProvider {
   public constructor(
     @InjectRepository(Attendance, USERS_CONNECTION_NAME)
     private readonly attendanceRepository: Repository<Attendance>,
-  ) {}
+  ) { }
 
   public async getAttendances(roomId: string): Promise<Attendance[]> {
     let attendances = await this.attendanceRepository.find({

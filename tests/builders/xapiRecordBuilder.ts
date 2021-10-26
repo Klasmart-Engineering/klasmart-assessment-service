@@ -13,8 +13,8 @@ export default class XApiRecordBuilder {
   private score: { min: number; max: number; raw: number } | undefined
   private h5pId?: string = v4()
   private h5pSubId?: string
-  private h5pType? = 'Flashcards'
-  private h5pName? = 'My Activity'
+  private h5pType?= 'Flashcards'
+  private h5pName?= 'My Activity'
   private verb = 'answered'
 
   public withUserId(value?: string): this {
