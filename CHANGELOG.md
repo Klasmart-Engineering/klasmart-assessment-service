@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.0.0...v1.1.0) (2021-10-27)
+
+
+### Features
+
+* add newrelic entrypoint + newrelic apollo plugin ([516d701](https://bitbucket.org/calmisland/kidsloop-assessment-service/commit/516d7017d850ffab1f17470ebd1438b271f4ab73))
+* add parent_id field to Content entity ([070d945](https://bitbucket.org/calmisland/kidsloop-assessment-service/commit/070d9453e47efcbbf88c2b2d3108b07288834a38))
+
+
+### Bug Fixes
+
+* add useUnknownInCatchVariables: false to tsconfig to prevent build failures due to bumped TS version ([66ea74f](https://bitbucket.org/calmisland/kidsloop-assessment-service/commit/66ea74f5779ecd36c7d69b5b9b91acc8c937dffc))
+* bump typescript version to 4.4.4 ([4d400db](https://bitbucket.org/calmisland/kidsloop-assessment-service/commit/4d400db3827f60822c8eccf13a4d9a5010bc7034))
+* fix build issue caused by new version of @types/jsonwebtoken ([f885e91](https://bitbucket.org/calmisland/kidsloop-assessment-service/commit/f885e91cbee5b45230dda724e7a4f4efc33f28bc))
+* update package-lock to fix npm ci ERR in docker build ([41cd5dd](https://bitbucket.org/calmisland/kidsloop-assessment-service/commit/41cd5dd0af30e67e904a7a9721813112bca64941))
+
+### [0.1.1](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v0.1.0...v0.1.1) (2021-07-12)
+
 ## [1.0.0](https://calmisland///compare/v0.1.0...v1.0.0) (2021-10-18)
 
 
