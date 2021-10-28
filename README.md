@@ -169,10 +169,37 @@ Once you're granted access to the above account, head to the [service task list]
 - [Mocha Test Explorer](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-mocha-test-adapter)
 
 
+## Migrations
+
+Use `typeorm` to generate and run migrations.
+
+Docs:
+- [typeorm - Migrations](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md)
+- [typeorm - Using CLI](https://github.com/typeorm/typeorm/blob/master/docs/using-cli.md)
+
+To manually create a migration, make sure there's an `ormConfig.json` file present. You can generate it with the `./scripts/generateOrmConfig.ts` script. Then run the following:
+
+```sh
+npm run typeorm migration:generate -- --config ormConfig.json -c assessments -n MigrationName
+```
+
+
 ## Miscellaneous
 
-Scan entire dynamoDb table and count items:
+#### Scan entire dynamoDb table and count items
 
 ```sh
 aws dynamodb scan --region ap-northeast-2 --table-name kidsloop-alpha-xapi-ace-ray --select "COUNT"
+```
+
+#### Generate ormConfig.json for manual migrations
+
+```sh
+./scripts/generateOrmConfig.ts
+```
+
+#### Generate JWT token with nearly-inifitine expiration date
+
+```
+./scripts/generateJwt.ts
 ```
