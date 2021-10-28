@@ -120,3 +120,6 @@ dist
 
 # snippets
 *snippet*
+
+# typeorm ormCOnfig.json file
+ormConfig.json

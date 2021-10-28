@@ -3,7 +3,7 @@
  * Signature:
  * ----------
  *
- *    ./scripts/jwt.ts [USER_ID] [--id USER_ID] [--secret SECRET] [--email EMAIL]
+ *    ./scripts/generateJwt.ts [USER_ID] [--id USER_ID] [--secret SECRET] [--email EMAIL]
  *
  */
 import { sign, Secret, SignOptions } from 'jsonwebtoken'
@@ -26,6 +26,7 @@ const options: SignOptions = {
     alg: 'HS256',
     typ: 'JWT',
   },
+  expiresIn: 3600 * 7 * 52 * 50, // 50 years
 }
 
 console.log({ payload, secretOrPrivateKey, options })
