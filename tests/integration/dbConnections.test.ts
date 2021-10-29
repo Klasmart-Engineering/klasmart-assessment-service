@@ -41,9 +41,9 @@ describe('connectToDatabases', () => {
   afterEach(() => Logger.reset())
 
   describe('connectToAssessmentDatabase', () => {
-    it('synchronize is true, dropSchema is undefined', async () => {
+    it('synchronize is false, dropSchema is undefined', async () => {
       const config = getAssessmentDatabaseConnectionOptions(asessmentDbUrl)
-      expect(config.synchronize).is.true
+      expect(config.synchronize).is.false
       expect(config.dropSchema).is.undefined
     })
 
