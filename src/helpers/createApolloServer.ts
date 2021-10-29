@@ -5,15 +5,12 @@ import {
   ExpressContext,
 } from 'apollo-server-express'
 import { GraphQLSchema } from 'graphql'
-import { checkToken, TokenDecoder } from '../auth/auth'
+import { checkAuthenticationToken } from 'kidsloop-token-validation'
 import { Context } from '../auth/context'
 import { ErrorMessage } from './errorMessages'
 import { Logger } from './logger'
 
-export const createApolloServer = (
-  schema: GraphQLSchema,
-  tokenDecoder: TokenDecoder,
-): ApolloServer => {
+export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
     playground: true,
@@ -28,9 +25,16 @@ export const createApolloServer = (
     context: async ({ req }: ExpressContext): Promise<Context | undefined> => {
       try {
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
-        const encodedToken = req.headers.authorization || req.cookies.access
-        const token = await checkToken(encodedToken, tokenDecoder)
-        return { token, ip, userId: token?.id }
+        const encodedAuthenticationToken =
+          req.headers.authorization || req.cookies.access
+        const authenticationToken = await checkAuthenticationToken(
+          encodedAuthenticationToken,
+        )
+        return {
+          authenticationToken,
+          ip,
+          userId: authenticationToken?.id,
+        }
       } catch (e: unknown) {
         Logger.get().error(e as string)
       }

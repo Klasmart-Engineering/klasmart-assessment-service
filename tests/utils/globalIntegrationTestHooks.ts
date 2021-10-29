@@ -12,7 +12,6 @@ import { Substitute } from '@fluffy-spoon/substitute'
 import { ILogger, Logger } from '../../src/helpers/logger'
 import path from 'path'
 import dotenv from 'dotenv'
-import { TokenDecoder } from '../../src/auth/auth'
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 export let connections: Connection[]
@@ -22,7 +21,7 @@ before(async () => {
   await createAssessmentDbIfItDoesntExist()
   useContainer(Container)
   const schema = await buildDefaultSchema()
-  const server = createApolloServer(schema, new TokenDecoder())
+  const server = createApolloServer(schema)
   testClient = createTestClient(server)
   Logger.register(() => Substitute.for<ILogger>())
 })

@@ -16,7 +16,6 @@ import { buildDefaultSchema } from './helpers/buildDefaultSchema'
 import { createH5pIdToCmsContentIdCache } from './helpers/getContent'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { XApiDynamodbRepository } from './db/xapi/dynamodb/repo'
-import { TokenDecoder } from './auth/auth'
 import { XApiSqlRepository } from './db/xapi/sql/repo'
 import { XApiRecordSql } from './db/xapi/sql/entities'
 
@@ -29,7 +28,7 @@ async function main() {
   await createH5pIdToCmsContentIdCache()
 
   const schema = await buildDefaultSchema()
-  const server = createApolloServer(schema, new TokenDecoder())
+  const server = createApolloServer(schema)
 
   const app = express()
   app.use(compression())

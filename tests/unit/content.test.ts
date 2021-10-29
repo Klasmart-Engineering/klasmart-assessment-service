@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { expect } from 'chai'
 import { FileType } from '../../src/db/cms/enums'
 import { LessonMaterialBuilder } from '../builders'
