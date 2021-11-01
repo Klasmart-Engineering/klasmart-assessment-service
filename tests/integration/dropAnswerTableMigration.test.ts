@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { DropAnswerTable1625183413268 } from '../../src/migrations/DropAnswerTable1625183413268'
+import { DropAnswerTable1625183413268 } from '../../src/migrations/1625183413268-DropAnswerTable'
 import { Connection } from 'typeorm'
 import { createAssessmentDbConnection } from '../utils/testConnection'
 import {
