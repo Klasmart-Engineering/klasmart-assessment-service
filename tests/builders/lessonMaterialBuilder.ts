@@ -8,7 +8,7 @@ import ContentBuilder from './contentBuilder'
 
 export default class LessonMaterialBuilder extends ContentBuilder {
   private rawSourceId = v4()
-  private sourceId?= v4()
+  private sourceId? = v4()
   private fileType = FileType.H5P
   private readonly sourceMap = new Map([
     [FileType.H5P, this.rawSourceId],
