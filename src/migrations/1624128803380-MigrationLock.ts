@@ -7,7 +7,9 @@ export class MigrationLock1627128803380 implements MigrationInterface {
 
     // Use an exclusive lock on the migrations table so that connection.showMigrations()
     // will stall and eventually return false if another instance is already running migrations
-    await queryRunner.query(`LOCK TABLE migrations in ACCESS EXCLUSIVE MODE;`)
+    await queryRunner.query(
+      `LOCK TABLE assessment_xapi_migration in ACCESS EXCLUSIVE MODE;`,
+    )
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
