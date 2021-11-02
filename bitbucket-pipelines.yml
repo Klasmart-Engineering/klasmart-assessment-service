@@ -34,13 +34,26 @@ definitions:
           - docker
         script:
           - docker build -t kidsloop-assessment .
+      
+    - step: &pre-release
+        name: 'Pre-release'
+        image: node:lts
+        script:
+          - npm run pre-release
+    - step: &release
+        name: 'Release'
+        image: node:lts
+        script:
+          - npm run release
+        trigger: 'manual'
+
     - step: &slack-notification
         name: Slack Notification
         script:
           - pipe: atlassian/slack-notify:1.0.1
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: 'A new build of Assessment Service ($BITBUCKET_COMMIT) has been push with the "$BITBUCKET_BRANCH" tag'
+              MESSAGE: 'A new build of Assessment Service ($BITBUCKET_COMMIT) has been pushed with the "$BITBUCKET_BRANCH" tag'
 
   script: &docker-build-and-push-to-aws
     - pip3 install -U awscli
@@ -48,16 +61,19 @@ definitions:
     - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
     - export REPO=$DOCKER_REPO_URL/kidsloop-assessment # DOCKER_REPO_URL is workspace wide variable
     - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
-    - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
+    - export VERSION_TAG=$(git describe --tags)
+    - printf '"Git version":"%s", "Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $VERSION_TAG $BRANCH_TAG $COMMIT_TAG $REPO
 
     - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
 
     - docker build -t kidsloop-assessment .
+    - '[[ ! -z "$VERSION_TAG" ]] && docker tag kidsloop-assessment:latest $REPO:$VERSION_TAG'
     - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
     - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-latest
     - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
     - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
 
+    - '[[ ! -z "$VERSION_TAG" ]] && docker push $REPO:$VERSION_TAG'
     - docker push $REPO:$BRANCH_TAG
     - docker push $REPO:$BRANCH_TAG-latest
     - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
@@ -78,6 +94,24 @@ pipelines:
     master:
       - step: *build-and-test
       - step: *docker-build
+      - step: *pre-release
+      - step:
+          name: 'Docker build and push to AWS'
+          deployment: pre-release
+          image: python:3.9-alpine
+          services:
+            - docker
+          script: *docker-build-and-push-to-aws
+      - step: *slack-notification
+      - step: *release
+      - step:
+          name: 'Docker build and push to AWS'
+          deployment: release
+          image: python:3.9-alpine
+          services:
+            - docker
+          script: *docker-build-and-push-to-aws
+      - step: *slack-notification
     alpha:
       - step: *build-and-test
       - step:
