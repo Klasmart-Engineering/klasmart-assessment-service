@@ -24,7 +24,7 @@ EXPOSE 8080
 # install production node_modules
 COPY ./package*.json ./
 RUN npm ci --only=production
-# RUN npm audit --ignore
+# RUN npm audit fix --only=production
 # copy app sources
 COPY --from=build /root/app/dist ./dist
 CMD node dist/index.js

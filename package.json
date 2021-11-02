@@ -21,8 +21,7 @@
     "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
     "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
     "bootstrap": "husky install",
-    "pre-commit": "lint-staged",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
+    "pre-commit": "lint-staged"
   },
   "config": {
     "commitizen": {
@@ -95,8 +94,5 @@
     "typeorm": "^0.2.32",
     "typeorm-typedi-extensions": "^0.4.1",
     "uuid": "^8.3.2"
-  },
-  "peerDependencies": {
-    "class-validator": "^0.13.1"
   }
 }
