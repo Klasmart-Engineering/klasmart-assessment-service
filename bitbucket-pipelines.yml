@@ -66,13 +66,13 @@ definitions:
 pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
-      - step: *build-and-test
-      - step: *docker-build
       - step:
           name: 'Conventional Commits check'
           image: node:lts
           script:
             - /bin/bash commitlint-pipeline-check.sh
+      - step: *build-and-test
+      - step: *docker-build
 
   branches:
     master:
