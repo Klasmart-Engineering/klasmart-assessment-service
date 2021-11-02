@@ -28,6 +28,12 @@ definitions:
           - nodemodules
         artifacts:
           - node_modules/**
+    - step: &docker-build
+        name: 'Docker build'
+        services:
+          - docker
+        script:
+          - docker build -t kidsloop-assessment .
     - step: &slack-notification
         name: Slack Notification
         script:
@@ -36,7 +42,7 @@ definitions:
               WEBHOOK_URL: $SLACK_WEBHOOK
               MESSAGE: 'A new build of Assessment Service ($BITBUCKET_COMMIT) has been push with the "$BITBUCKET_BRANCH" tag'
 
-  script: &build-and-push-to-aws
+  script: &docker-build-and-push-to-aws
     - pip3 install -U awscli
 
     - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
@@ -61,6 +67,7 @@ pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
       - step: *build-and-test
+      - step: *docker-build
       - step:
           name: 'Conventional Commits check'
           image: node:lts
@@ -70,6 +77,7 @@ pipelines:
   branches:
     master:
       - step: *build-and-test
+      - step: *docker-build
     alpha:
       - step: *build-and-test
       - step:
@@ -78,7 +86,7 @@ pipelines:
           image: python:3.9-alpine
           services:
             - docker
-          script: *build-and-push-to-aws
+          script: *docker-build-and-push-to-aws
       - step: *slack-notification
     production:
       - step: *build-and-test
@@ -88,5 +96,5 @@ pipelines:
           image: python:3.9-alpine
           services:
             - docker
-          script: *build-and-push-to-aws
+          script: *docker-build-and-push-to-aws
       - step: *slack-notification
