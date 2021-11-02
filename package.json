@@ -20,7 +20,7 @@
     "test:codecov": "nyc --reporter=cobertura --report-dir ./test-results/coverage.xml npm test && codecov",
     "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
     "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
-    "bootstrap": "husky install",
+    "prepare": "husky install || exit 0",
     "pre-commit": "lint-staged"
   },
   "config": {
