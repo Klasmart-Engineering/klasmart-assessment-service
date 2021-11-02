@@ -35,6 +35,13 @@ Branching model: `feature/fix/etc` -> `master` -> `alpha` -> `production`
 - Npm v6.x.x
 - Docker (for Postgres and MySQL)
 
+Install the packages and husky git hooks:
+
+```
+npm install
+npm run bootstrap
+```
+
 #### Configuration
 
 Copy/paste `.env.example` in the root directory, rename it to `.env`, and modify as necessary.

@@ -1,4 +1,4 @@
-FROM node:lts-alpine AS base
+FROM node:16-alpine AS base
 RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
 WORKDIR /root/app
@@ -8,7 +8,7 @@ FROM base AS build
 WORKDIR /root/app
 COPY ./package*.json ./
 RUN npm ci
-RUN npm audit fix
+# RUN npm audit fix
 COPY ./ ./
 RUN npm run build
 
@@ -24,7 +24,7 @@ EXPOSE 8080
 # install production node_modules
 COPY ./package*.json ./
 RUN npm ci --only=production
-RUN npm audit fix --only=production
+# RUN npm audit --ignore
 # copy app sources
 COPY --from=build /root/app/dist ./dist
 CMD node dist/index.js
