@@ -80,6 +80,19 @@ definitions:
     - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
 
 pipelines:
+
+  custom:
+    release:
+      - step: *release
+      - step:
+          name: 'Docker build and push to AWS'
+          deployment: release
+          image: python:3.9-alpine
+          services:
+            - docker
+          script: *docker-build-and-push-to-aws
+      - step: *slack-notification
+
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
       - step:
@@ -103,15 +116,7 @@ pipelines:
             - docker
           script: *docker-build-and-push-to-aws
       - step: *slack-notification
-      - step: *release
-      - step:
-          name: 'Docker build and push to AWS'
-          deployment: release
-          image: python:3.9-alpine
-          services:
-            - docker
-          script: *docker-build-and-push-to-aws
-      - step: *slack-notification
+
     alpha:
       - step: *build-and-test
       - step:
