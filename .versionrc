@@ -1,0 +1,37 @@
+{
+  "types": [
+    {
+      "type": "feat",
+      "section": "Features"
+    },
+    {
+      "type": "fix",
+      "section": "Bug Fixes"
+    },
+    {
+      "type": "chore",
+      "hidden": false
+    },
+    {
+      "type": "docs",
+      "hidden": false
+    },
+    {
+      "type": "style",
+      "hidden": false
+    },
+    {
+      "type": "refactor",
+      "section": "Refactor"
+    },
+    {
+      "type": "perf",
+      "section": "Performance"
+    },
+    {
+      "type": "test",
+      "hidden": false
+    }
+  ],
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}}"
+}
