@@ -45,8 +45,8 @@ definitions:
 
   steps:
     - step: &npm-install-and-test
-        name: '⚡ Build and test'
-        image: node:lts
+        name: '⚡ npm install and test'
+        image: node:16
         services:
           - postgres
           - mysql
@@ -59,6 +59,26 @@ definitions:
           - nodemodules
         artifacts:
           - node_modules/**
+
+    - step: &npm-install-and-build
+        name: '⚡ npm install and build'
+        image: node:16
+        script:
+          - npm i
+          - npm run build
+        caches:
+          - nodemodules
+        artifacts:
+          - node_modules/**
+          - dist/**
+
+    - step: &npm-build
+        name: '⚡ npm build'
+        image: node:16
+        script:
+          - npm run build
+        artifacts:
+          - dist/**
 
     - step: &docker-build
         name: '🐳 Docker build'
@@ -112,17 +132,20 @@ pipelines:
           script:
             - /bin/bash commitlint-pipeline-check.sh
       - step: *npm-install-and-test
+      - step: *npm-build
       - step: *docker-build
 
   branches:
     master:
       - step: *npm-install-and-test
+      - step: *npm-build
       - step: *docker-build
       - step: *version-release
       - step: *slack-notification-version-release
 
   tags:
     '*':
+      - step: *npm-install-and-build
       - step:
           name: '🚀 Docker build + push to ECR'
           deployment: release
