@@ -94,7 +94,6 @@ definitions:
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
               MESSAGE: '🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH \nBuild: $BITBUCKET_BUILD_NUMBER:'
-              MESSAGE: '🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH'
 
     - step: &slack-notification-build
         name: '🔔 Slack: Build'
@@ -103,14 +102,6 @@ definitions:
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
               MESSAGE: '🚀 A new build of Assessment Service ($BITBUCKET_TAG) has been pushed to ECR \nBuild: $BITBUCKET_BUILD_NUMBER:'
-
-    - step: &slack-notification-test
-        name: '🔔 Slack: Test'
-        script:
-          - pipe: atlassian/slack-notify:1.0.1
-            variables:
-              WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: 'TEST::::: 🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH'
 
     - step: &slack-notification-test
         name: '🔔 Slack: Test'
