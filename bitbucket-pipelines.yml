@@ -31,13 +31,13 @@ definitions:
       - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
 
       - docker build -t kidsloop-assessment .
-      - docker tag kidsloop-assessment:latest $REPO:$BITBUCKET_TAG'
+      - docker tag kidsloop-assessment:latest $REPO:$BITBUCKET_TAG
       - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG
       - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-latest
       - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
       - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
 
-      - docker push $REPO:$BITBUCKET_TAG'
+      - docker push $REPO:$BITBUCKET_TAG
       - docker push $REPO:$BRANCH_TAG
       - docker push $REPO:$BRANCH_TAG-latest
       - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
@@ -61,7 +61,7 @@ definitions:
           - node_modules/**
 
     - step: &docker-build
-        name: '🏗️ Docker build'
+        name: '🐳 Docker build'
         services:
           - docker
         script:
@@ -93,7 +93,8 @@ definitions:
           - pipe: atlassian/slack-notify:1.0.1
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: '🏷️ A new version of Assessment Service ($BITBUCKET_COMMIT) has been merged into $BITBUCKET_BRANCH'
+              MESSAGE: '🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH \nBuild: $BITBUCKET_BUILD_NUMBER:'
+              MESSAGE: '🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH'
 
     - step: &slack-notification-build
         name: '🔔 Slack: Build'
@@ -101,7 +102,23 @@ definitions:
           - pipe: atlassian/slack-notify:1.0.1
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: '🐳🚀 A new build of Assessment Service ($BITBUCKET_TAG) has been pushed to ECR'
+              MESSAGE: '🚀 A new build of Assessment Service ($BITBUCKET_TAG) has been pushed to ECR \nBuild: $BITBUCKET_BUILD_NUMBER:'
+
+    - step: &slack-notification-test
+        name: '🔔 Slack: Test'
+        script:
+          - pipe: atlassian/slack-notify:1.0.1
+            variables:
+              WEBHOOK_URL: $SLACK_WEBHOOK
+              MESSAGE: 'TEST::::: 🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH'
+
+    - step: &slack-notification-test
+        name: '🔔 Slack: Test'
+        script:
+          - pipe: atlassian/slack-notify:1.0.1
+            variables:
+              WEBHOOK_URL: $SLACK_WEBHOOK
+              MESSAGE: 'TEST::::: 🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH'
 
 pipelines:
   pull-requests:
@@ -113,6 +130,7 @@ pipelines:
             - /bin/bash commitlint-pipeline-check.sh
       - step: *npm-install-and-test
       - step: *docker-build
+      - step: *slack-notification-test
 
   branches:
     master:
@@ -124,7 +142,7 @@ pipelines:
   tags:
     '*':
       - step:
-          name: '🐳🚀 Docker build + push to ECR'
+          name: '🚀 Docker build + push to ECR'
           deployment: release
           image: python:3.9-alpine
           services:
