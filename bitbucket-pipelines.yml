@@ -45,7 +45,7 @@ definitions:
 
   steps:
     - step: &npm-install-and-test
-        name: 'Build and test'
+        name: '⚡ Build and test'
         image: node:lts
         services:
           - postgres
@@ -61,7 +61,7 @@ definitions:
           - node_modules/**
 
     - step: &docker-build
-        name: 'Docker build'
+        name: '🏗️ Docker build'
         services:
           - docker
         script:
@@ -69,7 +69,7 @@ definitions:
           - docker build -t kidsloop-assessment .
   
     - step: &version-release
-        name: 'Release Version Bump'
+        name: '🏷️ Release Version Bump'
         image: node:16
         caches:
         - nodemodules
@@ -93,16 +93,15 @@ definitions:
           - pipe: atlassian/slack-notify:1.0.1
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: 'A new version of Assessment Service ($BITBUCKET_COMMIT) has been merged into $BITBUCKET_BRANCH'
+              MESSAGE: '🏷️ A new version of Assessment Service ($BITBUCKET_COMMIT) has been merged into $BITBUCKET_BRANCH'
 
     - step: &slack-notification-build
         name: '🔔 Slack: Build'
         script:
-          - *skip-bitbucket-authored-commits
           - pipe: atlassian/slack-notify:1.0.1
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: 'A new build of Assessment Service ($BITBUCKET_TAG) has been pushed to ECR'
+              MESSAGE: '🐳🚀 A new build of Assessment Service ($BITBUCKET_TAG) has been pushed to ECR'
 
 pipelines:
   pull-requests:
@@ -125,7 +124,7 @@ pipelines:
   tags:
     '*':
       - step:
-          name: 'Docker build + push to ECR'
+          name: '🐳🚀 Docker build + push to ECR'
           deployment: release
           image: python:3.9-alpine
           services:
