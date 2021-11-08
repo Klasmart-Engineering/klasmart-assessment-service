@@ -56,6 +56,14 @@ export class RoomScoresTemplateProvider {
       const subIds = h5pIdToSubIdsMap.get(x.h5pId) ?? new Set<string>()
       h5pIdToSubIdsMap.set(x.h5pId, subIds)
       subIds.add(x.h5pSubId)
+      // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
+      // Because without a subcontent API, we can't know about it.
+      // But now we use the fact that an xAPI event will include a parent ID if the activity
+      // that generated the event is a sub-activity. So we now use that parent ID to generate a
+      // UserContentScore for that parent, even though the parent may not emit an event.
+      if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
+        subIds.add(x.h5pParentId)
+      }
     }
 
     // Populate mapKeyToUserContentScoreMap with an empty UserContentScore for every user-material combination.
@@ -159,10 +167,11 @@ export class RoomScoresTemplateProvider {
     }
     // If we find a content_id entry that's still using the h5pId, it means we haven't
     // run the migration script yet. So keep using the h5pId, for now.
-    const userContentScoreUsingH5pId = (await this.userContentScoreRepository.manager.query(
-      `SELECT EXISTS(SELECT * FROM assessment_xapi_user_content_score WHERE room_id = $1 AND student_id = $2 AND content_id = $3)`,
-      [roomId, studentId, contentKey],
-    )) as [{ exists: boolean }]
+    const userContentScoreUsingH5pId =
+      (await this.userContentScoreRepository.manager.query(
+        `SELECT EXISTS(SELECT * FROM assessment_xapi_user_content_score WHERE room_id = $1 AND student_id = $2 AND content_id = $3)`,
+        [roomId, studentId, contentKey],
+      )) as [{ exists: boolean }]
 
     if (userContentScoreUsingH5pId[0].exists === true) {
       this.roomIdToContentKeyUsesH5pIdMap.set(roomId, true)

@@ -89,7 +89,7 @@ export async function checkToken(
         reject(err)
       }
       if (decoded) {
-        resolve(decoded)
+        resolve(decoded as IToken)
       }
       reject(new Error('Unexpected authorization error'))
     })
