@@ -13,6 +13,7 @@ export default class XApiRecordBuilder {
   private score: { min: number; max: number; raw: number } | undefined
   private h5pId?: string = v4()
   private h5pSubId?: string
+  private h5pParentId?: string
   private h5pType? = 'Flashcards'
   private h5pName? = 'My Activity'
   private verb = 'answered'
@@ -57,6 +58,11 @@ export default class XApiRecordBuilder {
     return this
   }
 
+  public withH5pParentId(value?: string): this {
+    this.h5pParentId = value
+    return this
+  }
+
   public withH5pType(value?: string): this {
     this.h5pType = value
     return this
@@ -85,6 +91,10 @@ export default class XApiRecordBuilder {
     if (this.h5pType) {
       h5pTypeUrl = `http://h5p.org/libraries/H5P.${this.h5pType}-1.2`
     }
+    let h5pParentString: string | undefined
+    if (this.h5pParentId) {
+      h5pParentString = `undefined?subContentId=${this.h5pParentId}`
+    }
     return {
       userId: this.userId,
       serverTimestamp: this.serverTimestamp,
@@ -108,6 +118,11 @@ export default class XApiRecordBuilder {
                 category: [
                   {
                     id: h5pTypeUrl,
+                  },
+                ],
+                parent: [
+                  {
+                    id: h5pParentString,
                   },
                 ],
               },

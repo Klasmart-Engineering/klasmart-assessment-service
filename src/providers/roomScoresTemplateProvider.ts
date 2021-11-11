@@ -139,6 +139,13 @@ export class RoomScoresTemplateProvider {
       h5pType = h5pKeyToXapiEventMap.get(h5pKey)?.h5pType
       h5pName = h5pKeyToXapiEventMap.get(h5pKey)?.h5pName
       h5pParentId = h5pKeyToXapiEventMap.get(h5pKey)?.h5pParentId
+      if (featureFlags.FixDisconnectedUserContentScoreNodes) {
+        if (subcontentId != null && h5pParentId == null) {
+          // subcontent.parentId is always non-null if the parent is another subcontent.
+          // In this case, h5pParentId is null so the parent must be the root h5p id.
+          h5pParentId = material.h5pId
+        }
+      }
     }
     mapKeyToUserContentScoreMap.set(
       mapKey,

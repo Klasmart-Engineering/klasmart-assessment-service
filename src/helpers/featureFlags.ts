@@ -13,7 +13,7 @@ export class FeatureFlags {
   }
 
   reset() {
-    this.FixDisconnectedUserContentScoreNodes = false
+    this.FixDisconnectedUserContentScoreNodes = true
     this.logAllFlags()
   }
 
