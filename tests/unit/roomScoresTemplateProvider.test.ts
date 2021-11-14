@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import { Substitute } from '@fluffy-spoon/substitute'
+import { Repository } from 'typeorm'
 import {
   AttendanceBuilder,
   LessonMaterialBuilder,
   UserContentScoreBuilder,
 } from '../builders'
-import { Repository } from 'typeorm'
 import { RoomAttendanceProvider } from '../../src/helpers/roomAttendanceProvider'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { RoomScoresTemplateProvider } from '../../src/helpers/roomScoresTemplateProvider'
@@ -13,11 +13,12 @@ import { UserContentScoreFactory } from '../../src/helpers/userContentScoreFacto
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
+import { featureFlags } from '../../src/helpers/featureFlags'
 
 describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {
     context(
-      "1 student, 1 h5p material with 'h5pSub1' sub-activity; 'h5pSub1' has 'h5pSub2' sub-activity; only 1 xAPI event which is for 'h5pSub2'",
+      "1 student, 1 h5p material with 'h5pSub1' sub-activity; 'h5pSub1' has 'h5pSub2' sub-activity; only 1 xAPI event which is for 'h5pSub2'; h5pRoot->h5pSub1->h5pSub2",
       () => {
         // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
         // Because without a subcontent API, we can't know about it.
@@ -92,17 +93,30 @@ describe('roomScoresTemplateProvider', () => {
             userContentScoreFactory,
           )
 
-          // Act
-          const result = await sut.getTemplate(
+          // FEATURE_FLAG: FixDisconnectedUserContentScoreNodes
+          // Act 1
+          featureFlags.setFixDisconnectedUserContentScoreNodes(true)
+          const result1 = await sut.getTemplate(
             roomId,
             teacherId,
             materials,
             attendances,
             xapiEvents,
           )
+          expect(result1).to.have.lengthOf(3)
 
-          // Assert
-          expect(result).to.have.lengthOf(3)
+          // Act 2
+          featureFlags.setFixDisconnectedUserContentScoreNodes(false)
+          const result2 = await sut.getTemplate(
+            roomId,
+            teacherId,
+            materials,
+            attendances,
+            xapiEvents,
+          )
+          expect(result2).to.have.lengthOf(2)
+
+          featureFlags.reset()
         })
       },
     )

@@ -1,6 +1,7 @@
 import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
+
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
@@ -9,6 +10,7 @@ import ContentKey from './contentKey'
 import { RoomAttendanceProvider } from './roomAttendanceProvider'
 import { ParsedXapiEvent } from './parsedXapiEvent'
 import { UserContentScoreFactory } from './userContentScoreFactory'
+import { featureFlags } from '../helpers/featureFlags'
 
 /**
  * Creates a list of empty UserContentScores for every user-material combination, including subcontent.
@@ -56,13 +58,16 @@ export class RoomScoresTemplateProvider {
       const subIds = h5pIdToSubIdsMap.get(x.h5pId) ?? new Set<string>()
       h5pIdToSubIdsMap.set(x.h5pId, subIds)
       subIds.add(x.h5pSubId)
-      // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
-      // Because without a subcontent API, we can't know about it.
-      // But now we use the fact that an xAPI event will include a parent ID if the activity
-      // that generated the event is a sub-activity. So we now use that parent ID to generate a
-      // UserContentScore for that parent, even though the parent may not emit an event.
-      if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
-        subIds.add(x.h5pParentId)
+
+      if (featureFlags.FixDisconnectedUserContentScoreNodes) {
+        // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
+        // Because without a subcontent API, we can't know about it.
+        // But now we use the fact that an xAPI event will include a parent ID if the activity
+        // that generated the event is a sub-activity. So we now use that parent ID to generate a
+        // UserContentScore for that parent, even though the parent may not emit an event.
+        if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
+          subIds.add(x.h5pParentId)
+        }
       }
     }
 
