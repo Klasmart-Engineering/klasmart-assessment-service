@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [1.3.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.3...v1.3.4) (2021-11-15)
 
+### Bug Fixes
+
+* fix: revert Answer timestamp to Date + set synchronise=true, runMigrations=false ([6bcced8](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/a5db9bf975a75cefb56c4db9b093e6ef18fcc8f5))
+
 ### [1.3.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.2...v1.3.3) (2021-11-11)
 
 
