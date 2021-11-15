@@ -11,7 +11,7 @@ export function getAssessmentDatabaseConnectionOptions(
     name: ASSESSMENTS_CONNECTION_NAME,
     type: 'postgres',
     url,
-    synchronize: false,
+    synchronize: true,
     entities: [
       path.join(__dirname, './entities/*.ts'),
       path.join(__dirname, './entities/*.js'),
@@ -19,7 +19,7 @@ export function getAssessmentDatabaseConnectionOptions(
     logging: Boolean(process.env.ASSESSMENT_DATABASE_LOGGING),
     migrations: ['src/migrations/*.ts', 'dist/migrations/*.js'],
     migrationsTableName: 'assessment_xapi_migration',
-    migrationsRun: true,
+    migrationsRun: false,
     cli: {
       migrationsDir: 'src/migrations',
     },

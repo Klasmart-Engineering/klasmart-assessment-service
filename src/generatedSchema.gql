@@ -9,6 +9,7 @@ type Answer {
   maximumPossibleScore: Float
   minimumPossibleScore: Float
   score: Float
+  timestamp: Timestamp!
 }
 
 type Content {
