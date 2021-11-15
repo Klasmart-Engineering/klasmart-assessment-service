@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.4...v1.3.5) (2021-11-15)
+
+
+### Refactor
+
+* replace auth.ts with kidsloop-token-validation library ([5d9f94c](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/5d9f94ca62ead48de361c232e9e070c3832e75b6))
+
+
+* stop prettier from complaining about line endings ([7264435](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/72644359cbb6f1ee0cc61bfa60e24f1d5b964be6))
+* update CHANGELOG v1.3.4 release description ([260f87f](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/260f87f6b3197543c70d0ea283522a147df06082))
+
 ### [1.3.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.3...v1.3.4) (2021-11-15)
 
 ### Bug Fixes
