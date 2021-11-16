@@ -3,7 +3,7 @@
   "description": "Assessment Service",
   "author": "KidsLoop Ltd",
   "license": "ISC",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "main": "index.ts",
   "scripts": {
     "lint": "eslint \"{src,tests}/**/*.ts\" --ext .ts",

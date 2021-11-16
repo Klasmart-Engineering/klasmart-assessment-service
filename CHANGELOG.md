@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.5...v1.3.6) (2021-11-16)
+
+
+### Refactor
+
+* modularize server creation and db connections ([b6749b2](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/b6749b20405fde4fa665800791fcec0fb9392a24))
+
 ### [1.3.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.4...v1.3.5) (2021-11-15)
 
 
