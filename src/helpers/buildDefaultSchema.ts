@@ -4,7 +4,7 @@ import { buildSchema } from 'type-graphql'
 import { Container } from 'typedi'
 import { authChecker } from '../auth/authChecker'
 
-export function buildDefaultSchema(): Promise<GraphQLSchema> {
+export default function buildDefaultSchema(): Promise<GraphQLSchema> {
   return buildSchema({
     resolvers: [
       path.join(__dirname, '../resolvers/**/*.ts'),

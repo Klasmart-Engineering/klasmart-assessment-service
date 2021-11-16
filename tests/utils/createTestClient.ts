@@ -1,4 +1,5 @@
 /**
+ * Github comment: https://github.com/apollographql/apollo-server/issues/2277#issuecomment-717412623
  * The following file is an amalgamation of [Apollo Server Testing](https://github.com/apollographql/apollo-server/blob/main/packages/apollo-server-testing/src/createTestClient.ts)
  * and [apollo-server-integration-testing](https://github.com/zapier/apollo-server-integration-testing),
  * this allows the use of `headers` while making a request
@@ -6,12 +7,10 @@
  * Credits to the original authors
  */
 
-import express from 'express'
 import { convertNodeHttpToRequest, runHttpQuery } from 'apollo-server-core'
 import { ApolloServer } from 'apollo-server-express'
 import { GraphQLResponse } from 'apollo-server-types'
 import { print, DocumentNode } from 'graphql'
-import { graphqlUploadExpress } from 'graphql-upload'
 import httpMocks, {
   RequestOptions,
   ResponseOptions,
@@ -124,10 +123,6 @@ export interface ApolloServerTestClient {
 export const createTestClient = (
   server: ApolloServer,
 ): ApolloServerTestClient => {
-  const app = express()
-  app.use(graphqlUploadExpress({ maxFileSize: 10000, maxFiles: 10 }))
-  server.applyMiddleware({ app })
-
   const test = async ({
     query,
     mutation,

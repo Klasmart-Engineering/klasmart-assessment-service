@@ -1,8 +1,6 @@
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
 import { Container as MutableContainer } from 'typedi'
-import { createApolloServer } from '../../src/helpers/createApolloServer'
-import { buildDefaultSchema } from '../../src/helpers/buildDefaultSchema'
 import { ApolloServerTestClient, createTestClient } from './createTestClient'
 import {
   createBootstrapPostgresConnection,
@@ -12,6 +10,7 @@ import { Substitute } from '@fluffy-spoon/substitute'
 import { ILogger, Logger } from '../../src/helpers/logger'
 import path from 'path'
 import dotenv from 'dotenv'
+import createAssessmentServer from '../../src/helpers/createAssessmentServer'
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 export let connections: Connection[]
@@ -20,8 +19,7 @@ export let testClient: ApolloServerTestClient
 before(async () => {
   await createAssessmentDbIfItDoesntExist()
   useContainer(Container)
-  const schema = await buildDefaultSchema()
-  const server = createApolloServer(schema)
+  const { server } = await createAssessmentServer()
   testClient = createTestClient(server)
   Logger.register(() => Substitute.for<ILogger>())
 })

@@ -14,7 +14,7 @@ import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
 
-describe.only('roomScoresTemplateProvider', () => {
+describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {
     context(
       "1 student, 1 h5p material with 'h5pSub1' sub-activity; 'h5pSub1' has 'h5pSub2' sub-activity; only 1 xAPI event which is for 'h5pSub2'",
