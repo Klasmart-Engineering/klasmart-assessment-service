@@ -124,12 +124,12 @@ definitions:
 pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
+      - step: *npm-install-and-test
       - step:
           name: '📝 Conventional Commits check'
           image: node:lts
           script:
             - /bin/bash commitlint-pipeline-check.sh
-      - step: *npm-install-and-test
       - step: *npm-build
       - step: *docker-build
 
