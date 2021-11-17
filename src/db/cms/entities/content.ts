@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AfterLoad, Column, Entity, PrimaryColumn } from 'typeorm'
-import { ObjectType, Field, Directive, ID } from 'type-graphql'
+import { ObjectType, Field } from 'type-graphql'
 import { ContentType } from '../enums/contentType'
 import { FileType } from '../enums'
 
 @ObjectType()
-@Entity({ name: 'cms_contents' })
 export class Content {
   @Field({ name: 'content_id' })
-  @PrimaryColumn({ name: 'id' })
   readonly contentId!: string
 
   @Field({ name: 'subcontent_id', nullable: true })
@@ -20,33 +17,40 @@ export class Content {
   @Field({ name: 'h5p_id', nullable: true })
   h5pId?: string
 
-  fileType?: FileType
-
-  @Column('enum', { name: 'content_type', enum: ContentType })
-  readonly contentType!: ContentType
-
   @Field({ nullable: true })
-  @Column({ name: 'content_name' })
   name!: string
-
-  @Column({ name: 'author' })
-  readonly author!: string
-
-  @Column({ type: 'json', name: 'data', nullable: true })
-  readonly data?: JSON
-
-  @Column({ type: 'bigint', name: 'create_at' })
-  readonly createdAt!: number
-
-  @Column({ name: 'publish_status', default: 'draft' })
-  readonly publishStatus!: string
 
   @Field(() => String, { nullable: true })
   type?: string | null
 
-  @AfterLoad()
+  fileType?: FileType
+  readonly contentType!: ContentType
+  readonly author!: string
+  readonly data?: JSON
+  readonly createdAt!: number
+  readonly publishStatus!: string
+
+  constructor(
+    contentId: string,
+    authorId: string,
+    contentName: string,
+    contentType: ContentType,
+    createdAt: number,
+    data: JSON | undefined,
+    publishStatus: string,
+  ) {
+    this.contentId = contentId
+    this.author = authorId
+    this.name = contentName
+    this.contentType = contentType
+    this.createdAt = createdAt
+    this.data = data
+    this.publishStatus = publishStatus
+    this.populateH5pId()
+  }
+
   populateH5pId(): void {
-    const typedData = (this.data as unknown) as IMaterial
+    const typedData = this.data as unknown as IMaterial
     if (typedData == null) {
       return
     }

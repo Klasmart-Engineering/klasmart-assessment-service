@@ -2,8 +2,6 @@ import { Container as MutableContainer } from 'typedi'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 
-import { UserApi } from '../api'
-import { connectToCmsDatabase } from '../db/cms/connectToCmsDatabase'
 import { connectToUserDatabase } from '../db/users/connectToUserDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { connectToXApiDatabase } from '../db/xapi/sql/connectToXApiDatabase'
@@ -17,12 +15,6 @@ useContainer(TypeormTypediContainer)
 // *** Restrict all environment variable access to be done here at the entry point. ***
 export default async function registerAndConnectToDataSources(): Promise<void> {
   const connectionPromises: Promise<void>[] = []
-
-  const cmsDatabaseUrl = process.env.CMS_DATABASE_URL
-  if (!cmsDatabaseUrl) {
-    throw new Error('Please specify a value for CMS_DATABASE_URL')
-  }
-  connectionPromises.push(connectToCmsDatabase(cmsDatabaseUrl))
 
   const userDatabaseUrl = process.env.USER_DATABASE_URL
   if (!userDatabaseUrl) {

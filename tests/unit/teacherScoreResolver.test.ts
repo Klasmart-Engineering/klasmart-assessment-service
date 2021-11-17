@@ -2,8 +2,8 @@ import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { EntityManager, Repository } from 'typeorm'
 import { UserContentScore } from '../../src/db/assessments/entities'
-import { Content } from '../../src/db/cms/entities'
 import { UserProvider } from '../../src/helpers/userProvider'
+import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import TeacherScoreResolver from '../../src/resolvers/teacherScore'
 import {
   LessonMaterialBuilder,
@@ -24,7 +24,7 @@ describe('teacherScoreResolver.content', () => {
 
       const userProvider = Substitute.for<UserProvider>()
       const assessmentDB = Substitute.for<EntityManager>()
-      const contentRepository = Substitute.for<Repository<Content>>()
+      const cmsContentProvider = Substitute.for<CmsContentProvider>()
 
       assessmentDB
         .findOne(UserContentScore, {
@@ -39,7 +39,7 @@ describe('teacherScoreResolver.content', () => {
       const sut = new TeacherScoreResolver(
         userProvider,
         assessmentDB,
-        contentRepository,
+        cmsContentProvider,
       )
 
       // Act

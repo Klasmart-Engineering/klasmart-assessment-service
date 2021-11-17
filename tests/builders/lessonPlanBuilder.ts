@@ -2,7 +2,6 @@ import { Mutable } from '../utils/mutable'
 import { LessonPlan } from '../../src/db/cms/entities/lessonPlan'
 import { v4 } from 'uuid'
 import { getRepository } from 'typeorm'
-import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
 import { ContentType } from '../../src/db/cms/enums/contentType'
 
 export default class LessonPlanBuilder {
@@ -51,11 +50,6 @@ export default class LessonPlanBuilder {
       mutableEntity.data = this.createMaterialLinkedList()
     }
     return entity
-  }
-
-  public async buildAndPersist(): Promise<LessonPlan> {
-    const entity = this.build()
-    return await getRepository(LessonPlan, CMS_CONNECTION_NAME).save(entity)
   }
 
   private createMaterialLinkedList(): JSON {

@@ -8,19 +8,18 @@ import {
   Authorized,
 } from 'type-graphql'
 import { Service } from 'typedi'
-import { EntityManager, Repository } from 'typeorm'
-import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
+import { EntityManager } from 'typeorm'
 import { UserInputError } from 'apollo-server-express'
+import { InjectManager } from 'typeorm-typedi-extensions'
 
 import { User } from '../api/user'
 import { Context, UserID } from '../auth/context'
-import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { TeacherComment } from '../db/assessments/entities'
-import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
-import { Schedule } from '../db/cms/entities'
+import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 import { UserProvider } from '../helpers/userProvider'
 import { ILogger, Logger } from '../helpers/logger'
 import { ErrorMessage } from '../helpers/errorMessages'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 
 @Service()
 @Resolver(() => TeacherComment)
@@ -37,8 +36,7 @@ export default class TeacherCommentResolver {
     private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
-    @InjectRepository(Schedule, CMS_CONNECTION_NAME)
-    private readonly scheduleRepository: Repository<Schedule>,
+    private readonly scheduleProvider: CmsScheduleProvider,
   ) {}
 
   @Authorized()
@@ -72,9 +70,7 @@ export default class TeacherCommentResolver {
     @UserID() teacherId: string,
   ): Promise<TeacherComment | undefined> {
     try {
-      const schedule = await this.scheduleRepository.findOne({
-        where: { id: roomId },
-      })
+      const schedule = await this.scheduleProvider.getSchedule(roomId)
       if (!schedule) {
         throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
       }

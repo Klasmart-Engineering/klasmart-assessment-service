@@ -1,6 +1,5 @@
 import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
-import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
 import { Content } from '../../src/db/cms/entities/content'
 import { FileType } from '../../src/db/cms/enums/fileType'
 import { Mutable } from '../utils/mutable'
@@ -32,7 +31,6 @@ export default class LessonMaterialBuilder extends ContentBuilder {
 
   public build(): Content {
     const entity = super.build()
-    entity.h5pId = this.fileType === FileType.H5P ? this.sourceId : undefined
     const mutableEntity: Mutable<Content> = entity
     if (this.isDataDefined) {
       const data: unknown = {
@@ -41,12 +39,8 @@ export default class LessonMaterialBuilder extends ContentBuilder {
         input_source: 1,
       }
       mutableEntity.data = data as JSON
+      entity['populateH5pId']()
     }
     return entity
-  }
-
-  public async buildAndPersist(): Promise<Content> {
-    const entity = this.build()
-    return await getRepository(Content, CMS_CONNECTION_NAME).save(entity)
   }
 }

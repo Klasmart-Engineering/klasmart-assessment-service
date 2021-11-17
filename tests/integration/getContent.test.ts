@@ -2,13 +2,13 @@ import { expect } from 'chai'
 import { LessonMaterialBuilder } from '../builders'
 import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
 import { v4 } from 'uuid'
-import { Content } from '../../src/db/cms/entities'
-import { getRepository } from 'typeorm'
 import { FileType } from '../../src/db/cms/enums'
 import getContent, {
   h5pIdToCmsContentIdCache,
 } from '../../src/helpers/getContent'
-import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
+import Substitute, { Arg } from '@fluffy-spoon/substitute'
+import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
+import { Container as MutableContainer } from 'typedi'
 
 describe('getContent', function () {
   context(
@@ -21,6 +21,8 @@ describe('getContent', function () {
         const contentType = undefined
         const contentName = undefined
         const contentParentId = undefined
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
 
         // Act
         const result = await getContent(
@@ -28,7 +30,7 @@ describe('getContent', function () {
           contentType,
           contentName,
           contentParentId,
-          getRepository(Content, CMS_CONNECTION_NAME),
+          cmsContentProvider,
         )
 
         // Assert
@@ -51,6 +53,9 @@ describe('getContent', function () {
         const contentName = undefined
         const contentParentId = undefined
         h5pIdToCmsContentIdCache.set(contentKey, contentId)
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
+        cmsContentProvider.getLessonMaterial(contentId).resolves(undefined)
 
         // Act
         const result = await getContent(
@@ -58,7 +63,7 @@ describe('getContent', function () {
           contentType,
           contentName,
           contentParentId,
-          getRepository(Content, CMS_CONNECTION_NAME),
+          cmsContentProvider,
         )
 
         // Assert
@@ -72,17 +77,22 @@ describe('getContent', function () {
   context(
     'provided contentKey uses h5pId, not cached, material publishStatus is hidden',
     () => {
-      it('returns mathing material', async () => {
+      it('returns matching material', async () => {
         // Arrange
         await dbConnect()
         const contentKey = v4()
         const contentType = undefined
         const contentName = undefined
         const contentParentId = undefined
-        const material = await new LessonMaterialBuilder()
+        const material = new LessonMaterialBuilder()
           .withPublishStatus('hidden')
           .withSource(FileType.H5P, contentKey)
-          .buildAndPersist()
+          .build()
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(material.h5pId!)
+          .resolves([material])
 
         // Act
         const result = await getContent(
@@ -90,7 +100,7 @@ describe('getContent', function () {
           contentType,
           contentName,
           contentParentId,
-          getRepository(Content, CMS_CONNECTION_NAME),
+          cmsContentProvider,
         )
 
         // Assert

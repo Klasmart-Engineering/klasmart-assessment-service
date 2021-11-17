@@ -1,6 +1,5 @@
 import { Connection, createConnection } from 'typeorm'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
-import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
 import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
 import { XAPI_CONNECTION_NAME } from '../../src/db/xapi/sql/connectToXApiDatabase'
 
@@ -15,11 +14,7 @@ export const createBootstrapPostgresConnection = (): Promise<Connection> => {
 }
 
 export const createTestConnections = (): Promise<Connection>[] => {
-  return [
-    createAssessmentDbConnection(),
-    createUserDbConnection(),
-    createCmsDbConnection(),
-  ]
+  return [createAssessmentDbConnection(), createUserDbConnection()]
 }
 
 export const createAssessmentDbConnection = (): Promise<Connection> => {
@@ -49,21 +44,6 @@ export const createUserDbConnection = (): Promise<Connection> => {
     synchronize: true,
     dropSchema: true,
     entities: ['src/db/users/entities/*.ts'],
-  })
-}
-
-export const createCmsDbConnection = (): Promise<Connection> => {
-  return createConnection({
-    name: CMS_CONNECTION_NAME,
-    type: 'mysql',
-    host: process.env.LOCALHOST || 'localhost',
-    port: Number(process.env.TEST_MYSQL_PORT) || 3316,
-    username: 'root',
-    password: 'assessments',
-    database: 'test_cms_db',
-    synchronize: true,
-    dropSchema: true,
-    entities: ['src/db/cms/entities/*.ts'],
   })
 }
 

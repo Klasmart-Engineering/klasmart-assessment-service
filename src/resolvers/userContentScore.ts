@@ -1,23 +1,20 @@
 import { Ctx, FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { InjectRepository } from 'typeorm-typedi-extensions'
-import { Repository } from 'typeorm'
 
 import { User } from '../api/user'
 import { UserProvider } from '../helpers/userProvider'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import getContent from '../helpers/getContent'
-import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Context } from '../auth/context'
+import { CmsContentProvider } from '../providers/cmsContentProvider'
 
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
   constructor(
     private readonly userProvider: UserProvider,
-    @InjectRepository(Content, CMS_CONNECTION_NAME)
-    private readonly contentRepository: Repository<Content>,
+    private readonly cmsContentProvider: CmsContentProvider,
   ) {}
 
   @FieldResolver(() => User, { nullable: true })
@@ -40,7 +37,7 @@ export default class UserContentScoreResolver {
       source.contentType,
       source.contentName,
       source.contentParentId,
-      this.contentRepository,
+      this.cmsContentProvider,
     )
   }
 }

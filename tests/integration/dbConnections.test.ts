@@ -7,11 +7,6 @@ import {
   getAssessmentDatabaseConnectionOptions,
 } from '../../src/db/assessments/connectToAssessmentDatabase'
 import {
-  CMS_CONNECTION_NAME,
-  connectToCmsDatabase,
-  getCmsDatabaseConnectionOptions,
-} from '../../src/db/cms/connectToCmsDatabase'
-import {
   connectToUserDatabase,
   getUserDatabaseConnectionOptions,
   USERS_CONNECTION_NAME,
@@ -107,30 +102,6 @@ describe('connectToDatabases', () => {
         Logger.register(() => logger)
         const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_user_db`
         const fn = () => connectToUserDatabase(badUrl)
-        await expect(fn()).to.be.rejected
-        logger.received(1).error(Arg.any())
-      })
-    })
-  })
-
-  describe('connectToCmsDatabase', () => {
-    it('synchronize is false, dropSchema is undefined', async () => {
-      const config = getCmsDatabaseConnectionOptions(mysqlUrl)
-      expect(config.synchronize).is.false
-      expect(config.dropSchema).is.undefined
-    })
-
-    it('connects successfully', async () => {
-      await connectToCmsDatabase(mysqlUrl)
-      await getConnection(CMS_CONNECTION_NAME).close()
-    })
-
-    context('invalid url (wrong username)', () => {
-      it('logs connection error and rethrows', async () => {
-        const logger = Substitute.for<ILogger>()
-        Logger.register(() => logger)
-        const badUrl = `mysql://xxxxx:assessments@${host}:${mysqlPort}/test_cms_db`
-        const fn = () => connectToCmsDatabase(badUrl)
         await expect(fn()).to.be.rejected
         logger.received(1).error(Arg.any())
       })

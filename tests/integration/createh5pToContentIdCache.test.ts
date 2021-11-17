@@ -10,7 +10,9 @@ import {
   h5pIdToCmsContentIdCache,
 } from '../../src/helpers/getContent'
 import { FileType } from '../../src/db/cms/enums'
-import { throwExpression } from '../utils/throwExpression'
+import { throwExpression } from '../../src/helpers/throwExpression'
+import Substitute from '@fluffy-spoon/substitute'
+import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 
 describe('createH5pIdToCmsContentIdCache', function () {
   before(async () => await dbConnect())
@@ -20,27 +22,35 @@ describe('createH5pIdToCmsContentIdCache', function () {
   context(
     '1 published h5p material, 1 draft h5p material, 1 published pdf material, 1 lesson plan',
     () => {
-      it('h5pIdToCmsContentIdCache is populated with the 2 lesson materials', async () => {
+      it('h5pIdToCmsContentIdCache is populated with only the published h5p material', async () => {
         // Arrange
-        const lessonMaterial1 = await new LessonMaterialBuilder()
+        const lessonMaterial1 = new LessonMaterialBuilder()
           .withPublishStatus('draft')
-          .buildAndPersist()
-        const lessonMaterial2 = await new LessonMaterialBuilder()
+          .build()
+        const lessonMaterial2 = new LessonMaterialBuilder()
           .withPublishStatus('published')
           .withSource(FileType.H5P, lessonMaterial1.h5pId)
-          .buildAndPersist()
-        const lessonMaterial3 = await new LessonMaterialBuilder()
+          .build()
+        const lessonMaterial3 = new LessonMaterialBuilder()
           .withPublishStatus('published')
           .withSource(FileType.Document)
-          .buildAndPersist()
-        const lessonMaterial4 = await new LessonMaterialBuilder()
+          .build()
+        const lessonMaterial4 = new LessonMaterialBuilder()
           .withPublishStatus('hidden')
           .withSource(FileType.H5P, lessonMaterial1.h5pId)
-          .buildAndPersist()
-        const lessonPlan = await new LessonPlanBuilder().buildAndPersist()
+          .build()
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getAllLessonMaterials()
+          .resolves([
+            lessonMaterial1,
+            lessonMaterial2,
+            lessonMaterial3,
+            lessonMaterial4,
+          ])
 
         // Act
-        await createH5pIdToCmsContentIdCache()
+        await createH5pIdToCmsContentIdCache(cmsContentProvider)
 
         // Assert
         expect(h5pIdToCmsContentIdCache).to.have.lengthOf(1)

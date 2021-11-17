@@ -24,6 +24,9 @@ import { TestTitle } from '../utils/testTitles'
 import { v4 } from 'uuid'
 import { TeacherComment } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
+import Substitute from '@fluffy-spoon/substitute'
+import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
+import { Container as MutableContainer } from 'typedi'
 
 /**
  * - throws when not authenticated
@@ -75,9 +78,7 @@ describe('teacherCommentResolver.setComment', () => {
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const comment = 'great job!'
       const room = await new RoomBuilder().buildAndPersist()
-      const schedule = await new ScheduleBuilder()
-        .withRoomId(room.roomId)
-        .buildAndPersist()
+      const schedule = new ScheduleBuilder().withRoomId(room.roomId).build()
       const providedStudentId = v4()
 
       const userServiceUnkownUserErrorMsg = (userId: string) =>
@@ -91,6 +92,9 @@ describe('teacherCommentResolver.setComment', () => {
             new Error(userServiceUnkownUserErrorMsg(providedStudentId)),
           ),
         )
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+      cmsScheduleProvider.getSchedule(room.roomId).resolves(schedule)
+      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
       const fn = () =>
@@ -159,9 +163,10 @@ describe('teacherCommentResolver.setComment', () => {
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
-      const schedule = await new ScheduleBuilder()
-        .withRoomId(roomId)
-        .buildAndPersist()
+      const schedule = new ScheduleBuilder().withRoomId(roomId).build()
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
       gqlTeacherComment = await setTeacherCommentMutation(
@@ -179,6 +184,7 @@ describe('teacherCommentResolver.setComment', () => {
       expect(gqlTeacherComment).to.not.be.undefined
     })
 
+    // TODO: Either remove commented out code or try to find a way to test the dates.
     // it('returns teacherComment with expected created date', () => {
     //   expect(gqlTeacherComment?.date).is.equal(Date.now())
     // })
@@ -247,16 +253,16 @@ describe('teacherCommentResolver.setComment', () => {
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
-      const schedule = await new ScheduleBuilder()
-        .withRoomId(roomId)
-        .buildAndPersist()
+      const schedule = new ScheduleBuilder().withRoomId(roomId).build()
       originalComment = await new TeacherCommentBuilder()
         .withRoomId(roomId)
         .withTeacherId(endUser.userId)
         .withStudentId(student.userId)
         .withComment(originalCommentText)
         .buildAndPersist()
-      //const commentByAnotherTeacher = await new TeacherCommentBuilder().buildAndPersist()
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
       gqlTeacherComment = await setTeacherCommentMutation(
@@ -341,15 +347,16 @@ describe('teacherCommentResolver.setComment', () => {
         const room = await new RoomBuilder()
           .withRoomId(roomId)
           .buildAndPersist()
-        const schedule = await new ScheduleBuilder()
-          .withRoomId(roomId)
-          .buildAndPersist()
+        const schedule = new ScheduleBuilder().withRoomId(roomId).build()
         commentForSomeOtherStudent = await new TeacherCommentBuilder()
           .withRoomId(roomId)
           .withTeacherId(endUser.userId)
           .withStudentId(someOtherStudent.userId)
           .withComment('needs some work')
           .buildAndPersist()
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         // Act
         gqlTeacherComment = await setTeacherCommentMutation(
@@ -453,15 +460,16 @@ describe('teacherCommentResolver.setComment', () => {
         const someOtherRoom = await new RoomBuilder()
           .withRoomId(someOtherRoomId)
           .buildAndPersist()
-        const schedule = await new ScheduleBuilder()
-          .withRoomId(roomId)
-          .buildAndPersist()
+        const schedule = new ScheduleBuilder().withRoomId(roomId).build()
         commentForSomeOtherRoom = await new TeacherCommentBuilder()
           .withRoomId(someOtherRoomId)
           .withTeacherId(endUser.userId)
           .withStudentId(student.userId)
           .withComment('needs some work')
           .buildAndPersist()
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         // Act
         gqlTeacherComment = await setTeacherCommentMutation(

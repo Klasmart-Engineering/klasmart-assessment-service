@@ -1,7 +1,6 @@
 import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
 import { Content } from '../../src/db/cms/entities/content'
-import { CMS_CONNECTION_NAME } from '../../src/db/cms/connectToCmsDatabase'
 import { Mutable } from '../utils/mutable'
 import { ContentType } from '../../src/db/cms/enums/contentType'
 
@@ -63,21 +62,18 @@ export default class ContentBuilder {
   }
 
   public build(): Content {
-    const entity = new Content()
+    const entity = new Content(
+      this.contentId,
+      this.author,
+      this.name,
+      this.contentType,
+      this.createdAt,
+      this.data,
+      this.publishStatus,
+    )
     const mutableEntity: Mutable<Content> = entity
-    mutableEntity.contentId = this.contentId
     mutableEntity.subcontentId = this.subcontentId
     mutableEntity.parentId = this.parentId
-    mutableEntity.contentType = this.contentType
-    mutableEntity.name = this.name
-    mutableEntity.author = this.author
-    mutableEntity.createdAt = this.createdAt
-    mutableEntity.publishStatus = this.publishStatus
     return entity
-  }
-
-  public async buildAndPersist(): Promise<Content> {
-    const entity = this.build()
-    return await getRepository(Content, CMS_CONNECTION_NAME).save(entity)
   }
 }

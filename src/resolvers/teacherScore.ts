@@ -16,13 +16,13 @@ import { User } from '../api/user'
 import { Context, UserID } from '../auth/context'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { Content } from '../db/cms/entities'
-import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ILogger, Logger } from '../helpers/logger'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { UserProvider } from '../helpers/userProvider'
+import { CmsContentProvider } from '../providers/cmsContentProvider'
+import { Content } from '../db/cms/entities/content'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -39,8 +39,7 @@ export default class TeacherScoreResolver {
     private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
-    @InjectRepository(Content, CMS_CONNECTION_NAME)
-    private readonly contentRepository: Repository<Content>,
+    private readonly cmsContentProvider: CmsContentProvider,
   ) {}
 
   @Authorized()
@@ -65,9 +64,9 @@ export default class TeacherScoreResolver {
       // If the content_id columns haven't been migrated yet
       // (still using h5p ids), we need to try with the h5pId.
       if (!userContentScore) {
-        const content = await this.contentRepository.findOne({
-          where: { contentId: contentId },
-        })
+        const content = await this.cmsContentProvider.getLessonMaterial(
+          contentId,
+        )
         if (content?.h5pId) {
           contentKey = ContentKey.construct(content.h5pId, subcontentId)
           userContentScore = await this.assesmentDB.findOne(UserContentScore, {
@@ -142,7 +141,7 @@ export default class TeacherScoreResolver {
       contentType,
       contentName,
       contentParentId,
-      this.contentRepository,
+      this.cmsContentProvider,
     )
   }
 }

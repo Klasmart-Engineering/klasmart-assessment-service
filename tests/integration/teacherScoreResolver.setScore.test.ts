@@ -4,8 +4,6 @@ import { FindConditions, getRepository } from 'typeorm'
 import {
   EndUserBuilder,
   LessonMaterialBuilder,
-  LessonPlanBuilder,
-  ScheduleBuilder,
   UserBuilder,
   UserContentScoreBuilder,
 } from '../builders'
@@ -29,6 +27,10 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 import { TestTitle } from '../utils/testTitles'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import ContentKey from '../../src/helpers/contentKey'
+import Substitute from '@fluffy-spoon/substitute'
+import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
+import { Container as MutableContainer } from 'typedi'
+import { throwExpression } from '../../src/helpers/throwExpression'
 
 /**
  * - throws when not authenticated
@@ -55,7 +57,7 @@ describe('teacherScoreResolver.setScore', function () {
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const roomId = 'room1'
-      const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+      const lessonMaterial = new LessonMaterialBuilder().build()
 
       // Act
       const fn = () =>
@@ -90,8 +92,7 @@ describe('teacherScoreResolver.setScore', function () {
 
         const roomId = 'room1'
         const providedRoomId = 'room2'
-        const lessonMaterial =
-          await new LessonMaterialBuilder().buildAndPersist()
+        const lessonMaterial = new LessonMaterialBuilder().build()
 
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
@@ -140,8 +141,7 @@ describe('teacherScoreResolver.setScore', function () {
         userApi.fetchUser(someOtherStudent.userId).resolves(someOtherStudent)
 
         const roomId = 'room1'
-        const lessonMaterial =
-          await new LessonMaterialBuilder().buildAndPersist()
+        const lessonMaterial = new LessonMaterialBuilder().build()
         const providedStudentId = someOtherStudent.userId
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
@@ -188,10 +188,8 @@ describe('teacherScoreResolver.setScore', function () {
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
         const roomId = 'room1'
-        const lessonMaterial =
-          await new LessonMaterialBuilder().buildAndPersist()
-        const someOtherLessonMaterial =
-          await new LessonMaterialBuilder().buildAndPersist()
+        const lessonMaterial = new LessonMaterialBuilder().build()
+        const someOtherLessonMaterial = new LessonMaterialBuilder().build()
         const providedContentId = someOtherLessonMaterial.contentId
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
@@ -286,7 +284,7 @@ describe('teacherScoreResolver.setScore', function () {
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-        lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+        lessonMaterial = new LessonMaterialBuilder().build()
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -294,6 +292,21 @@ describe('teacherScoreResolver.setScore', function () {
           .withContentType(xapiContentType)
           .withContentName(xapiContentName)
           .buildAndPersist()
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterial(lessonMaterial.contentId)
+          .resolves(lessonMaterial)
+        cmsContentProvider
+          .getLessonMaterial(
+            lessonMaterial.h5pId ?? throwExpression('h5pId is undefined'),
+          )
+          .resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(
+            lessonMaterial.h5pId ?? throwExpression('h5pId is undefined'),
+          )
+          .resolves([lessonMaterial])
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
         // Act
         gqlTeacherScore = await setTeacherScoreMutation(
@@ -394,7 +407,7 @@ describe('teacherScoreResolver.setScore', function () {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-      lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+      lessonMaterial = new LessonMaterialBuilder().build()
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
@@ -402,6 +415,11 @@ describe('teacherScoreResolver.setScore', function () {
         .withContentType(xapiContentType)
         .withContentName(xapiContentName)
         .buildAndPersist()
+      const cmsContentProvider = Substitute.for<CmsContentProvider>()
+      cmsContentProvider
+        .getLessonMaterial(lessonMaterial.contentId)
+        .resolves(lessonMaterial)
+      MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
       // Act
       gqlTeacherScore = await setTeacherScoreMutation(
@@ -500,9 +518,9 @@ describe('teacherScoreResolver.setScore', function () {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-      lessonMaterial = await new LessonMaterialBuilder()
+      lessonMaterial = new LessonMaterialBuilder()
         .withSubcontentId(v4())
-        .buildAndPersist()
+        .build()
       contentKey = ContentKey.construct(
         lessonMaterial.contentId,
         lessonMaterial.subcontentId,
@@ -515,6 +533,11 @@ describe('teacherScoreResolver.setScore', function () {
         .withContentName(xapiContentName)
         .withContentParentId(lessonMaterial.h5pId)
         .buildAndPersist()
+      const cmsContentProvider = Substitute.for<CmsContentProvider>()
+      cmsContentProvider
+        .getLessonMaterial(lessonMaterial.contentId)
+        .resolves(lessonMaterial)
+      MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
       // Act
       gqlTeacherScore = await setTeacherScoreMutation(

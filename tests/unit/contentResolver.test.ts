@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { expect } from 'chai'
 import ContentResolver from '../../src/resolvers/content'
 import { LessonMaterialBuilder } from '../builders'
