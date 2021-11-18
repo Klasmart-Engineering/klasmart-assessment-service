@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.6...v1.4.0) (2021-11-18)
+
+
+### Features
+
+* add FeatureFlags + update roomScoreTemplateProvider helper and test ([04e1dca](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/04e1dca63c705774b17c6c8363dfebcb68a171fc))
+
 ### [1.3.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.5...v1.3.6) (2021-11-16)
 
 
