@@ -77,7 +77,7 @@ const convertUserResultToTypedUser = (result: UserResult): User => {
   return user
 }
 
-// @Service()
+@Service('UserApi')
 export class UserApi {
   readonly config: Configuration = getConfig()
 

@@ -65,8 +65,5 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
     )
   }
 
-  //
-  MutableContainer.set('UserApi', new UserApi())
-
   await Promise.all(connectionPromises)
 }
