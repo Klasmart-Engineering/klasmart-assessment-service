@@ -96,8 +96,12 @@ The javascript `Date` as integer. Type represents date and time as number of mil
 scalar Timestamp
 
 type User {
+  email: String
+  familyName: String
   family_name: String
+  givenName: String
   given_name: String
+  userId: String!
   user_id: String!
 }
 

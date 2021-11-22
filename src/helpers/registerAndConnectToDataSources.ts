@@ -1,6 +1,8 @@
 import { Container as MutableContainer } from 'typedi'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
+
+import { UserApi } from '../api'
 import { connectToCmsDatabase } from '../db/cms/connectToCmsDatabase'
 import { connectToUserDatabase } from '../db/users/connectToUserDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
@@ -62,6 +64,9 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
       new XApiDynamodbRepository(dynamodbTableName, docClient),
     )
   }
+
+  //
+  MutableContainer.set('UserApi', new UserApi())
 
   await Promise.all(connectionPromises)
 }

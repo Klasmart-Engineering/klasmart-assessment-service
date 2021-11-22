@@ -1,23 +1,24 @@
-import { Resolver, FieldResolver, Root } from 'type-graphql'
+import { Resolver, FieldResolver, Root, Ctx } from 'type-graphql'
 import { Service } from 'typedi'
-import { Repository } from 'typeorm'
-import { InjectRepository } from 'typeorm-typedi-extensions'
-import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
-import { User } from '../db/users/entities'
+
+import { User } from '../api/user'
+import { Context } from '../auth/context'
 import { UserScores } from '../graphql'
+import { UserProvider } from '../helpers/userProvider'
 
 @Service()
 @Resolver(() => UserScores)
 export default class UserScoresResolver {
-  constructor(
-    @InjectRepository(User, USERS_CONNECTION_NAME)
-    private readonly userRepository: Repository<User>,
-  ) {}
+  constructor(private readonly userProvider: UserProvider) {}
 
   @FieldResolver(() => User, { nullable: true })
-  public async user(@Root() source: UserScores): Promise<User | undefined> {
-    return await this.userRepository.findOne({
-      where: { userId: source.userId },
-    })
+  public async user(
+    @Root() source: UserScores,
+    @Ctx() context: Context,
+  ): Promise<User | undefined> {
+    return await this.userProvider.getUser(
+      source.userId,
+      context.encodedAuthenticationToken,
+    )
   }
 }

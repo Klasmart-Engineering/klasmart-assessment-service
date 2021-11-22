@@ -17,8 +17,8 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:coverage": "nyc --reporter=lcov --report-dir ./test-results/coverage.lcov npm run test",
     "test:codecov": "nyc --reporter=cobertura --report-dir ./test-results/coverage.xml npm test && codecov",
-    "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
-    "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
+    "test:unit": "NODE_ENV=test mocha --require ts-node/register tests/unit/**/*.test.ts",
+    "test:integration": "NODE_ENV=test mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
     "prepare": "husky install || exit 0",
     "pre-commit": "lint-staged",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
@@ -81,6 +81,7 @@
     "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
     "graphql": "^15.5.0",
+    "graphql-request": "^3.6.1",
     "jsonwebtoken": "^8.5.1",
     "kidsloop-token-validation": "bitbucket:calmisland/kidsloop-token-validation",
     "mysql2": "^2.2.5",

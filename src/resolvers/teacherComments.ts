@@ -10,17 +10,17 @@ import {
 import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
-
-import { TeacherComment } from '../db/assessments/entities'
-import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
-import { User } from '../db/users/entities'
-import { Context, UserID } from '../auth/context'
-import { ILogger, Logger } from '../helpers/logger'
 import { UserInputError } from 'apollo-server-express'
-import { ErrorMessage } from '../helpers/errorMessages'
+
+import { User } from '../api/user'
+import { Context, UserID } from '../auth/context'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { TeacherComment } from '../db/assessments/entities'
 import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import { Schedule } from '../db/cms/entities'
+import { UserProvider } from '../helpers/userProvider'
+import { ILogger, Logger } from '../helpers/logger'
+import { ErrorMessage } from '../helpers/errorMessages'
 
 @Service()
 @Resolver(() => TeacherComment)
@@ -34,10 +34,9 @@ export default class TeacherCommentResolver {
   }
 
   constructor(
+    private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
-    @InjectRepository(User, USERS_CONNECTION_NAME)
-    private readonly userRepository: Repository<User>,
     @InjectRepository(Schedule, CMS_CONNECTION_NAME)
     private readonly scheduleRepository: Repository<Schedule>,
   ) {}
@@ -80,9 +79,10 @@ export default class TeacherCommentResolver {
         throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
       }
 
-      const student = await this.userRepository.findOne({
-        where: { userId: studentId },
-      })
+      const student = await this.userProvider.getUser(
+        studentId,
+        context.encodedAuthenticationToken,
+      )
       if (!student) {
         throw new UserInputError(ErrorMessage.unknownUser(studentId))
       }
@@ -107,18 +107,22 @@ export default class TeacherCommentResolver {
   @FieldResolver(() => User, { nullable: true })
   public async teacher(
     @Root() source: TeacherComment,
+    @Ctx() context: Context,
   ): Promise<User | undefined> {
-    return await this.userRepository.findOne({
-      where: { userId: source.teacherId },
-    })
+    return await this.userProvider.getUser(
+      source.teacherId,
+      context.encodedAuthenticationToken,
+    )
   }
 
   @FieldResolver(() => User, { nullable: true })
   public async student(
     @Root() source: TeacherComment,
+    @Ctx() context: Context,
   ): Promise<User | undefined> {
-    return await this.userRepository.findOne({
-      where: { userId: source.studentId },
-    })
+    return await this.userProvider.getUser(
+      source.studentId,
+      context.encodedAuthenticationToken,
+    )
   }
 }

@@ -12,17 +12,17 @@ import { Service } from 'typedi'
 import { EntityManager, Repository } from 'typeorm'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 
-import { TeacherScore, UserContentScore } from '../db/assessments/entities'
-import { Content } from '../db/cms/entities'
-import { User } from '../db/users/entities'
-import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
-import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
+import { User } from '../api/user'
 import { Context, UserID } from '../auth/context'
+import { TeacherScore, UserContentScore } from '../db/assessments/entities'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { Content } from '../db/cms/entities'
+import { CMS_CONNECTION_NAME } from '../db/cms/connectToCmsDatabase'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ILogger, Logger } from '../helpers/logger'
 import { ErrorMessage } from '../helpers/errorMessages'
+import { UserProvider } from '../helpers/userProvider'
 
 @Service()
 @Resolver(() => TeacherScore)
@@ -36,10 +36,9 @@ export default class TeacherScoreResolver {
   }
 
   constructor(
+    private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
-    @InjectRepository(User, USERS_CONNECTION_NAME)
-    private readonly userRepository: Repository<User>,
     @InjectRepository(Content, CMS_CONNECTION_NAME)
     private readonly contentRepository: Repository<Content>,
   ) {}
@@ -107,19 +106,23 @@ export default class TeacherScoreResolver {
   @FieldResolver(() => User, { nullable: true })
   public async teacher(
     @Root() source: TeacherScore,
+    @Ctx() context: Context,
   ): Promise<User | undefined> {
-    return await this.userRepository.findOne({
-      where: { userId: source.teacherId },
-    })
+    return await this.userProvider.getUser(
+      source.teacherId,
+      context.encodedAuthenticationToken,
+    )
   }
 
   @FieldResolver(() => User, { nullable: true })
   public async student(
     @Root() source: TeacherScore,
+    @Ctx() context: Context,
   ): Promise<User | undefined> {
-    return await this.userRepository.findOne({
-      where: { userId: source.studentId },
-    })
+    return await this.userProvider.getUser(
+      source.studentId,
+      context.encodedAuthenticationToken,
+    )
   }
 
   @FieldResolver(() => Content, { nullable: true })
