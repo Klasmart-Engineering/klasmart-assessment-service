@@ -3,6 +3,7 @@ import { KidsloopAuthenticationToken } from 'kidsloop-token-validation'
 
 export interface Context {
   authenticationToken?: KidsloopAuthenticationToken
+  encodedAuthenticationToken?: string
   ip?: string | string[]
   userId?: string
 }
