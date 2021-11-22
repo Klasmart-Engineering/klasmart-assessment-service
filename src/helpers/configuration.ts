@@ -73,13 +73,18 @@ export class Configuration {
     this.ASSESSMENT_DATABASE_URL = getEnvironmentVariableOrThrow(
       'ASSESSMENT_DATABASE_URL',
     )
-    if (this.USE_XAPI_SQL_DATABASE_FLAG && !this.XAPI_DATABASE_URL) {
+    if (
+      this.USE_XAPI_SQL_DATABASE_FLAG &&
+      !this.XAPI_DATABASE_URL &&
+      process.env.NODE_ENV !== 'test'
+    ) {
       throw new BadConfiguration(
         '❌ When USE_XAPI_SQL_DATABASE_FLAG=1 you must provide XAPI_DATABASE_URL',
       )
     } else if (
       !this.USE_XAPI_SQL_DATABASE_FLAG &&
-      (!this.AWS_REGION || !this.DYNAMODB_TABLE_NAME)
+      (!this.AWS_REGION || !this.DYNAMODB_TABLE_NAME) &&
+      process.env.NODE_ENV !== 'test'
     ) {
       throw new BadConfiguration(
         '❌ When USE_XAPI_SQL_DATABASE_FLAG=0 you must provide DYNAMODB_TABLE_NAME and AWS_REGION',
