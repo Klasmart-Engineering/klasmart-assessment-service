@@ -6,9 +6,13 @@ import {
   TeacherCommentBuilder,
   UserBuilder,
 } from '../builders'
-import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
+import {
+  dbConnect,
+  dbDisconnect,
+  createSubstitutesToExpectedInjectableServices,
+} from '../utils/globalIntegrationTestHooks'
 import { setTeacherCommentMutation } from '../queriesAndMutations/teacherCommentOps'
-import { User } from '../../src/db/users/entities'
+import { User } from '../../src/api'
 import EndUser from '../entities/endUser'
 import {
   GqlTeacherComment,
@@ -39,12 +43,17 @@ describe('teacherCommentResolver.setComment', () => {
     it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       await dbConnect()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
       const roomId = 'room1'
       const comment = 'great job!'
-      const student = await new UserBuilder().buildAndPersist()
-      const endUser = await new EndUserBuilder()
-        .dontAuthenticate()
-        .buildAndPersist()
+      const endUser = new EndUserBuilder().dontAuthenticate().build()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
 
       // Act
       const fn = () =>
@@ -67,15 +76,27 @@ describe('teacherCommentResolver.setComment', () => {
     it('throws unknown User error', async () => {
       // Arrange
       await dbConnect()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
       const comment = 'great job!'
       const room = await new RoomBuilder().buildAndPersist()
       const schedule = await new ScheduleBuilder()
         .withRoomId(room.roomId)
         .buildAndPersist()
       const providedStudentId = v4()
-      const endUser = await new EndUserBuilder()
-        .authenticate()
-        .buildAndPersist()
+
+      const userServiceUnkownUserErrorMsg = (userId: string) =>
+        `UserConnectionNode ${userId} doesn't exist.`
+      const endUser = new EndUserBuilder().authenticate().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(providedStudentId, endUser.token)
+        .returns(
+          Promise.reject(
+            new Error(userServiceUnkownUserErrorMsg(providedStudentId)),
+          ),
+        )
 
       // Act
       const fn = () =>
@@ -89,7 +110,7 @@ describe('teacherCommentResolver.setComment', () => {
 
       // Assert
       await expect(fn()).to.be.rejectedWith(
-        ErrorMessage.unknownUser(providedStudentId),
+        userServiceUnkownUserErrorMsg(providedStudentId),
       )
     })
 
@@ -100,12 +121,17 @@ describe('teacherCommentResolver.setComment', () => {
     it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
       await dbConnect()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
       const comment = 'great job!'
       const room = await new RoomBuilder().buildAndPersist()
-      const student = await new UserBuilder().buildAndPersist()
-      const endUser = await new EndUserBuilder()
-        .authenticate()
-        .buildAndPersist()
+      const endUser = new EndUserBuilder().authenticate().build()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
 
       // Act
       const fn = () =>
@@ -136,8 +162,16 @@ describe('teacherCommentResolver.setComment', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = await new ScheduleBuilder()
         .withRoomId(roomId)
@@ -219,8 +253,17 @@ describe('teacherCommentResolver.setComment', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = await new ScheduleBuilder()
         .withRoomId(roomId)
@@ -304,9 +347,21 @@ describe('teacherCommentResolver.setComment', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
-        someOtherStudent = await new UserBuilder().buildAndPersist()
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        someOtherStudent = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+        userApi
+          .fetchUser(someOtherStudent.userId)
+          .returns(Promise.resolve<User>(someOtherStudent))
+
         const room = await new RoomBuilder()
           .withRoomId(roomId)
           .buildAndPersist()
@@ -409,8 +464,17 @@ describe('teacherCommentResolver.setComment', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+
         const room = await new RoomBuilder()
           .withRoomId(roomId)
           .buildAndPersist()

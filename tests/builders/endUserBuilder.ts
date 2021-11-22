@@ -1,9 +1,6 @@
-import { getRepository } from 'typeorm'
-import { User } from '../../src/db/users/entities'
 import UserBuilder from './userBuilder'
 import EndUser from '../entities/endUser'
 import { generateAuthenticationToken } from '../utils/generateToken'
-import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
 
 export default class EndUserBuilder extends UserBuilder {
   private isAuthenticated = false
@@ -33,11 +30,5 @@ export default class EndUserBuilder extends UserBuilder {
         ? generateAuthenticationToken(this.userId, this.email, this.isExpired)
         : undefined,
     }
-  }
-
-  public async buildAndPersist(): Promise<EndUser> {
-    const entity = this.build()
-    await getRepository(User, USERS_CONNECTION_NAME).save(entity)
-    return entity
   }
 }

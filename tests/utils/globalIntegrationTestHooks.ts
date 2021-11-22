@@ -1,3 +1,5 @@
+import path from 'path'
+import dotenv from 'dotenv'
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
 import { Container as MutableContainer } from 'typedi'
@@ -8,9 +10,10 @@ import {
 } from './testConnection'
 import { Substitute } from '@fluffy-spoon/substitute'
 import { ILogger, Logger } from '../../src/helpers/logger'
-import path from 'path'
-import dotenv from 'dotenv'
 import createAssessmentServer from '../../src/helpers/createAssessmentServer'
+import { UserApi } from '../../src/api'
+import { IXApiRepository } from '../../src/db/xapi'
+
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 export let connections: Connection[]
@@ -61,4 +64,15 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
 
   await queryRunner.release()
   await connection.close()
+}
+
+export const createSubstitutesToExpectedInjectableServices = () => {
+  const xapiRepository = Substitute.for<IXApiRepository>()
+  MutableContainer.set('IXApiRepository', xapiRepository)
+  const userApi = Substitute.for<UserApi>()
+  MutableContainer.set('UserApi', userApi)
+  return {
+    xapiRepository,
+    userApi,
+  }
 }

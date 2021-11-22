@@ -1,8 +1,6 @@
-import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
-import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
-import { User } from '../../src/db/users/entities/user'
-import { Mutable } from '../utils/mutable'
+import { User } from '../../src/api/user'
+// import { Mutable } from '../utils/mutable'
 
 export default class UserBuilder {
   protected static givenNameCounter = 1
@@ -33,17 +31,17 @@ export default class UserBuilder {
   }
 
   public build(): User {
-    const user = new User()
-    const mutableUser: Mutable<User> = user
-    mutableUser.userId = this.userId
-    mutableUser.givenName = this.givenName
-    mutableUser.familyName = this.familyName
-    mutableUser.email = this.email
-    return user
-  }
-
-  public async buildAndPersist(): Promise<User> {
-    const entity = this.build()
-    return await getRepository(User, USERS_CONNECTION_NAME).save(entity)
+    // const user = new User()
+    // const mutableUser: Mutable<User> = user
+    // mutableUser.userId = this.userId
+    // mutableUser.givenName = this.givenName
+    // mutableUser.familyName = this.familyName
+    // mutableUser.email = this.email
+    return {
+      userId: this.userId,
+      givenName: this.givenName,
+      familyName: this.familyName,
+      email: this.email,
+    }
   }
 }

@@ -11,9 +11,8 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
   context('dynamodb client returns list containing 1 xapi record', () => {
     it('returns a list containing 1 xapi record', async () => {
       const documentClient = Substitute.for<DocumentClient>()
-      const transientResult = Substitute.for<
-        Request<DocumentClient.QueryOutput, AWSError>
-      >()
+      const transientResult =
+        Substitute.for<Request<DocumentClient.QueryOutput, AWSError>>()
       const record1: XApiRecord = {
         serverTimestamp: Date.now(),
         userId: v4(),
@@ -22,13 +21,11 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
           data: { statement: { result: { response: 'hello' } } },
         },
       }
-      const promiseResult: PromiseResult<
-        DocumentClient.QueryOutput,
-        AWSError
-      > = {
-        $response: Arg.any(),
-        Items: [record1],
-      }
+      const promiseResult: PromiseResult<DocumentClient.QueryOutput, AWSError> =
+        {
+          $response: Arg.any(),
+          Items: [record1],
+        }
       transientResult.promise().resolves(promiseResult)
       documentClient.query(Arg.any()).returns(transientResult)
 
@@ -47,9 +44,8 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
     () => {
       it('returns a list containing 1 xapi record', async () => {
         const documentClient = Substitute.for<DocumentClient>()
-        const transientResult = Substitute.for<
-          Request<DocumentClient.QueryOutput, AWSError>
-        >()
+        const transientResult =
+          Substitute.for<Request<DocumentClient.QueryOutput, AWSError>>()
         const record1: XApiRecord = {
           serverTimestamp: Date.now(),
           userId: v4(),
@@ -78,9 +74,8 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
   context(`dynamodb client returns undefined xapi record list`, () => {
     it('returns an empty list of xapi records', async () => {
       const documentClient = Substitute.for<DocumentClient>()
-      const transientResult = Substitute.for<
-        Request<DocumentClient.QueryOutput, AWSError>
-      >()
+      const transientResult =
+        Substitute.for<Request<DocumentClient.QueryOutput, AWSError>>()
       const record1: XApiRecord = {
         serverTimestamp: Date.now(),
         userId: v4(),
@@ -89,13 +84,11 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
           data: { statement: { result: { response: 'hello' } } },
         },
       }
-      const promiseResult: PromiseResult<
-        DocumentClient.QueryOutput,
-        AWSError
-      > = {
-        $response: Arg.any(),
-        Items: undefined,
-      }
+      const promiseResult: PromiseResult<DocumentClient.QueryOutput, AWSError> =
+        {
+          $response: Arg.any(),
+          Items: undefined,
+        }
       transientResult.promise().resolves(promiseResult)
       documentClient.query(Arg.any()).returns(transientResult)
 

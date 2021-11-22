@@ -57,7 +57,8 @@ describe('roomScoresCalculator', () => {
       const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
       const eventsProvider = Substitute.for<RoomEventsProvider>()
       const materialsProvider = Substitute.for<RoomMaterialsProvider>()
-      const scoresTemplateProvider = Substitute.for<RoomScoresTemplateProvider>()
+      const scoresTemplateProvider =
+        Substitute.for<RoomScoresTemplateProvider>()
 
       attendanceProvider.getAttendances(roomId).resolves([attendance])
       materialsProvider.getMaterials(roomId).resolves([material])
@@ -150,7 +151,8 @@ describe('roomScoresCalculator', () => {
         const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
         const eventsProvider = Substitute.for<RoomEventsProvider>()
         const materialsProvider = Substitute.for<RoomMaterialsProvider>()
-        const scoresTemplateProvider = Substitute.for<RoomScoresTemplateProvider>()
+        const scoresTemplateProvider =
+          Substitute.for<RoomScoresTemplateProvider>()
 
         attendanceProvider.getAttendances(roomId).resolves([attendance])
         materialsProvider.getMaterials(roomId).resolves([material])

@@ -30,7 +30,10 @@
       "sourceMaps": true,
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",
-      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"]
+      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
     },
     {
       "type": "pwa-node",

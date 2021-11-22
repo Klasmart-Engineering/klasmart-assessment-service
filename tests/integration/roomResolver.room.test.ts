@@ -1,14 +1,20 @@
+import { v4 } from 'uuid'
+import { Arg } from '@fluffy-spoon/substitute'
+import { FindConditions, getRepository } from 'typeorm'
+
 import expect from '../utils/chaiAsPromisedSetup'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import { TestTitle } from '../utils/testTitles'
-import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { XApiRecord } from '../../src/db/xapi'
 import { Container as MutableContainer } from 'typedi'
 import '../utils/globalIntegrationTestHooks'
 import EndUser from '../entities/endUser'
-import { User } from '../../src/db/users/entities'
-import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
-import { FindConditions, getRepository } from 'typeorm'
+// import { User } from '../../src/db/users/entities'
+import {
+  dbConnect,
+  dbDisconnect,
+  createSubstitutesToExpectedInjectableServices,
+} from '../utils/globalIntegrationTestHooks'
 import { Content } from '../../src/db/cms/entities/content'
 import { FileType } from '../../src/db/cms/enums/fileType'
 import {
@@ -46,9 +52,8 @@ import {
 } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import TeacherCommentBuilder from '../builders/teacherCommentBuilder'
-import { v4 } from 'uuid'
 import ContentKey from '../../src/helpers/contentKey'
-import { IXApiRepository } from '../../src/db/xapi/repo'
+import { User } from '../../src/api/user'
 
 /**
  * - scores 0 the first time
@@ -82,10 +87,11 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set('IXApiRepository', Substitute.for<IXApiRepository>())
-      const endUser = await new EndUserBuilder()
-        .dontAuthenticate()
-        .buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const endUser = new EndUserBuilder().dontAuthenticate().build()
+      userApi
+        .fetchUser(endUser.userId, Arg.any())
+        .returns(Promise.resolve<User>(endUser))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -102,10 +108,11 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set('IXApiRepository', Substitute.for<IXApiRepository>())
-      const endUser = await new EndUserBuilder()
-        .expiredToken()
-        .buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const endUser = new EndUserBuilder().authenticate().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -124,13 +131,11 @@ describe('roomResolver.Room', () => {
         // Arrange
         await dbConnect()
         const roomId = 'room1'
-        MutableContainer.set(
-          'IXApiRepository',
-          Substitute.for<IXApiRepository>(),
-        )
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+        const endUser = new EndUserBuilder().authenticate().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
 
         // Act
         const fn = () =>
@@ -151,10 +156,11 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       const roomId = 'room1'
-      MutableContainer.set('IXApiRepository', Substitute.for<IXApiRepository>())
-      const endUser = await new EndUserBuilder()
-        .authenticate()
-        .buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const endUser = new EndUserBuilder().authenticate().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -182,11 +188,19 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -216,11 +230,10 @@ describe('roomResolver.Room', () => {
         .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-        .returns(
-          Promise.resolve<XApiRecord[]>([xapiRecord]),
-        )
+        .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
 
       gqlRoom = await roomQuery(roomId, endUser)
+      console.log('asdasd')
     })
 
     after(async () => await dbDisconnect())
@@ -367,11 +380,19 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -401,9 +422,7 @@ describe('roomResolver.Room', () => {
         .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-        .returns(
-          Promise.resolve<XApiRecord[]>([xapiRecord]),
-        )
+        .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
 
       gqlRoom = await roomQuery(roomId, endUser)
     })
@@ -550,11 +569,19 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -585,9 +612,7 @@ describe('roomResolver.Room', () => {
         .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-        .returns(
-          Promise.resolve<XApiRecord[]>([xapiRecord]),
-        )
+        .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
 
       gqlRoom = await roomQuery(roomId, endUser)
     })
@@ -724,11 +749,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -766,9 +798,7 @@ describe('roomResolver.Room', () => {
           .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(
-            Promise.resolve<XApiRecord[]>([xapiRecord1, xapiRecord2]),
-          )
+          .returns(Promise.resolve<XApiRecord[]>([xapiRecord1, xapiRecord2]))
 
         gqlRoom = await roomQuery(roomId, endUser)
       })
@@ -1073,11 +1103,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1125,9 +1162,7 @@ describe('roomResolver.Room', () => {
           .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(
-            Promise.resolve<XApiRecord[]>([xapiRecord]),
-          )
+          .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
 
         gqlRoom = await roomQuery(roomId, endUser)
       })
@@ -1287,11 +1322,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1333,9 +1375,7 @@ describe('roomResolver.Room', () => {
           .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(
-            Promise.resolve<XApiRecord[]>([xapiRecord2, xapiRecord1]),
-          )
+          .returns(Promise.resolve<XApiRecord[]>([xapiRecord2, xapiRecord1]))
 
         gqlRoom = await roomQuery(roomId, endUser)
       })
@@ -1565,11 +1605,19 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -1609,9 +1657,7 @@ describe('roomResolver.Room', () => {
         .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-        .returns(
-          Promise.resolve<XApiRecord[]>([xapiRecord, xapiRecord2]),
-        )
+        .returns(Promise.resolve<XApiRecord[]>([xapiRecord, xapiRecord2]))
     })
 
     after(async () => await dbDisconnect())
@@ -1756,11 +1802,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1789,9 +1842,7 @@ describe('roomResolver.Room', () => {
           .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(
-            Promise.resolve<XApiRecord[]>([xapiRecord]),
-          )
+          .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
 
         gqlRoom = await roomQuery(roomId, endUser)
       })
@@ -1923,12 +1974,22 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student1 = await new UserBuilder().buildAndPersist()
-      student2 = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student1 = new UserBuilder().build()
+      student2 = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student1.userId, endUser.token)
+        .returns(Promise.resolve<User>(student1))
+      userApi
+        .fetchUser(student2.userId, endUser.token)
+        .returns(Promise.resolve<User>(student2))
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -1964,9 +2025,7 @@ describe('roomResolver.Room', () => {
         .returns(Promise.resolve<XApiRecord[]>([]))
       xapiRepository
         .searchXApiEvents(student2.userId, Arg.any(), Arg.any())
-        .returns(
-          Promise.resolve<XApiRecord[]>([xapiRecord]),
-        )
+        .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
 
       gqlRoom = await roomQuery(roomId, endUser)
     })
@@ -2178,11 +2237,18 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -2336,11 +2402,18 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const xapiRepository = Substitute.for<IXApiRepository>()
+      const { xapiRepository, userApi } =
+        createSubstitutesToExpectedInjectableServices()
       MutableContainer.set('IXApiRepository', xapiRepository)
 
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -2503,11 +2576,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -2536,9 +2616,7 @@ describe('roomResolver.Room', () => {
           .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(
-            Promise.resolve<XApiRecord[]>([xapiRecord]),
-          )
+          .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
         const room = await new RoomBuilder()
           .withRoomId(roomId)
           .buildAndPersist()
@@ -2815,11 +2893,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -3029,11 +3114,18 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const xapiRepository = Substitute.for<IXApiRepository>()
+        const { xapiRepository, userApi } =
+          createSubstitutesToExpectedInjectableServices()
         MutableContainer.set('IXApiRepository', xapiRepository)
 
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -3062,9 +3154,7 @@ describe('roomResolver.Room', () => {
           .returns(Promise.resolve<XApiRecord[]>([]))
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
-          .returns(
-            Promise.resolve<XApiRecord[]>([xapiRecord]),
-          )
+          .returns(Promise.resolve<XApiRecord[]>([xapiRecord]))
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)

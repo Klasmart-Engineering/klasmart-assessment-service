@@ -1,4 +1,6 @@
 import { expect } from 'chai'
+import { v4 } from 'uuid'
+import { FindConditions, getRepository } from 'typeorm'
 import {
   EndUserBuilder,
   LessonMaterialBuilder,
@@ -7,18 +9,20 @@ import {
   UserBuilder,
   UserContentScoreBuilder,
 } from '../builders'
-import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
+import {
+  dbConnect,
+  dbDisconnect,
+  createSubstitutesToExpectedInjectableServices,
+} from '../utils/globalIntegrationTestHooks'
 import { setTeacherScoreMutation } from '../queriesAndMutations/teacherScoreOps'
-import { v4 } from 'uuid'
 import {
   GqlContent,
   GqlTeacherScore,
   GqlUser,
 } from '../queriesAndMutations/gqlInterfaces'
-import { User } from '../../src/db/users/entities'
+import { User } from '../../src/api'
 import { Content } from '../../src/db/cms/entities'
 import EndUser from '../entities/endUser'
-import { FindConditions, getRepository } from 'typeorm'
 import { FileType } from '../../src/db/cms/enums'
 import { TeacherScore } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
@@ -43,13 +47,19 @@ describe('teacherScoreResolver.setScore', function () {
     it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       await dbConnect()
-      const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
-      const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
 
-      const endUser = await new EndUserBuilder()
-        .dontAuthenticate()
-        .buildAndPersist()
+      const endUser = new EndUserBuilder().dontAuthenticate().build()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
+      const roomId = 'room1'
+      const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
 
       // Act
       const fn = () =>
@@ -75,14 +85,22 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+        const endUser = new EndUserBuilder().authenticate().build()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+
         const roomId = 'room1'
         const providedRoomId = 'room2'
-        const student = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+        const lessonMaterial =
+          await new LessonMaterialBuilder().buildAndPersist()
 
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -120,15 +138,25 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
-        const someOtherStudent = await new UserBuilder().buildAndPersist()
-        const providedStudentId = someOtherStudent.userId
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
+        const endUser = new EndUserBuilder().authenticate().build()
+        const someOtherStudent = new UserBuilder().build()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+        userApi
+          .fetchUser(someOtherStudent.userId)
+          .returns(Promise.resolve<User>(someOtherStudent))
+
+        const roomId = 'room1'
+        const lessonMaterial =
+          await new LessonMaterialBuilder().buildAndPersist()
+        const providedStudentId = someOtherStudent.userId
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -166,15 +194,23 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
-        const someOtherLessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
-        const providedContentId = someOtherLessonMaterial.contentId
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
+        const endUser = new EndUserBuilder().authenticate().build()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+
+        const roomId = 'room1'
+        const lessonMaterial =
+          await new LessonMaterialBuilder().buildAndPersist()
+        const someOtherLessonMaterial =
+          await new LessonMaterialBuilder().buildAndPersist()
+        const providedContentId = someOtherLessonMaterial.contentId
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -212,13 +248,19 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
-        const providedContentId = v4()
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
-        const endUser = await new EndUserBuilder()
-          .authenticate()
-          .buildAndPersist()
+        const endUser = new EndUserBuilder().authenticate().build()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+
+        const roomId = 'room1'
+        const providedContentId = v4()
 
         // Act
         const fn = () =>
@@ -259,8 +301,17 @@ describe('teacherScoreResolver.setScore', function () {
       before(async () => {
         // Arrange
         await dbConnect()
-        endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-        student = await new UserBuilder().buildAndPersist()
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
+        userApi
+          .fetchUser(endUser.userId, endUser.token)
+          .returns(Promise.resolve<User>(endUser))
+        userApi
+          .fetchUser(student.userId, endUser.token)
+          .returns(Promise.resolve<User>(student))
+
         lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
@@ -362,8 +413,17 @@ describe('teacherScoreResolver.setScore', function () {
     before(async () => {
       // Arrange
       await dbConnect()
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
@@ -463,8 +523,17 @@ describe('teacherScoreResolver.setScore', function () {
     before(async () => {
       // Arrange
       await dbConnect()
-      endUser = await new EndUserBuilder().authenticate().buildAndPersist()
-      student = await new UserBuilder().buildAndPersist()
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+
+      endUser = new EndUserBuilder().authenticate().build()
+      student = new UserBuilder().build()
+      userApi
+        .fetchUser(endUser.userId, endUser.token)
+        .returns(Promise.resolve<User>(endUser))
+      userApi
+        .fetchUser(student.userId, endUser.token)
+        .returns(Promise.resolve<User>(student))
+
       lessonMaterial = await new LessonMaterialBuilder()
         .withSubcontentId(v4())
         .buildAndPersist()

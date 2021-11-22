@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import { EntityManager, Repository } from 'typeorm'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { Content } from '../../src/db/cms/entities'
-import { User } from '../../src/db/users/entities'
+import { UserProvider } from '../../src/helpers/userProvider'
 import TeacherScoreResolver from '../../src/resolvers/teacherScore'
 import {
   LessonMaterialBuilder,
@@ -22,8 +22,8 @@ describe('teacherScoreResolver.content', () => {
         .build()
       const teacherScore = new TeacherScoreBuilder(userContentScore).build()
 
+      const userProvider = Substitute.for<UserProvider>()
       const assessmentDB = Substitute.for<EntityManager>()
-      const userRepository = Substitute.for<Repository<User>>()
       const contentRepository = Substitute.for<Repository<Content>>()
 
       assessmentDB
@@ -37,8 +37,8 @@ describe('teacherScoreResolver.content', () => {
         .resolves(null)
 
       const sut = new TeacherScoreResolver(
+        userProvider,
         assessmentDB,
-        userRepository,
         contentRepository,
       )
 

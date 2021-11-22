@@ -1,6 +1,8 @@
+import { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { getConnection, getRepository } from 'typeorm'
 import { v4 } from 'uuid'
+import { User } from '../../src/api'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import {
   Answer,
@@ -20,6 +22,7 @@ import {
   UserContentScoreBuilder,
 } from '../builders'
 import {
+  createSubstitutesToExpectedInjectableServices,
   dbConnect,
   dbDisconnect,
   dbSynchronize,
@@ -36,8 +39,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context('contentId columns are set as h5pId, schedule not found', () => {
     it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(student.userId, Arg.any())
+        .returns(Promise.resolve<User>(student))
+
       const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const lessonPlan = await new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -111,8 +119,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context('contentId columns are set as h5pId, lesson plan not found', () => {
     it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(student.userId, Arg.any())
+        .returns(Promise.resolve<User>(student))
+
       const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const schedule = await new ScheduleBuilder()
         .withRoomId(roomId)
@@ -188,8 +201,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
     () => {
       it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
         // Arrange
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(student.userId, Arg.any())
+          .returns(Promise.resolve<User>(student))
+
         const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
         const lessonMaterial = await new LessonMaterialBuilder()
           .withUndefinedH5pId()
           .buildAndPersist()
@@ -276,9 +294,15 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
     () => {
       it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
         // Arrange
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(student.userId, Arg.any())
+          .returns(Promise.resolve<User>(student))
+
         const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+        const lessonMaterial =
+          await new LessonMaterialBuilder().buildAndPersist()
         const lessonPlan = await new LessonPlanBuilder().buildAndPersist()
         const schedule = await new ScheduleBuilder()
           .withRoomId(roomId)
@@ -360,8 +384,12 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
     () => {
       it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
         // Arrange
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+        const student = new UserBuilder().build()
+        userApi
+          .fetchUser(student.userId, Arg.any())
+          .returns(Promise.resolve<User>(student))
         const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
         const lessonMaterial = await new LessonMaterialBuilder()
           .withPublishStatus('hidden')
           .buildAndPersist()
@@ -444,8 +472,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context('contentId columns are set as h5pId, read-only run', () => {
     it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(student.userId, Arg.any())
+        .returns(Promise.resolve<User>(student))
+
       const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const lessonPlan = await new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -525,10 +558,19 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
     () => {
       it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
         // Arrange
+        const { userApi } = createSubstitutesToExpectedInjectableServices()
+        const student = new UserBuilder().build()
+        const student2 = new UserBuilder().build()
+        userApi
+          .fetchUser(student.userId, Arg.any())
+          .returns(Promise.resolve<User>(student))
+        userApi
+          .fetchUser(student2.userId, Arg.any())
+          .returns(Promise.resolve<User>(student2))
+
         const roomId = 'room1'
-        const student = await new UserBuilder().buildAndPersist()
-        const student2 = await new UserBuilder().buildAndPersist()
-        const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
+        const lessonMaterial =
+          await new LessonMaterialBuilder().buildAndPersist()
         const lessonPlan = await new LessonPlanBuilder()
           .addMaterialId(lessonMaterial.contentId)
           .buildAndPersist()
@@ -626,8 +668,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context('contentId columns are set as h5pId', () => {
     it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId', async () => {
       // Arrange
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(student.userId, Arg.any())
+        .returns(Promise.resolve<User>(student))
+
       const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const lessonPlan = await new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -707,8 +754,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context('contentId columns are set as h5pId|subcontentId', () => {
     it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are set to contentId|subcontentId', async () => {
       // Arrange
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(student.userId, Arg.any())
+        .returns(Promise.resolve<User>(student))
+
       const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder()
         .withSubcontentId(v4())
         .buildAndPersist()
@@ -799,8 +851,13 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
   context('contentId columns are set as contentId|subcontentId', () => {
     it('Answer table is dropped, and contentId columns for tables (UserContentScore, TeacherScore) are not modified', async () => {
       // Arrange
+      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const student = new UserBuilder().build()
+      userApi
+        .fetchUser(student.userId, Arg.any())
+        .returns(Promise.resolve<User>(student))
+
       const roomId = 'room1'
-      const student = await new UserBuilder().buildAndPersist()
       const lessonMaterial = await new LessonMaterialBuilder()
         .withSubcontentId(v4())
         .buildAndPersist()
