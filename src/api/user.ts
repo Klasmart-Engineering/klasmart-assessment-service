@@ -21,15 +21,6 @@ export class User {
   public readonly email?: string
 }
 
-// interface User {
-//   userId: string
-//   givenName?: string
-//   familyName?: string
-//   email?: string
-// }
-
-// export interface User extends UserClass {}
-
 export class UserClass {
   readonly userId: string
   readonly givenName?: string
@@ -67,6 +58,25 @@ const convertUserNodeResultToTypedUser = (result: UserNodeResult): User => {
   return user
 }
 
+// to deprecate
+interface UserResult {
+  user_id: string
+  full_name?: string
+  given_name?: string
+  email?: string
+}
+
+// to deprecate
+const convertUserResultToTypedUser = (result: UserResult): User => {
+  const user = {
+    userId: result.user_id,
+    givenName: result.given_name,
+    familyName: result.full_name,
+    email: result?.email,
+  }
+  return user
+}
+
 // @Service()
 export class UserApi {
   readonly config: Configuration = getConfig()
@@ -79,30 +89,46 @@ export class UserApi {
       authorization: authorizationToken || '',
     }
 
-    const data: { userNode: UserNodeResult } = await request(
+    const data: { userNode: UserNodeResult; user: UserResult } = await request(
       this.config.USER_SERVICE_ENDPOINT,
       GET_USER_NODE,
       { id },
       requestHeaders,
     )
-    if (!data.userNode) {
+
+    // if (!data.userNode) {
+    //   return undefined
+    // }
+    // return convertUserNodeResultToTypedUser(data.userNode)
+
+    // to deprecate
+    if (!data.user) {
       return undefined
     }
-    return convertUserNodeResultToTypedUser(data.userNode)
+    return convertUserResultToTypedUser(data.user)
   }
 }
 
 const GET_USER_NODE = gql`
   query Query($id: ID!) {
-    userNode(id: $id) {
-      id
-      givenName
-      familyName
-      avatar
-      contactInfo {
-        email
-        phone
-      }
+    # to deprecate
+    user(user_id: $id) {
+      user_id
+      full_name
+      given_name
+      email
     }
+
+    ## future query
+    # userNode(id: $id) {
+    #   id
+    #   givenName
+    #   familyName
+    #   avatar
+    #   contactInfo {
+    #     email
+    #     phone
+    #   }
+    # }
   }
 `

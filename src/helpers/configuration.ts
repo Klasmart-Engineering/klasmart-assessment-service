@@ -65,9 +65,8 @@ export class Configuration {
     logger.info('')
     logger.info('🔧 CONFIGURATION:')
     logger.info('-----------------')
-    this.ATTENDANCE_SERVICE_ENDPOINT = getEnvironmentVariableOrThrow(
-      'ATTENDANCE_SERVICE_ENDPOINT',
-    )
+    this.ATTENDANCE_SERVICE_ENDPOINT =
+      process.env.ATTENDANCE_SERVICE_ENDPOINT || ''
     this.USER_SERVICE_ENDPOINT = getEnvironmentVariableOrThrow(
       'USER_SERVICE_ENDPOINT',
     )
