@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.4.0...v1.5.0) (2021-11-23)
+
+
+### Features
+
+* add configuration object ([47f795e](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/47f795ee1a3bfaf9b01ba575bf7ab7b16e40c0c2))
+* add encodedAuthenticationToken to Context object ([bdece79](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/bdece7990b603df734aa3f9b201ea3ffb06ca807))
+* replace userDB with user-service API + update resolvers ([77120e7](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/77120e7e58e17208397d278009eb2f7559efb464))
+* **user-api:** use 'user' instead of 'userNode' for now, will deprecate in the future ([df79066](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/df7906657e77039fe730454a566c14269a13867f))
+
+
+### Bug Fixes
+
+* fix tests by checking NODE_ENV ([c6e5429](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/c6e542989e755240f99fe35e9fd01fb87106d9c0))
+
+
+### Refactor
+
+* register UserApi with @Service instead of MutableContainer ([f18dcff](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/f18dcff9f3a76aafff07eacabc5c21b093f43c7b))
+
+
+* add [@deprecation](http://bitbucket.org/deprecation) directives to User snake_case fields ([ac172f7](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/ac172f76565b4e934db1525894517281cf984a32))
+* cleanup files ([e86af8c](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/e86af8c894776800bbae9d3838ba949c3f75d31f))
+* update tests with user-service API substitute calls ([c0c7b87](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/c0c7b87a1d1c19fef7aa636082dfd63a24d5fe4f))
+* use shorter syntax Substitute.resolves to return promises ([cb3d2fd](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/cb3d2fd9ed5a3e2fc550f0306ad3de6e14602a89))
+
 ## [1.4.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.3.6...v1.4.0) (2021-11-18)
 
 
