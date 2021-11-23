@@ -98,11 +98,11 @@ scalar Timestamp
 type User {
   email: String
   familyName: String
-  family_name: String
+  family_name: String @deprecated(reason: "use familyName instead")
   givenName: String
-  given_name: String
+  given_name: String @deprecated(reason: "use givenName instead")
   userId: String!
-  user_id: String!
+  user_id: String! @deprecated(reason: "use userId instead")
 }
 
 type UserContentScore {
