@@ -1,5 +1,5 @@
 import { Inject, Service } from 'typedi'
-import { Attendance } from '../db/users/entities'
+import { Attendance } from '../api'
 import { XApiRecord } from '../db/xapi'
 import { IXApiRepository } from '../db/xapi/repo'
 import { ParsedXapiEvent } from './parsedXapiEvent'

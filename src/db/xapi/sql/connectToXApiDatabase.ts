@@ -27,7 +27,6 @@ export function getXApiDatabaseConnectionOptions(
 }
 
 export async function connectToXApiDatabase(url: string): Promise<Connection> {
-  console.log('attempting connection')
   try {
     const connection = await createConnection(
       getXApiDatabaseConnectionOptions(url),

@@ -1,7 +1,7 @@
 import { Service } from 'typedi'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import { Attendance } from '../db/users/entities'
+import { Attendance } from '../api'
 import { RoomAttendanceProvider } from './roomAttendanceProvider'
 import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
@@ -67,13 +67,14 @@ export class RoomScoresCalculator {
     xapiEvents: ParsedXapiEvent[],
     h5pIdToContentIdMap: Map<string, string>,
   ): Promise<UserContentScore[]> {
-    const mapKeyToUserContentScoreMap = await this.roomScoresTemplateProvider.getTemplate(
-      roomId,
-      teacherId,
-      materials,
-      attendances,
-      xapiEvents,
-    )
+    const mapKeyToUserContentScoreMap =
+      await this.roomScoresTemplateProvider.getTemplate(
+        roomId,
+        teacherId,
+        materials,
+        attendances,
+        xapiEvents,
+      )
 
     for (const xapiEvent of xapiEvents) {
       const contentId = h5pIdToContentIdMap.get(xapiEvent.h5pId)
@@ -85,13 +86,14 @@ export class RoomScoresCalculator {
       }
       // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
       //const contentKey = ContentKey.construct(contentId, xapiEvent.h5pSubId)
-      const contentKey = await this.roomScoresTemplateProvider.getCompatContentKey(
-        roomId,
-        xapiEvent.userId,
-        contentId,
-        xapiEvent.h5pId,
-        xapiEvent.h5pSubId,
-      )
+      const contentKey =
+        await this.roomScoresTemplateProvider.getCompatContentKey(
+          roomId,
+          xapiEvent.userId,
+          contentId,
+          xapiEvent.h5pId,
+          xapiEvent.h5pSubId,
+        )
       const mapKey = RoomScoresTemplateProvider.getMapKey(
         roomId,
         xapiEvent.userId,

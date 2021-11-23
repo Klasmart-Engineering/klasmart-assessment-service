@@ -1,20 +1,12 @@
-import { Service } from 'typedi'
-import { Repository } from 'typeorm'
-import { InjectRepository } from 'typeorm-typedi-extensions'
-import { USERS_CONNECTION_NAME } from '../db/users/connectToUserDatabase'
-import { Attendance } from '../db/users/entities'
+import { Inject, Service } from 'typedi'
+import { AttendanceApi, Attendance } from '../api'
 
 @Service()
 export class RoomAttendanceProvider {
-  public constructor(
-    @InjectRepository(Attendance, USERS_CONNECTION_NAME)
-    private readonly attendanceRepository: Repository<Attendance>,
-  ) {}
+  public constructor(private readonly attendanceApi: AttendanceApi) {}
 
   public async getAttendances(roomId: string): Promise<Attendance[]> {
-    let attendances = await this.attendanceRepository.find({
-      where: { roomId },
-    })
+    let attendances = await this.attendanceApi.getRoomAttendances(roomId)
     attendances =
       this.handleDuplicateSessionsWithDifferentTimestamps(attendances)
 

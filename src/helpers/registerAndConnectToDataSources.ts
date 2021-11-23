@@ -1,11 +1,11 @@
 import { Container as MutableContainer } from 'typedi'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
+import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
 import { connectToUserDatabase } from '../db/users/connectToUserDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { connectToXApiDatabase } from '../db/xapi/sql/connectToXApiDatabase'
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { XApiDynamodbRepository } from '../db/xapi/dynamodb/repo'
 import { XApiSqlRepository } from '../db/xapi/sql/repo'
 import { XApiRecordSql } from '../db/xapi/sql/entities'

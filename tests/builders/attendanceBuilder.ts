@@ -1,8 +1,5 @@
-import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
-import { Attendance } from '../../src/db/users/entities/attendance'
-import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
-import { Mutable } from '../utils/mutable'
+import { Attendance } from '../../src/api'
 
 export default class AttendanceBuilder {
   private sessionId?: string
@@ -33,25 +30,19 @@ export default class AttendanceBuilder {
   }
 
   public build(): Attendance {
-    const entity = new Attendance()
-    const mutableEntity: Mutable<Attendance> = entity
-    mutableEntity.sessionId = this.sessionId ?? v4()
-    mutableEntity.userId = this.userId ?? v4()
-    mutableEntity.roomId = this.roomId ?? v4()
-    this.assignPeriod(entity)
-    return entity
-  }
-
-  public async buildAndPersist(): Promise<Attendance> {
-    const entity = this.build()
-    return await getRepository(Attendance, USERS_CONNECTION_NAME).save(entity)
-  }
-
-  private assignPeriod(entity: Attendance) {
     const joinDate = new Date()
     joinDate.setDate(joinDate.getDate() - 1)
     const leaveDate = new Date(joinDate.getTime() + 5 * 60000)
-    entity.joinTimestamp = this.joinTimestamp ?? joinDate
-    entity.leaveTimestamp = this.leaveTimestamp ?? leaveDate
+    const joinTimestamp = this.joinTimestamp ?? joinDate
+    const leaveTimestamp = this.leaveTimestamp ?? leaveDate
+
+    const entity: Attendance = {
+      sessionId: this.sessionId ?? v4(),
+      userId: this.userId ?? v4(),
+      roomId: this.roomId ?? v4(),
+      joinTimestamp,
+      leaveTimestamp,
+    }
+    return entity
   }
 }

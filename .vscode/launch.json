@@ -45,6 +45,17 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "internalConsoleOptions": "openOnSessionStart",
       "envFile": "${workspaceFolder}/debug/.env"
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Debug Current File",
+      "program": "${file}",
+      "sourceMaps": true,
+      "smartStep": true,
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "internalConsoleOptions": "openOnSessionStart",
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }

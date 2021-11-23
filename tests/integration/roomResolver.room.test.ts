@@ -53,10 +53,10 @@ import {
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import TeacherCommentBuilder from '../builders/teacherCommentBuilder'
 import ContentKey from '../../src/helpers/contentKey'
-import { User } from '../../src/api/user'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
+import { Attendance, User } from '../../src/api'
 
 /**
  * - scores 0 the first time
@@ -89,6 +89,8 @@ describe('roomResolver.Room', () => {
     it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       await dbConnect()
+      createSubstitutesToExpectedInjectableServices()
+
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().dontAuthenticate().build()
@@ -108,9 +110,11 @@ describe('roomResolver.Room', () => {
     it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       await dbConnect()
+      createSubstitutesToExpectedInjectableServices()
+
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
-      const endUser = new EndUserBuilder().authenticate().build()
+      const endUser = new EndUserBuilder().expiredToken().build()
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
       // Act
@@ -129,6 +133,8 @@ describe('roomResolver.Room', () => {
       it(TestTitle.ScheduleNotFound.throwsError, async () => {
         // Arrange
         await dbConnect()
+        createSubstitutesToExpectedInjectableServices()
+
         const roomId = 'room1'
         const { userApi } = createSubstitutesToExpectedInjectableServices()
         const endUser = new EndUserBuilder().authenticate().build()
@@ -152,6 +158,8 @@ describe('roomResolver.Room', () => {
     it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
       await dbConnect()
+      createSubstitutesToExpectedInjectableServices()
+
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
@@ -183,7 +191,7 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
@@ -191,14 +199,18 @@ describe('roomResolver.Room', () => {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-      const endUserAttendance = await new AttendanceBuilder()
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const studentAttendance = await new AttendanceBuilder()
+        .build()
+      const studentAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, studentAttendance])
+
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -381,7 +393,7 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
@@ -389,14 +401,18 @@ describe('roomResolver.Room', () => {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-      const endUserAttendance = await new AttendanceBuilder()
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const studentAttendance = await new AttendanceBuilder()
+        .build()
+      const studentAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, studentAttendance])
+
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -577,7 +593,7 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
@@ -585,14 +601,18 @@ describe('roomResolver.Room', () => {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-      const endUserAttendance = await new AttendanceBuilder()
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const studentAttendance = await new AttendanceBuilder()
+        .build()
+      const studentAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, studentAttendance])
+
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -764,21 +784,25 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .buildAndPersist()
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .resolves([endUserAttendance, studentAttendance])
+
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
           .addMaterialId(lessonMaterial.contentId)
@@ -1125,40 +1149,30 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .withPeriod(new Date(), new Date(Date.now() + 5 * 60000))
-          .buildAndPersist()
-        const studentAttendance2 = await new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .withSessionId(studentAttendance.sessionId)
-          .withPeriod(
-            new Date(Date.now() + 2.5 * 60000),
-            new Date(Date.now() + 7.5 * 60000),
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .returns(
+            Promise.resolve<Attendance[]>([
+              endUserAttendance,
+              studentAttendance,
+            ]),
           )
-          .buildAndPersist()
-        const studentAttendance3 = await new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .withSessionId(studentAttendance.sessionId)
-          .withPeriod(
-            new Date(Date.now() - 2.5 * 60000),
-            new Date(Date.now() + 2 * 60000),
-          )
-          .buildAndPersist()
+
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
           .addMaterialId(lessonMaterial.contentId)
@@ -1351,21 +1365,25 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .buildAndPersist()
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .resolves([endUserAttendance, studentAttendance])
         lessonMaterial1 = new LessonMaterialBuilder()
           .withName(xapiContent1Name)
           .build()
@@ -1644,7 +1662,7 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
@@ -1652,14 +1670,18 @@ describe('roomResolver.Room', () => {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
-      const endUserAttendance = await new AttendanceBuilder()
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const studentAttendance = await new AttendanceBuilder()
+        .build()
+      const studentAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, studentAttendance])
+
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -1848,21 +1870,26 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .buildAndPersist()
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .resolves([endUserAttendance, studentAttendance])
+
         lessonMaterial1 = new LessonMaterialBuilder().build()
         lessonMaterial2 = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -2027,7 +2054,7 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
@@ -2036,18 +2063,23 @@ describe('roomResolver.Room', () => {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student1.userId, endUser.token).resolves(student1)
       userApi.fetchUser(student2.userId, endUser.token).resolves(student2)
-      const endUserAttendance = await new AttendanceBuilder()
+
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const student1Attendance = await new AttendanceBuilder()
+        .build()
+      const student1Attendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student1.userId)
-        .buildAndPersist()
-      const student2Attendance = await new AttendanceBuilder()
+        .build()
+      const student2Attendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student2.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, student1Attendance, student2Attendance])
+
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -2295,21 +2327,26 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
-      const endUserAttendance = await new AttendanceBuilder()
+
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const studentAttendance = await new AttendanceBuilder()
+        .build()
+      const studentAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, studentAttendance])
+
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
         .addMaterialId(lessonMaterial.contentId)
@@ -2467,21 +2504,26 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { xapiRepository, userApi } =
+      const { attendanceApi, userApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
-      const endUserAttendance = await new AttendanceBuilder()
+
+      const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
-        .buildAndPersist()
-      const studentAttendance = await new AttendanceBuilder()
+        .build()
+      const studentAttendance = new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(student.userId)
-        .buildAndPersist()
+        .build()
+      attendanceApi
+        .getRoomAttendances(roomId)
+        .resolves([endUserAttendance, studentAttendance])
+
       lessonMaterial = new LessonMaterialBuilder()
         .withSource(FileType.Audio)
         .build()
@@ -2648,21 +2690,25 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .buildAndPersist()
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .resolves([endUserAttendance, studentAttendance])
+
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
           .addMaterialId(lessonMaterial.contentId)
@@ -2972,21 +3018,26 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .buildAndPersist()
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .resolves([endUserAttendance, studentAttendance])
+
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
           .addMaterialId(lessonMaterial.contentId)
@@ -3200,21 +3251,26 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { xapiRepository, userApi } =
+        const { attendanceApi, userApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
         userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        const endUserAttendance = await new AttendanceBuilder()
+
+        const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
-          .buildAndPersist()
-        const studentAttendance = await new AttendanceBuilder()
+          .build()
+        const studentAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(student.userId)
-          .buildAndPersist()
+          .build()
+        attendanceApi
+          .getRoomAttendances(roomId)
+          .resolves([endUserAttendance, studentAttendance])
+
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
           .addMaterialId(lessonMaterial.contentId)

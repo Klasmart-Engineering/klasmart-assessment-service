@@ -3,15 +3,16 @@ import dotenv from 'dotenv'
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
 import { Container as MutableContainer } from 'typedi'
+import { Substitute } from '@fluffy-spoon/substitute'
+
 import { ApolloServerTestClient, createTestClient } from './createTestClient'
 import {
   createBootstrapPostgresConnection,
   createTestConnections,
 } from './testConnection'
-import { Substitute } from '@fluffy-spoon/substitute'
 import { ILogger, Logger } from '../../src/helpers/logger'
 import createAssessmentServer from '../../src/helpers/createAssessmentServer'
-import { UserApi } from '../../src/api'
+import { AttendanceApi, UserApi } from '../../src/api'
 import { IXApiRepository } from '../../src/db/xapi'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
@@ -67,12 +68,15 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
 }
 
 export const createSubstitutesToExpectedInjectableServices = () => {
-  const xapiRepository = Substitute.for<IXApiRepository>()
-  MutableContainer.set('IXApiRepository', xapiRepository)
+  const attendanceApi = Substitute.for<AttendanceApi>()
+  MutableContainer.set(AttendanceApi, attendanceApi)
   const userApi = Substitute.for<UserApi>()
   MutableContainer.set(UserApi, userApi)
+  const xapiRepository = Substitute.for<IXApiRepository>()
+  MutableContainer.set('IXApiRepository', xapiRepository)
   return {
-    xapiRepository,
+    attendanceApi,
     userApi,
+    xapiRepository,
   }
 }

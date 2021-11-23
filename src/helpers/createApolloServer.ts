@@ -13,7 +13,11 @@ import { Logger } from './logger'
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
-    playground: true,
+    playground: {
+      settings: {
+        'request.credentials': 'include',
+      },
+    },
     introspection: true,
     formatError: (err) => {
       // Override the @Authorized error by TypeGraphQL.
