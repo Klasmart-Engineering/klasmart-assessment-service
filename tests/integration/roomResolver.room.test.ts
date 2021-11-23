@@ -89,9 +89,7 @@ describe('roomResolver.Room', () => {
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().dontAuthenticate().build()
-      userApi
-        .fetchUser(endUser.userId, Arg.any())
-        .returns(Promise.resolve<User>(endUser))
+      userApi.fetchUser(endUser.userId, Arg.any()).resolves(endUser)
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -110,9 +108,7 @@ describe('roomResolver.Room', () => {
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -133,9 +129,7 @@ describe('roomResolver.Room', () => {
         const roomId = 'room1'
         const { userApi } = createSubstitutesToExpectedInjectableServices()
         const endUser = new EndUserBuilder().authenticate().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
         // Act
         const fn = () =>
@@ -158,9 +152,7 @@ describe('roomResolver.Room', () => {
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -194,12 +186,8 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
@@ -386,12 +374,8 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
@@ -575,12 +559,8 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
@@ -755,12 +735,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1109,12 +1085,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1328,12 +1300,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1611,12 +1579,8 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
@@ -1808,12 +1772,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1981,15 +1941,9 @@ describe('roomResolver.Room', () => {
       endUser = new EndUserBuilder().authenticate().build()
       student1 = new UserBuilder().build()
       student2 = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student1.userId, endUser.token)
-        .returns(Promise.resolve<User>(student1))
-      userApi
-        .fetchUser(student2.userId, endUser.token)
-        .returns(Promise.resolve<User>(student2))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student1.userId, endUser.token).resolves(student1)
+      userApi.fetchUser(student2.userId, endUser.token).resolves(student2)
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -2243,12 +2197,8 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -2408,12 +2358,8 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
       const endUserAttendance = await new AttendanceBuilder()
         .withroomId(roomId)
         .withUserId(endUser.userId)
@@ -2582,12 +2528,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -2899,12 +2841,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -3120,12 +3058,8 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
         const endUserAttendance = await new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)

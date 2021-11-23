@@ -51,12 +51,8 @@ describe('teacherScoreResolver.setScore', function () {
 
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
@@ -89,12 +85,8 @@ describe('teacherScoreResolver.setScore', function () {
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
         const roomId = 'room1'
         const providedRoomId = 'room2'
@@ -143,15 +135,9 @@ describe('teacherScoreResolver.setScore', function () {
         const endUser = new EndUserBuilder().authenticate().build()
         const someOtherStudent = new UserBuilder().build()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
-        userApi
-          .fetchUser(someOtherStudent.userId)
-          .returns(Promise.resolve<User>(someOtherStudent))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi.fetchUser(someOtherStudent.userId).resolves(someOtherStudent)
 
         const roomId = 'room1'
         const lessonMaterial =
@@ -198,12 +184,8 @@ describe('teacherScoreResolver.setScore', function () {
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
         const roomId = 'room1'
         const lessonMaterial =
@@ -252,12 +234,8 @@ describe('teacherScoreResolver.setScore', function () {
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
         const roomId = 'room1'
         const providedContentId = v4()
@@ -305,12 +283,8 @@ describe('teacherScoreResolver.setScore', function () {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
         lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
         const userContentScore = await new UserContentScoreBuilder()
@@ -417,12 +391,8 @@ describe('teacherScoreResolver.setScore', function () {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
       const userContentScore = await new UserContentScoreBuilder()
@@ -527,12 +497,8 @@ describe('teacherScoreResolver.setScore', function () {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       lessonMaterial = await new LessonMaterialBuilder()
         .withSubcontentId(v4())

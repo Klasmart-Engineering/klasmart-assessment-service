@@ -41,9 +41,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       // Arrange
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(student.userId, Arg.any())
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
@@ -121,9 +119,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       // Arrange
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(student.userId, Arg.any())
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
@@ -203,9 +199,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         // Arrange
         const { userApi } = createSubstitutesToExpectedInjectableServices()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(student.userId, Arg.any())
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
         const roomId = 'room1'
         const lessonMaterial = await new LessonMaterialBuilder()
@@ -296,9 +290,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         // Arrange
         const { userApi } = createSubstitutesToExpectedInjectableServices()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(student.userId, Arg.any())
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
         const roomId = 'room1'
         const lessonMaterial =
@@ -386,9 +378,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         // Arrange
         const { userApi } = createSubstitutesToExpectedInjectableServices()
         const student = new UserBuilder().build()
-        userApi
-          .fetchUser(student.userId, Arg.any())
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(student.userId, Arg.any()).resolves(student)
         const roomId = 'room1'
         const lessonMaterial = await new LessonMaterialBuilder()
           .withPublishStatus('hidden')
@@ -474,9 +464,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       // Arrange
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(student.userId, Arg.any())
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
@@ -561,12 +549,8 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
         const { userApi } = createSubstitutesToExpectedInjectableServices()
         const student = new UserBuilder().build()
         const student2 = new UserBuilder().build()
-        userApi
-          .fetchUser(student.userId, Arg.any())
-          .returns(Promise.resolve<User>(student))
-        userApi
-          .fetchUser(student2.userId, Arg.any())
-          .returns(Promise.resolve<User>(student2))
+        userApi.fetchUser(student.userId, Arg.any()).resolves(student)
+        userApi.fetchUser(student2.userId, Arg.any()).resolves(student2)
 
         const roomId = 'room1'
         const lessonMaterial =
@@ -670,9 +654,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       // Arrange
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(student.userId, Arg.any())
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder().buildAndPersist()
@@ -756,9 +738,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       // Arrange
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(student.userId, Arg.any())
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder()
@@ -853,9 +833,7 @@ describe('migrateContentIdColumnsToUseContentIdInsteadOfH5pId', function () {
       // Arrange
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(student.userId, Arg.any())
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(student.userId, Arg.any()).resolves(student)
 
       const roomId = 'room1'
       const lessonMaterial = await new LessonMaterialBuilder()

@@ -48,12 +48,8 @@ describe('teacherCommentResolver.setComment', () => {
       const comment = 'great job!'
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       // Act
       const fn = () =>
@@ -87,9 +83,7 @@ describe('teacherCommentResolver.setComment', () => {
       const userServiceUnkownUserErrorMsg = (userId: string) =>
         `UserConnectionNode ${userId} doesn't exist.`
       const endUser = new EndUserBuilder().authenticate().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi
         .fetchUser(providedStudentId, endUser.token)
         .returns(
@@ -126,12 +120,8 @@ describe('teacherCommentResolver.setComment', () => {
       const room = await new RoomBuilder().buildAndPersist()
       const endUser = new EndUserBuilder().authenticate().build()
       const student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       // Act
       const fn = () =>
@@ -165,12 +155,8 @@ describe('teacherCommentResolver.setComment', () => {
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = await new ScheduleBuilder()
@@ -257,12 +243,8 @@ describe('teacherCommentResolver.setComment', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .fetchUser(endUser.userId, endUser.token)
-        .returns(Promise.resolve<User>(endUser))
-      userApi
-        .fetchUser(student.userId, endUser.token)
-        .returns(Promise.resolve<User>(student))
+      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = await new ScheduleBuilder()
@@ -352,15 +334,9 @@ describe('teacherCommentResolver.setComment', () => {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         someOtherStudent = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
-        userApi
-          .fetchUser(someOtherStudent.userId)
-          .returns(Promise.resolve<User>(someOtherStudent))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi.fetchUser(someOtherStudent.userId).resolves(someOtherStudent)
 
         const room = await new RoomBuilder()
           .withRoomId(roomId)
@@ -468,12 +444,8 @@ describe('teacherCommentResolver.setComment', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .fetchUser(endUser.userId, endUser.token)
-          .returns(Promise.resolve<User>(endUser))
-        userApi
-          .fetchUser(student.userId, endUser.token)
-          .returns(Promise.resolve<User>(student))
+        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi.fetchUser(student.userId, endUser.token).resolves(student)
 
         const room = await new RoomBuilder()
           .withRoomId(roomId)
