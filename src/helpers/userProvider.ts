@@ -1,9 +1,9 @@
-import { Inject, Service } from 'typedi'
+import { Service } from 'typedi'
 import { UserApi, User } from '../api'
 
 @Service()
 export class UserProvider {
-  public constructor(@Inject('UserApi') private readonly userApi: UserApi) {}
+  public constructor(private readonly userApi: UserApi) {}
 
   public async getUser(
     userId: string,

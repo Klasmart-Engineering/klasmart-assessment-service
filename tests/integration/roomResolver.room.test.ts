@@ -1,15 +1,15 @@
 import { v4 } from 'uuid'
 import { Arg } from '@fluffy-spoon/substitute'
 import { FindConditions, getRepository } from 'typeorm'
+import { Container as MutableContainer } from 'typedi'
 
 import expect from '../utils/chaiAsPromisedSetup'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import { TestTitle } from '../utils/testTitles'
 import { XApiRecord } from '../../src/db/xapi'
-import { Container as MutableContainer } from 'typedi'
 import '../utils/globalIntegrationTestHooks'
 import EndUser from '../entities/endUser'
-// import { User } from '../../src/db/users/entities'
+
 import {
   dbConnect,
   dbDisconnect,

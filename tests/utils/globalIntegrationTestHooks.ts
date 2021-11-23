@@ -70,7 +70,7 @@ export const createSubstitutesToExpectedInjectableServices = () => {
   const xapiRepository = Substitute.for<IXApiRepository>()
   MutableContainer.set('IXApiRepository', xapiRepository)
   const userApi = Substitute.for<UserApi>()
-  MutableContainer.set('UserApi', userApi)
+  MutableContainer.set(UserApi, userApi)
   return {
     xapiRepository,
     userApi,
