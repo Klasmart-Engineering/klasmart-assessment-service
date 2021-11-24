@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.5.0...v1.5.1) (2021-11-24)
+
+
+### Refactor
+
+* **DAS-131:** replace cms db access with web api ([a1ac6fa](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/a1ac6fafbfacf859f24b36bb975f38c182b18412))
+
+
+* add 1 test for each cms web api endpoint being used ([57d0ebe](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/57d0ebe55ed4e5bf6db6047d348e172b8f0afd43))
+* add cross-env to support Windows ([d430ca5](http://bitbucket.org/calmisland/kidsloop-assessment-service/commit/d430ca5d6285e6464e393748210c4dd1f3d7c246))
+
 ## [1.5.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.4.0...v1.5.0) (2021-11-23)
 
 
