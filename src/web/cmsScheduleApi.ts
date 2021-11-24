@@ -17,8 +17,13 @@ export class CmsScheduleApi {
 
     const response = await fetchPromise
     const body = await response.json()
-    const scheduleResponse = body as ScheduleResponse
-    const scheduleItem = scheduleResponse.data[0]
+    const scheduleResponse = body as ScheduleResponse | undefined
+
+    if (!scheduleResponse?.total) {
+      return undefined
+    }
+
+    const scheduleItem = scheduleResponse.data?.[0]
 
     return scheduleItem
   }

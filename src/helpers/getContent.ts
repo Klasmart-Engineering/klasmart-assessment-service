@@ -5,20 +5,6 @@ import ContentKey from './contentKey'
 // TODO: Remove after content_id migration.
 export const h5pIdToCmsContentIdCache = new Map<string, string>()
 
-export async function createH5pIdToCmsContentIdCache(
-  cmsContentProvider: CmsContentProvider,
-): Promise<void> {
-  const materials = await cmsContentProvider.getAllLessonMaterials()
-
-  for (const x of materials) {
-    if (!x.h5pId) continue
-    const cmsContentId = h5pIdToCmsContentIdCache.get(x.h5pId)
-    if (!cmsContentId || x.publishStatus === 'published') {
-      h5pIdToCmsContentIdCache.set(x.h5pId, x.contentId)
-    }
-  }
-}
-
 export default async function getContent(
   contentKey: string,
   contentType: string | undefined | null,

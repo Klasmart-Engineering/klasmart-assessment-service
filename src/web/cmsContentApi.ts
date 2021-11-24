@@ -21,23 +21,6 @@ export class CmsContentApi {
     return contentDtos
   }
 
-  public async getAllLessonMaterials(): Promise<ContentDto[]> {
-    const cmsApiUrl =
-      process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
-    const contentsApiUrl = `${cmsApiUrl}/contents?content_type=1`
-
-    const fetchPromise = fetch(contentsApiUrl, {
-      method: 'GET',
-    })
-
-    const response = await fetchPromise
-    const body = await response.json()
-    const contentResponse = body as ContentResponse
-    const contentDtos = contentResponse?.list ?? []
-
-    return contentDtos
-  }
-
   public async getLessonMaterial(
     contentId: string,
   ): Promise<ContentDto | undefined> {
@@ -53,6 +36,9 @@ export class CmsContentApi {
     const body = await response.json()
     const contentResponse = body as ContentResponse
     const contentDtos = contentResponse?.list ?? []
+    if (contentDtos.length === 0) {
+      return undefined
+    }
 
     return contentDtos[0]
   }

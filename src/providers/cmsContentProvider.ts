@@ -15,13 +15,6 @@ export class CmsContentProvider {
     return lessonMaterials
   }
 
-  public async getAllLessonMaterials(): Promise<Content[]> {
-    const dtos = await this.cmsContentApi.getAllLessonMaterials()
-    const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
-
-    return lessonMaterials
-  }
-
   public async getLessonMaterial(
     contentId: string,
   ): Promise<Content | undefined> {

@@ -1,17 +1,11 @@
 import 'reflect-metadata'
 import 'newrelic'
 
-import { createH5pIdToCmsContentIdCache } from './helpers/getContent'
 import createAssessmentServer from './helpers/createAssessmentServer'
 import registerAndConnectToDataSources from './helpers/registerAndConnectToDataSources'
-import { CmsContentApi } from './web/cmsContentApi'
-import { CmsContentProvider } from './providers/cmsContentProvider'
 
 async function main() {
   await registerAndConnectToDataSources()
-  await createH5pIdToCmsContentIdCache(
-    new CmsContentProvider(new CmsContentApi()),
-  )
 
   const { app, server } = await createAssessmentServer()
 
