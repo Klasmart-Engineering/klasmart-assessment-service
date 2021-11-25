@@ -6,11 +6,6 @@ definitions:
         POSTGRES_DB: test_user_db
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: assessments
-    mysql:
-      image: mysql
-      variables:
-        MYSQL_DATABASE: test_cms_db
-        MYSQL_ROOT_PASSWORD: assessments
 
   caches:
     nodemodules: ./node_modules
@@ -49,12 +44,11 @@ definitions:
         image: node:16
         services:
           - postgres
-          - mysql
         script:
           - *skip-bitbucket-authored-commits
           - export HUSKY=0
           - npm i
-          - TEST_POSTGRES_PORT=5432 TEST_MYSQL_PORT=3306 npm run test:codecov
+          - TEST_POSTGRES_PORT=5432 npm run test:codecov
         caches:
           - nodemodules
         artifacts:

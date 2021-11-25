@@ -1,6 +1,6 @@
 import { Connection, createConnection } from 'typeorm'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
-import { USERS_CONNECTION_NAME } from '../../src/db/users/connectToUserDatabase'
+import { ATTENDANCE_CONNECTION_NAME } from '../../src/db/attendance/connectToAttendanceDatabase'
 import { XAPI_CONNECTION_NAME } from '../../src/db/xapi/sql/connectToXApiDatabase'
 
 export const createBootstrapPostgresConnection = (): Promise<Connection> => {
@@ -14,7 +14,7 @@ export const createBootstrapPostgresConnection = (): Promise<Connection> => {
 }
 
 export const createTestConnections = (): Promise<Connection>[] => {
-  return [createAssessmentDbConnection(), createUserDbConnection()]
+  return [createAssessmentDbConnection(), createAttendanceDbConnection()]
 }
 
 export const createAssessmentDbConnection = (): Promise<Connection> => {
@@ -32,15 +32,15 @@ export const createAssessmentDbConnection = (): Promise<Connection> => {
   })
 }
 
-export const createUserDbConnection = (): Promise<Connection> => {
+export const createAttendanceDbConnection = (): Promise<Connection> => {
   return createConnection({
-    name: USERS_CONNECTION_NAME,
+    name: ATTENDANCE_CONNECTION_NAME,
     type: 'postgres',
     host: process.env.LOCALHOST || 'localhost',
     port: Number(process.env.TEST_POSTGRES_PORT) || 5442,
     username: 'postgres',
     password: 'assessments',
-    database: 'test_user_db',
+    database: 'test_attendance_db',
     synchronize: true,
     dropSchema: true,
     entities: ['src/db/users/entities/*.ts'],

@@ -7,10 +7,10 @@ import {
   getAssessmentDatabaseConnectionOptions,
 } from '../../src/db/assessments/connectToAssessmentDatabase'
 import {
-  connectToUserDatabase,
-  getUserDatabaseConnectionOptions,
-  USERS_CONNECTION_NAME,
-} from '../../src/db/users/connectToUserDatabase'
+  connectToAttendanceDatabase,
+  getAttendanceDatabaseConnectionOptions,
+  ATTENDANCE_CONNECTION_NAME,
+} from '../../src/db/attendance/connectToAttendanceDatabase'
 import {
   connectToXApiDatabase,
   getXApiDatabaseConnectionOptions,
@@ -22,11 +22,8 @@ describe('connectToDatabases', () => {
   const host = process.env.LOCALHOST || 'localhost'
   const postgresDbPort = Number(process.env.TEST_POSTGRES_PORT) || 5442
   const asessmentDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_assessment_db`
-  const userDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_user_db`
+  const attendanceDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_attendance_db`
   const xapiSqlDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_xapi_db`
-  const mysqlPort = Number(process.env.TEST_MYSQL_PORT) || 3316
-  const mysqlUrl = `mysql://root:assessments@${host}:${mysqlPort}/test_cms_db`
-  //console.log({ asessmentDbUrl, userDbUrl, mysqlUrl, xapiSqlDbUrl })
 
   before(() => Logger.reset())
   after(() => {
@@ -84,24 +81,24 @@ describe('connectToDatabases', () => {
     })
   })
 
-  describe('connectToUserDatabase', () => {
+  describe('connectToAttendanceDatabase', () => {
     it('synchronize is false, dropSchema is undefined', async () => {
-      const config = getUserDatabaseConnectionOptions(userDbUrl)
+      const config = getAttendanceDatabaseConnectionOptions(attendanceDbUrl)
       expect(config.synchronize).is.false
       expect(config.dropSchema).is.undefined
     })
 
     it('connects successfully', async () => {
-      await connectToUserDatabase(userDbUrl)
-      await getConnection(USERS_CONNECTION_NAME).close()
+      await connectToAttendanceDatabase(attendanceDbUrl)
+      await getConnection(ATTENDANCE_CONNECTION_NAME).close()
     })
 
     context('invalid url (wrong username)', () => {
       it('logs connection error and rethrows', async () => {
         const logger = Substitute.for<ILogger>()
         Logger.register(() => logger)
-        const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_user_db`
-        const fn = () => connectToUserDatabase(badUrl)
+        const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_attendance_db`
+        const fn = () => connectToAttendanceDatabase(badUrl)
         await expect(fn()).to.be.rejected
         logger.received(1).error(Arg.any())
       })

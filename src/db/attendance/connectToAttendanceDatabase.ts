@@ -2,13 +2,13 @@ import path from 'path'
 import { ConnectionOptions, createConnection } from 'typeorm'
 import { Logger } from '../../helpers/logger'
 
-export const USERS_CONNECTION_NAME = 'users'
+export const ATTENDANCE_CONNECTION_NAME = 'users'
 
-export function getUserDatabaseConnectionOptions(
+export function getAttendanceDatabaseConnectionOptions(
   url: string,
 ): ConnectionOptions {
   return {
-    name: USERS_CONNECTION_NAME,
+    name: ATTENDANCE_CONNECTION_NAME,
     type: 'postgres',
     url,
     synchronize: false,
@@ -19,9 +19,9 @@ export function getUserDatabaseConnectionOptions(
   }
 }
 
-export async function connectToUserDatabase(url: string): Promise<void> {
+export async function connectToAttendanceDatabase(url: string): Promise<void> {
   try {
-    await createConnection(getUserDatabaseConnectionOptions(url))
+    await createConnection(getAttendanceDatabaseConnectionOptions(url))
     Logger.get().info('🐘 Connected to postgres: User database')
   } catch (e) {
     Logger.get().error(

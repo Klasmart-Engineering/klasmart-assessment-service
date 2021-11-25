@@ -3,7 +3,7 @@ import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
-import { connectToUserDatabase } from '../db/users/connectToUserDatabase'
+import { connectToAttendanceDatabase } from '../db/attendance/connectToAttendanceDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { connectToXApiDatabase } from '../db/xapi/sql/connectToXApiDatabase'
 import { XApiDynamodbRepository } from '../db/xapi/dynamodb/repo'
@@ -16,11 +16,11 @@ useContainer(TypeormTypediContainer)
 export default async function registerAndConnectToDataSources(): Promise<void> {
   const connectionPromises: Promise<void>[] = []
 
-  const userDatabaseUrl = process.env.USER_DATABASE_URL
-  if (!userDatabaseUrl) {
-    throw new Error('Please specify a value for USER_DATABASE_URL')
+  const attendanceDatabaseUrl = process.env.ATTENDANCE_DATABASE_URL
+  if (!attendanceDatabaseUrl) {
+    throw new Error('Please specify a value for ATTENDANCE_DATABASE_URL')
   }
-  connectionPromises.push(connectToUserDatabase(userDatabaseUrl))
+  connectionPromises.push(connectToAttendanceDatabase(attendanceDatabaseUrl))
 
   const assessmentDatabaseUrl = process.env.ASSESSMENT_DATABASE_URL
   if (!assessmentDatabaseUrl) {

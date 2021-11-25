@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi'
+import { Service } from 'typedi'
 import { AttendanceApi, Attendance } from '../api'
 
 @Service()
