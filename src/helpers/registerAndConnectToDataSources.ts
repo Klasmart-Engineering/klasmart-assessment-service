@@ -9,18 +9,40 @@ import { connectToXApiDatabase } from '../db/xapi/sql/connectToXApiDatabase'
 import { XApiDynamodbRepository } from '../db/xapi/dynamodb/repo'
 import { XApiSqlRepository } from '../db/xapi/sql/repo'
 import { XApiRecordSql } from '../db/xapi/sql/entities'
+import {
+  RoomAttendanceApiProvider,
+  RoomAttendanceDbProvider,
+} from './roomAttendanceProvider'
+import { Attendance as AttendanceSql } from '../db/attendance/entities'
+import { getConfig, Configuration } from './configuration'
+import { AttendanceApi } from '../api'
 
 useContainer(TypeormTypediContainer)
 
 // *** Restrict all environment variable access to be done here at the entry point. ***
 export default async function registerAndConnectToDataSources(): Promise<void> {
+  const config = getConfig()
+
   const connectionPromises: Promise<void>[] = []
 
-  const attendanceDatabaseUrl = process.env.ATTENDANCE_DATABASE_URL
-  if (!attendanceDatabaseUrl) {
-    throw new Error('Please specify a value for ATTENDANCE_DATABASE_URL')
+  if (config.USE_ATTENDANCE_API_FLAG) {
+    const api = new AttendanceApi()
+    MutableContainer.set(
+      'RoomAttendanceProvider',
+      new RoomAttendanceApiProvider(api),
+    )
+  } else {
+    const attendanceDatabaseUrl = config.ATTENDANCE_DATABASE_URL
+    if (!attendanceDatabaseUrl) {
+      throw new Error('Please specify a value for ATTENDANCE_DATABASE_URL')
+    }
+    const conn = await connectToAttendanceDatabase(attendanceDatabaseUrl)
+    const sqlRepository = conn.getRepository(AttendanceSql)
+    MutableContainer.set(
+      'RoomAttendanceProvider',
+      new RoomAttendanceDbProvider(sqlRepository),
+    )
   }
-  connectionPromises.push(connectToAttendanceDatabase(attendanceDatabaseUrl))
 
   const assessmentDatabaseUrl = process.env.ASSESSMENT_DATABASE_URL
   if (!assessmentDatabaseUrl) {

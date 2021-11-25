@@ -1,5 +1,5 @@
 import path from 'path'
-import { ConnectionOptions, createConnection } from 'typeorm'
+import { Connection, ConnectionOptions, createConnection } from 'typeorm'
 import { Logger } from '../../helpers/logger'
 
 export const ATTENDANCE_CONNECTION_NAME = 'users'
@@ -19,13 +19,18 @@ export function getAttendanceDatabaseConnectionOptions(
   }
 }
 
-export async function connectToAttendanceDatabase(url: string): Promise<void> {
+export async function connectToAttendanceDatabase(
+  url: string,
+): Promise<Connection> {
   try {
-    await createConnection(getAttendanceDatabaseConnectionOptions(url))
-    Logger.get().info('🐘 Connected to postgres: User database')
+    const connection = await createConnection(
+      getAttendanceDatabaseConnectionOptions(url),
+    )
+    Logger.get().info('🐘 Connected to postgres: Attendance database')
+    return connection
   } catch (e) {
     Logger.get().error(
-      '❌ Failed to connect or initialize postgres: User database',
+      '❌ Failed to connect or initialize postgres: Attendance database',
     )
     throw e
   }

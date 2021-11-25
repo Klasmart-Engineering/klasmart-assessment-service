@@ -1,4 +1,4 @@
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { Attendance } from '../api'
@@ -20,6 +20,7 @@ export class RoomScoresCalculator {
   }
 
   constructor(
+    @Inject('RoomAttendanceProvider')
     private readonly roomAttendanceProvider: RoomAttendanceProvider,
     private readonly roomEventsProvider: RoomEventsProvider,
     private readonly roomMaterialsProvider: RoomMaterialsProvider,

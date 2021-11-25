@@ -14,6 +14,7 @@ import { ILogger, Logger } from '../../src/helpers/logger'
 import createAssessmentServer from '../../src/helpers/createAssessmentServer'
 import { AttendanceApi, UserApi } from '../../src/api'
 import { IXApiRepository } from '../../src/db/xapi'
+import { RoomAttendanceApiProvider } from '../../src/helpers/roomAttendanceProvider'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
@@ -56,6 +57,15 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
   if (
     (
       await connection.query(
+        "SELECT datname FROM pg_catalog.pg_database WHERE datname = 'test_attendance_db';",
+      )
+    ).length == 0
+  ) {
+    await connection.query('CREATE DATABASE test_attendance_db;')
+  }
+  if (
+    (
+      await connection.query(
         "SELECT datname FROM pg_catalog.pg_database WHERE datname = 'test_xapi_db';",
       )
     ).length == 0
@@ -70,6 +80,10 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
 export const createSubstitutesToExpectedInjectableServices = () => {
   const attendanceApi = Substitute.for<AttendanceApi>()
   MutableContainer.set(AttendanceApi, attendanceApi)
+  MutableContainer.set(
+    'RoomAttendanceProvider',
+    new RoomAttendanceApiProvider(attendanceApi),
+  )
   const userApi = Substitute.for<UserApi>()
   MutableContainer.set(UserApi, userApi)
   const xapiRepository = Substitute.for<IXApiRepository>()

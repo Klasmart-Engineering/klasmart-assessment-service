@@ -76,7 +76,7 @@ export class AttendanceApi {
 
   getRoomAttendances = async (roomId: string): Promise<Attendance[]> => {
     const data: { getClassAttendance: AttendanceResult[] } = await request(
-      this.config.ATTENDANCE_SERVICE_ENDPOINT,
+      this.config.ATTENDANCE_SERVICE_ENDPOINT!,
       GET_CLASS_ATTENDANCE_QUERY,
       { roomId },
     )

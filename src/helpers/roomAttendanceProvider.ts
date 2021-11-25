@@ -1,19 +1,23 @@
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
+import { Repository } from 'typeorm'
+import { InjectRepository } from 'typeorm-typedi-extensions'
+import { ATTENDANCE_CONNECTION_NAME } from '../db/attendance/connectToAttendanceDatabase'
+import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { AttendanceApi, Attendance } from '../api'
+import { getConfig } from '../helpers/configuration'
 
-@Service()
-export class RoomAttendanceProvider {
-  public constructor(private readonly attendanceApi: AttendanceApi) {}
+export interface RoomAttendanceProvider {
+  getAttendances(roomId: string): Promise<Attendance[]>
+  handleDuplicateSessionsWithDifferentTimestamps(
+    attendances: Attendance[],
+  ): Attendance[]
+  getUserIds(attendances: Attendance[]): Set<string>
+}
 
-  public async getAttendances(roomId: string): Promise<Attendance[]> {
-    let attendances = await this.attendanceApi.getRoomAttendances(roomId)
-    attendances =
-      this.handleDuplicateSessionsWithDifferentTimestamps(attendances)
+class BaseRoomAttendanceProvider {
+  public readonly configuration = getConfig()
 
-    return [...attendances.values()]
-  }
-
-  private handleDuplicateSessionsWithDifferentTimestamps(
+  public handleDuplicateSessionsWithDifferentTimestamps(
     attendances: Attendance[],
   ): Attendance[] {
     const sessionIdToAttendanceMap = new Map<string, Attendance>()
@@ -36,5 +40,48 @@ export class RoomAttendanceProvider {
 
   public getUserIds(attendances: Attendance[]): Set<string> {
     return new Set(attendances.map((x) => x.userId))
+  }
+}
+
+@Service()
+export class RoomAttendanceApiProvider
+  extends BaseRoomAttendanceProvider
+  implements RoomAttendanceProvider
+{
+  public constructor(
+    @Inject('AttendanceApi') private readonly attendanceApi: AttendanceApi,
+  ) {
+    super()
+  }
+
+  public async getAttendances(roomId: string): Promise<Attendance[]> {
+    let attendances = await this.attendanceApi.getRoomAttendances(roomId)
+    attendances =
+      this.handleDuplicateSessionsWithDifferentTimestamps(attendances)
+
+    return [...attendances.values()]
+  }
+}
+
+@Service()
+export class RoomAttendanceDbProvider
+  extends BaseRoomAttendanceProvider
+  implements RoomAttendanceProvider
+{
+  public constructor(
+    @InjectRepository(AttendanceSql, ATTENDANCE_CONNECTION_NAME)
+    private readonly attendanceRepository: Repository<AttendanceSql>,
+  ) {
+    super()
+  }
+
+  public async getAttendances(roomId: string): Promise<Attendance[]> {
+    let attendances = (await this.attendanceRepository.find({
+      where: { roomId },
+    })) as Attendance[]
+    attendances =
+      this.handleDuplicateSessionsWithDifferentTimestamps(attendances)
+
+    return [...attendances.values()]
   }
 }

@@ -1,4 +1,4 @@
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 
@@ -24,6 +24,7 @@ export class RoomScoresTemplateProvider {
   private roomIdToContentKeyUsesH5pIdMap = new Map<string, boolean>()
 
   constructor(
+    @Inject('RoomAttendanceProvider')
     private readonly roomAttendanceProvider: RoomAttendanceProvider,
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
     private readonly userContentScoreRepository: Repository<UserContentScore>,
