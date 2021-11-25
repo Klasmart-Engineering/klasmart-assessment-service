@@ -16,7 +16,8 @@ import {
   getXApiDatabaseConnectionOptions,
   XAPI_CONNECTION_NAME,
 } from '../../src/db/xapi/sql/connectToXApiDatabase'
-import { ILogger, Logger } from '../../src/helpers/logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 
 describe('connectToDatabases', () => {
   const host = process.env.LOCALHOST || 'localhost'
@@ -24,13 +25,6 @@ describe('connectToDatabases', () => {
   const asessmentDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_assessment_db`
   const attendanceDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_attendance_db`
   const xapiSqlDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_xapi_db`
-
-  before(() => Logger.reset())
-  after(() => {
-    Logger.reset()
-    Logger.register(() => Substitute.for<ILogger>())
-  })
-  afterEach(() => Logger.reset())
 
   describe('connectToAssessmentDatabase', () => {
     it('synchronize is true, dropSchema is undefined, runMigrations is false', async () => {
@@ -46,13 +40,10 @@ describe('connectToDatabases', () => {
     })
 
     context('invalid url (wrong username)', () => {
-      it('logs connection error and rethrows', async () => {
-        const logger = Substitute.for<ILogger>()
-        Logger.register(() => logger)
+      it('rethrows', async () => {
         const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_assessment_db`
         const fn = () => connectToAssessmentDatabase(badUrl)
         await expect(fn()).to.be.rejected
-        logger.received(1).error(Arg.any())
       })
     })
   })
@@ -70,13 +61,10 @@ describe('connectToDatabases', () => {
     })
 
     context('invalid url (wrong username)', () => {
-      it('logs connection error and rethrows', async () => {
-        const logger = Substitute.for<ILogger>()
-        Logger.register(() => logger)
+      it('rethrows', async () => {
         const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_xapi_db`
         const fn = () => connectToXApiDatabase(badUrl)
         await expect(fn()).to.be.rejected
-        logger.received(1).error(Arg.any())
       })
     })
   })
@@ -94,13 +82,10 @@ describe('connectToDatabases', () => {
     })
 
     context('invalid url (wrong username)', () => {
-      it('logs connection error and rethrows', async () => {
-        const logger = Substitute.for<ILogger>()
-        Logger.register(() => logger)
+      it('rethrows', async () => {
         const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_attendance_db`
         const fn = () => connectToAttendanceDatabase(badUrl)
         await expect(fn()).to.be.rejected
-        logger.received(1).error(Arg.any())
       })
     })
   })

@@ -1,6 +1,8 @@
 import path from 'path'
 import { Connection, ConnectionOptions, createConnection } from 'typeorm'
-import { Logger } from '../../../helpers/logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const logger = withLogger('connectToXApiDatabase')
 
 export const XAPI_CONNECTION_NAME = 'xapi'
 
@@ -31,12 +33,10 @@ export async function connectToXApiDatabase(url: string): Promise<Connection> {
     const connection = await createConnection(
       getXApiDatabaseConnectionOptions(url),
     )
-    Logger.get().info('🐘 Connected to postgres: XApi database')
+    logger.info('🐘 Connected to postgres: XApi database')
     return connection
   } catch (e) {
-    Logger.get().error(
-      '❌ Failed to connect or initialize postgres: XApi database',
-    )
+    logger.error('❌ Failed to connect or initialize postgres: XApi database')
     throw e
   }
 }

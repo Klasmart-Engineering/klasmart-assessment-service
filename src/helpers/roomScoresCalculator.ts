@@ -7,15 +7,16 @@ import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
 import { ParsedXapiEvent } from './parsedXapiEvent'
 import { RoomScoresTemplateProvider } from './roomScoresTemplateProvider'
-import { ILogger, Logger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 
 @Service()
 export class RoomScoresCalculator {
-  private static _logger: ILogger
-  private get Logger(): ILogger {
+  private static _logger: Logger
+  private get Logger(): Logger {
     return (
       RoomScoresCalculator._logger ||
-      (RoomScoresCalculator._logger = Logger.get('RoomScoresCalculator'))
+      (RoomScoresCalculator._logger = withLogger('RoomScoresCalculator'))
     )
   }
 
@@ -25,7 +26,7 @@ export class RoomScoresCalculator {
     private readonly roomEventsProvider: RoomEventsProvider,
     private readonly roomMaterialsProvider: RoomMaterialsProvider,
     private readonly roomScoresTemplateProvider: RoomScoresTemplateProvider,
-  ) {}
+  ) { }
 
   public async calculate(
     roomId: string,

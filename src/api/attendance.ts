@@ -1,9 +1,9 @@
 import { gql, request } from 'graphql-request'
 import { Service } from 'typedi'
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { getConfig, Configuration } from '../helpers/configuration'
-import { Logger } from '../helpers/logger'
 
-const logger = Logger.get()
+const logger = withLogger('connectToUserDatabase')
 
 class AttendanceApiBadResult extends Error {
   constructor(message: string) {

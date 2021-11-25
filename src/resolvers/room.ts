@@ -14,17 +14,20 @@ import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
-import { ILogger, Logger } from '../helpers/logger'
 import { UserID } from '../auth/context'
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
+
+const logger = withLogger('room')
 
 @Service()
 @Resolver(() => Room)
 export default class RoomResolver {
-  private static _logger: ILogger
-  private get Logger(): ILogger {
+  private static _logger: Logger
+  private get Logger(): Logger {
     return (
       RoomResolver._logger ||
-      (RoomResolver._logger = Logger.get('RoomResolver'))
+      (RoomResolver._logger = withLogger('RoomResolver'))
     )
   }
 
@@ -32,7 +35,7 @@ export default class RoomResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
-  ) {}
+  ) { }
 
   @Authorized()
   @Query(() => Room)

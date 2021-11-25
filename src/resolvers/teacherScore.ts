@@ -18,20 +18,20 @@ import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
-import { ILogger, Logger } from '../helpers/logger'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { UserProvider } from '../helpers/userProvider'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { Content } from '../db/cms/entities/content'
-
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 @Service()
 @Resolver(() => TeacherScore)
 export default class TeacherScoreResolver {
-  private static _logger: ILogger
-  private get Logger(): ILogger {
+  private static _logger: Logger
+  private get Logger(): Logger {
     return (
       TeacherScoreResolver._logger ||
-      (TeacherScoreResolver._logger = Logger.get('TeacherScoreResolver'))
+      (TeacherScoreResolver._logger = withLogger('TeacherScoreResolver'))
     )
   }
 
@@ -40,7 +40,7 @@ export default class TeacherScoreResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
     private readonly cmsContentProvider: CmsContentProvider,
-  ) {}
+  ) { }
 
   @Authorized()
   @Mutation(() => TeacherScore)

@@ -10,7 +10,6 @@ import {
   createBootstrapPostgresConnection,
   createTestConnections,
 } from './testConnection'
-import { ILogger, Logger } from '../../src/helpers/logger'
 import createAssessmentServer from '../../src/helpers/createAssessmentServer'
 import { AttendanceApi, UserApi } from '../../src/api'
 import { IXApiRepository } from '../../src/db/xapi'
@@ -26,7 +25,6 @@ before(async () => {
   useContainer(Container)
   const { server } = await createAssessmentServer()
   testClient = createTestClient(server)
-  Logger.register(() => Substitute.for<ILogger>())
 })
 
 export async function dbConnect(): Promise<void> {

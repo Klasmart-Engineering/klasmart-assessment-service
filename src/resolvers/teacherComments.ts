@@ -17,18 +17,18 @@ import { Context, UserID } from '../auth/context'
 import { TeacherComment } from '../db/assessments/entities'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 import { UserProvider } from '../helpers/userProvider'
-import { ILogger, Logger } from '../helpers/logger'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 @Service()
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {
-  private static _logger: ILogger
-  private get Logger(): ILogger {
+  private static _logger: Logger
+  private get Logger(): Logger {
     return (
       TeacherCommentResolver._logger ||
-      (TeacherCommentResolver._logger = Logger.get('TeacherCommentResolver'))
+      (TeacherCommentResolver._logger = withLogger('TeacherCommentResolver'))
     )
   }
 
@@ -37,7 +37,7 @@ export default class TeacherCommentResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly scheduleProvider: CmsScheduleProvider,
-  ) {}
+  ) { }
 
   @Authorized()
   @Mutation(() => TeacherComment, { nullable: true })

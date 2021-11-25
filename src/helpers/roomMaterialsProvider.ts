@@ -5,22 +5,23 @@ import { Content, Schedule } from '../db/cms/entities'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 import { ErrorMessage } from './errorMessages'
-import { ILogger, Logger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 
 @Service()
 export class RoomMaterialsProvider {
-  private static _logger: ILogger
-  private get Logger(): ILogger {
+  private static _logger: Logger
+  private get Logger(): Logger {
     return (
       RoomMaterialsProvider._logger ||
-      (RoomMaterialsProvider._logger = Logger.get('RoomMaterialsProvider'))
+      (RoomMaterialsProvider._logger = withLogger('RoomMaterialsProvider'))
     )
   }
 
   public constructor(
     private readonly cmsScheduleProvider: CmsScheduleProvider,
     private readonly cmsContentProvider: CmsContentProvider,
-  ) {}
+  ) { }
 
   public async getMaterials(roomId: string): Promise<Content[]> {
     const schedule = await this.cmsScheduleProvider.getSchedule(roomId)

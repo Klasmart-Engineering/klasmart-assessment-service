@@ -8,7 +8,9 @@ import { LessonPlan } from '../db/cms/entities/lessonPlan'
 import { ContentType } from '../db/cms/enums/contentType'
 import { Connection, getManager } from 'typeorm'
 import ContentKey from './contentKey'
-import { Logger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const logger = withLogger('contentIdMigration')
 
 export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   cmsDbConnection: Connection,
@@ -20,7 +22,6 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
   const userContentScoreRepo = assessmentDbConnection.getRepository(
     UserContentScore,
   )
-  const logger = Logger.get('ContentIdMigration')
   const planRepo = cmsDbConnection.getRepository(LessonPlan)
   const materials = await contentRepo.find({
     where: { contentType: ContentType.LessonMaterial },

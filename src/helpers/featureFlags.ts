@@ -1,6 +1,6 @@
-import { Logger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
 
-const logger = Logger.get()
+const logger = withLogger('featureFlags')
 
 export class FeatureFlags {
   // fix: disconnected UserContentScore nodes

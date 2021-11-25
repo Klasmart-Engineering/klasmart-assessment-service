@@ -8,7 +8,9 @@ import { GraphQLSchema } from 'graphql'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
 import { Context } from '../auth/context'
 import { ErrorMessage } from './errorMessages'
-import { Logger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const logger = withLogger('createApolloServer')
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
@@ -41,7 +43,11 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
           userId: authenticationToken?.id,
         }
       } catch (e: unknown) {
-        Logger.get().error(e as string)
+        if (e instanceof Error) {
+          logger.error(e.stack)
+        } else {
+          logger.error(e)
+        }
       }
     },
     plugins: [

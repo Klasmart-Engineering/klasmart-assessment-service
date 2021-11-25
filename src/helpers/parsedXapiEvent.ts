@@ -1,5 +1,6 @@
 import { XApiRecord } from '../db/xapi'
-import { ILogger, Logger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 
 type XapiScore = {
   min?: number
@@ -79,11 +80,11 @@ export class ParsedXapiEvent {
     }
   }
 
-  private static _logger: ILogger
-  private static get Logger(): ILogger {
+  private static _logger: Logger
+  private static get Logger(): Logger {
     return (
       ParsedXapiEvent._logger ||
-      (ParsedXapiEvent._logger = Logger.get('ParsedXapiEvent'))
+      (ParsedXapiEvent._logger = withLogger('ParsedXapiEvent'))
     )
   }
 }

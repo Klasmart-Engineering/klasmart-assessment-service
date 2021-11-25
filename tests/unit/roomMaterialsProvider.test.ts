@@ -9,7 +9,6 @@ import {
 import { Repository } from 'typeorm'
 import { Content, Schedule } from '../../src/db/cms/entities'
 import { LessonPlan } from '../../src/db/cms/entities/lessonPlan'
-import { ILogger, Logger } from '../../src/helpers/logger'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 

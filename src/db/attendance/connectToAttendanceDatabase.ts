@@ -1,8 +1,10 @@
 import path from 'path'
 import { Connection, ConnectionOptions, createConnection } from 'typeorm'
-import { Logger } from '../../helpers/logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
 
-export const ATTENDANCE_CONNECTION_NAME = 'users'
+const logger = withLogger('connectToAttendanceDatabase')
+
+export const ATTENDANCE_CONNECTION_NAME = 'attendance'
 
 export function getAttendanceDatabaseConnectionOptions(
   url: string,
@@ -26,10 +28,10 @@ export async function connectToAttendanceDatabase(
     const connection = await createConnection(
       getAttendanceDatabaseConnectionOptions(url),
     )
-    Logger.get().info('🐘 Connected to postgres: Attendance database')
+    logger.info('🐘 Connected to postgres: Attendance database')
     return connection
   } catch (e) {
-    Logger.get().error(
+    logger.error(
       '❌ Failed to connect or initialize postgres: Attendance database',
     )
     throw e

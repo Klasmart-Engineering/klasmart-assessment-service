@@ -1,6 +1,6 @@
-import { Logger } from '../helpers/logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
 
-const logger = Logger.get()
+const logger = withLogger('configuration')
 
 class BadEnvironmentVariable<T> extends Error {
   constructor(variableName: string, value: T) {
