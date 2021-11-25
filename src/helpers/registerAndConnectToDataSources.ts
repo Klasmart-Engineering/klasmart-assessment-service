@@ -16,6 +16,7 @@ import {
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from './configuration'
 import { AttendanceApi } from '../web/attendance'
+import { CmsContentProvider } from '../providers/cmsContentProvider'
 
 useContainer(TypeormTypediContainer)
 
@@ -78,6 +79,9 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
       new XApiDynamodbRepository(dynamodbTableName, docClient),
     )
   }
+
+  const cmsContentProvider = MutableContainer.get(CmsContentProvider)
+  cmsContentProvider.setRecurringCacheClear(24 * 60 * 60 * 1000)
 
   await Promise.all(connectionPromises)
 }

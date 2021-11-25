@@ -38,7 +38,7 @@
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
     "@commitlint/cz-commitlint": "^13.1.0",
-    "@fluffy-spoon/substitute": "^1.208.0",
+    "@fluffy-spoon/substitute": "^2.0.0-beta.0",
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
     "@types/compression": "^1.7.0",

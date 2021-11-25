@@ -5,11 +5,28 @@ import { CmsContentApi, ContentDto } from '../web/cms'
 
 @Service()
 export class CmsContentProvider {
+  private readonly lessonMaterialCache = new Map<string, Content>()
+  private readonly lessonPlanMaterialIdsCache = new Map<
+    string,
+    ReadonlyArray<string>
+  >()
+
   constructor(private readonly cmsContentApi: CmsContentApi) {}
 
+  // TODO: Replace with ReadonlyArray
   public async getLessonMaterials(lessonPlanId: string): Promise<Content[]> {
+    const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(lessonPlanId)
+    if (cachedMaterialIds) {
+      return [
+        ...cachedMaterialIds
+          .map((id) => this.lessonMaterialCache.get(id))
+          .filter(removeNulls),
+      ]
+    }
+
     const dtos = await this.cmsContentApi.getLessonMaterials(lessonPlanId)
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
+    this.cacheLessonPlanResults(lessonPlanId, lessonMaterials)
 
     return lessonMaterials
   }
@@ -17,9 +34,15 @@ export class CmsContentProvider {
   public async getLessonMaterial(
     contentId: string,
   ): Promise<Content | undefined> {
+    const cachedResult = this.lessonMaterialCache.get(contentId)
+    if (cachedResult) {
+      return cachedResult
+    }
+
     const dto = await this.cmsContentApi.getLessonMaterial(contentId)
     if (!dto) return undefined
     const lessonMaterial = contentDtoToEntity(dto)
+    this.lessonMaterialCache.set(contentId, lessonMaterial)
 
     return lessonMaterial
   }
@@ -33,6 +56,42 @@ export class CmsContentProvider {
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
 
     return lessonMaterials
+  }
+
+  /**
+   * Clears the caches every [ms] milliseconds
+   * @param ms milliseconds
+   * @returns intervalId that can be used to stop the recurring function via clearInterval(intervalId)
+   */
+  public setRecurringCacheClear(ms: number): NodeJS.Timeout {
+    return setInterval(
+      () =>
+        CmsContentProvider.clearCaches(
+          this.lessonMaterialCache,
+          this.lessonPlanMaterialIdsCache,
+        ),
+      ms,
+    )
+  }
+
+  private cacheLessonPlanResults(
+    lessonPlanId: string,
+    lessonMaterials: ReadonlyArray<Content>,
+  ) {
+    const lessonMaterialIds: string[] = []
+    for (const lessonMaterial of lessonMaterials) {
+      lessonMaterialIds.push(lessonMaterial.contentId)
+      this.lessonMaterialCache.set(lessonMaterial.contentId, lessonMaterial)
+    }
+    this.lessonPlanMaterialIdsCache.set(lessonPlanId, lessonMaterialIds)
+  }
+
+  private static clearCaches(
+    m1: Map<unknown, unknown>,
+    m2: Map<unknown, unknown>,
+  ) {
+    m1.clear()
+    m2.clear()
   }
 }
 
@@ -48,3 +107,5 @@ function contentDtoToEntity(dto: ContentDto) {
       throwExpression('content.publish_status is undefined'),
   )
 }
+
+const removeNulls = <S>(value: S | undefined): value is S => value != null
