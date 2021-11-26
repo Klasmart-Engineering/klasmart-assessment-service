@@ -1,8 +1,7 @@
+import { Service } from 'typedi'
 import { throwExpression } from '../helpers/throwExpression'
 import { Content } from '../db/cms/entities/content'
-import { CmsContentApi } from '../web/cmsContentApi'
-import { ContentDto } from '../web/contentResponse'
-import { Service } from 'typedi'
+import { CmsContentApi, ContentDto } from '../web/cms'
 
 @Service()
 export class CmsContentProvider {

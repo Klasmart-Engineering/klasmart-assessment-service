@@ -1,4 +1,4 @@
-import { UserClass } from '../../src/api/user'
+import { UserClass } from '../../src/web'
 
 export default class EndUser extends UserClass {
   public email?: string

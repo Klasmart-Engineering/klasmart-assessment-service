@@ -1,10 +1,10 @@
 import { Resolver, FieldResolver, Root, Ctx } from 'type-graphql'
 import { Service } from 'typedi'
 
-import { User } from '../api/user'
 import { Context } from '../auth/context'
 import { TeacherCommentsByStudent } from '../graphql'
 import { UserProvider } from '../helpers/userProvider'
+import { User } from '../web/user'
 
 @Service()
 @Resolver(() => TeacherCommentsByStudent)

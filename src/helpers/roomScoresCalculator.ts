@@ -1,7 +1,7 @@
 import { Inject, Service } from 'typedi'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import { Attendance } from '../api'
+import { Attendance } from '../web/attendance'
 import { RoomAttendanceProvider } from './roomAttendanceProvider'
 import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
@@ -26,7 +26,7 @@ export class RoomScoresCalculator {
     private readonly roomEventsProvider: RoomEventsProvider,
     private readonly roomMaterialsProvider: RoomMaterialsProvider,
     private readonly roomScoresTemplateProvider: RoomScoresTemplateProvider,
-  ) { }
+  ) {}
 
   public async calculate(
     roomId: string,

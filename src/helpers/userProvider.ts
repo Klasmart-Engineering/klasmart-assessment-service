@@ -1,5 +1,5 @@
 import { Service } from 'typedi'
-import { UserApi, User } from '../api'
+import { UserApi, User } from '../web/user'
 
 @Service()
 export class UserProvider {

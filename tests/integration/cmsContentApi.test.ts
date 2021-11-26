@@ -1,6 +1,5 @@
 import { expect } from 'chai'
-import { CmsContentApi } from '../../src/web/cmsContentApi'
-import { ContentDto } from '../../src/web/contentResponse'
+import { CmsContentApi, ContentDto } from '../../src/web/cms'
 
 describe('cmsContentApi', function () {
   describe('getLessonMaterials', () => {

@@ -1,13 +1,13 @@
 import { Ctx, FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 
-import { User } from '../api/user'
+import { Context } from '../auth/context'
 import { UserProvider } from '../helpers/userProvider'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import getContent from '../helpers/getContent'
-import { Context } from '../auth/context'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
+import { User } from '../web/user'
 
 @Service()
 @Resolver(() => UserContentScore)

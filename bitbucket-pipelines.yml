@@ -54,22 +54,11 @@ definitions:
         artifacts:
           - node_modules/**
 
-    - step: &npm-install-and-build
-        name: '⚡ npm install and build'
-        image: node:16
-        script:
-          - npm i
-          - npm run build
-        caches:
-          - nodemodules
-        artifacts:
-          - node_modules/**
-          - dist/**
-
     - step: &npm-build
         name: '⚡ npm build'
         image: node:16
         script:
+          - *skip-bitbucket-authored-commits
           - npm run build
         artifacts:
           - dist/**
@@ -108,6 +97,21 @@ definitions:
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
               MESSAGE: '"🏷️ A new version of Assessment Service ($(echo $BITBUCKET_COMMIT | cut -c1-7)) has been merged into $BITBUCKET_BRANCH"'
+    
+    ##
+    ## These steps won't be skipped when bitbucket is the author
+    ##
+    - step: &npm-install-and-build
+        name: '⚡ npm install and build'
+        image: node:16
+        script:
+          - npm i
+          - npm run build
+        caches:
+          - nodemodules
+        artifacts:
+          - node_modules/**
+          - dist/**
 
     - step: &slack-notification-build
         name: '🔔 Slack: Build'

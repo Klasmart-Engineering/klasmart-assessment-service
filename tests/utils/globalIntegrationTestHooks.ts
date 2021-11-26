@@ -11,9 +11,9 @@ import {
   createTestConnections,
 } from './testConnection'
 import createAssessmentServer from '../../src/helpers/createAssessmentServer'
-import { AttendanceApi, UserApi } from '../../src/api'
 import { IXApiRepository } from '../../src/db/xapi'
 import { RoomAttendanceApiProvider } from '../../src/helpers/roomAttendanceProvider'
+import { AttendanceApi, UserApi } from '../../src/web'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 

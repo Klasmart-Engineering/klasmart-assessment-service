@@ -1,6 +1,5 @@
 import { v4 } from 'uuid'
-import { User } from '../../src/api/user'
-// import { Mutable } from '../utils/mutable'
+import { User } from '../../src/web/user'
 
 export default class UserBuilder {
   protected static givenNameCounter = 1
@@ -31,12 +30,6 @@ export default class UserBuilder {
   }
 
   public build(): User {
-    // const user = new User()
-    // const mutableUser: Mutable<User> = user
-    // mutableUser.userId = this.userId
-    // mutableUser.givenName = this.givenName
-    // mutableUser.familyName = this.familyName
-    // mutableUser.email = this.email
     return {
       userId: this.userId,
       givenName: this.givenName,

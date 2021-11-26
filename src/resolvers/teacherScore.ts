@@ -9,21 +9,22 @@ import {
   Authorized,
 } from 'type-graphql'
 import { Service } from 'typedi'
-import { EntityManager, Repository } from 'typeorm'
-import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
+import { EntityManager } from 'typeorm'
+import { InjectManager } from 'typeorm-typedi-extensions'
+import { Logger } from 'winston'
+import { withLogger } from 'kidsloop-nodejs-logger'
 
-import { User } from '../api/user'
 import { Context, UserID } from '../auth/context'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { Content } from '../db/cms/entities/content'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { UserProvider } from '../helpers/userProvider'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
-import { Content } from '../db/cms/entities/content'
-import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
+import { User } from '../web/user'
+
 @Service()
 @Resolver(() => TeacherScore)
 export default class TeacherScoreResolver {
@@ -40,7 +41,7 @@ export default class TeacherScoreResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
     private readonly cmsContentProvider: CmsContentProvider,
-  ) { }
+  ) {}
 
   @Authorized()
   @Mutation(() => TeacherScore)

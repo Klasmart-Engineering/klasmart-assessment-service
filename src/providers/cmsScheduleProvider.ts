@@ -1,8 +1,7 @@
+import { Service } from 'typedi'
 import { throwExpression } from '../helpers/throwExpression'
 import { Schedule } from '../db/cms/entities/schedule'
-import { CmsScheduleApi } from '../web/cmsScheduleApi'
-import { ScheduleDto } from '../web/scheduleResponse'
-import { Service } from 'typedi'
+import { CmsScheduleApi, ScheduleDto } from '../web/cms'
 
 @Service()
 export class CmsScheduleProvider {

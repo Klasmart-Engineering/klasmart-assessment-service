@@ -1,6 +1,5 @@
 import { expect } from 'chai'
-import { CmsScheduleApi } from '../../src/web/cmsScheduleApi'
-import { ScheduleDto } from '../../src/web/scheduleResponse'
+import { CmsScheduleApi, ScheduleDto } from '../../src/web/cms'
 
 describe('cmsScheduleApi', function () {
   describe('getSchedule', () => {

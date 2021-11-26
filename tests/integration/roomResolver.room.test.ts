@@ -56,7 +56,8 @@ import ContentKey from '../../src/helpers/contentKey'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
-import { Attendance, User } from '../../src/api'
+import { Attendance } from '../../src/web/attendance'
+import { User } from '../../src/web/user'
 
 /**
  * - scores 0 the first time

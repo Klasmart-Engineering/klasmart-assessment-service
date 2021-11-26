@@ -14,8 +14,8 @@ import {
   RoomAttendanceDbProvider,
 } from './roomAttendanceProvider'
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
-import { getConfig, Configuration } from './configuration'
-import { AttendanceApi } from '../api'
+import { getConfig } from './configuration'
+import { AttendanceApi } from '../web/attendance'
 
 useContainer(TypeormTypediContainer)
 

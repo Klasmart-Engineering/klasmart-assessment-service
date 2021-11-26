@@ -12,7 +12,7 @@ import { EntityManager } from 'typeorm'
 import { UserInputError } from 'apollo-server-express'
 import { InjectManager } from 'typeorm-typedi-extensions'
 
-import { User } from '../api/user'
+import { User } from '../web/user'
 import { Context, UserID } from '../auth/context'
 import { TeacherComment } from '../db/assessments/entities'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
@@ -37,7 +37,7 @@ export default class TeacherCommentResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly scheduleProvider: CmsScheduleProvider,
-  ) { }
+  ) {}
 
   @Authorized()
   @Mutation(() => TeacherComment, { nullable: true })

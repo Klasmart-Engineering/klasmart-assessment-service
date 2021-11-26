@@ -12,7 +12,7 @@ import {
   createSubstitutesToExpectedInjectableServices,
 } from '../utils/globalIntegrationTestHooks'
 import { setTeacherCommentMutation } from '../queriesAndMutations/teacherCommentOps'
-import { User } from '../../src/api'
+import { User } from '../../src/web/user'
 import EndUser from '../entities/endUser'
 import {
   GqlTeacherComment,

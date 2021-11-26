@@ -18,7 +18,7 @@ import {
   GqlTeacherScore,
   GqlUser,
 } from '../queriesAndMutations/gqlInterfaces'
-import { User } from '../../src/api'
+import { User } from '../../src/web/user'
 import { Content } from '../../src/db/cms/entities'
 import EndUser from '../entities/endUser'
 import { FileType } from '../../src/db/cms/enums'

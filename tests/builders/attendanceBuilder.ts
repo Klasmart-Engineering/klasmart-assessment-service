@@ -1,5 +1,5 @@
 import { v4 } from 'uuid'
-import { Attendance } from '../../src/api'
+import { Attendance } from '../../src/web/attendance'
 
 export default class AttendanceBuilder {
   private sessionId?: string
