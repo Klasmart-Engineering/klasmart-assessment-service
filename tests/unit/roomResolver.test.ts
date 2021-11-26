@@ -4,7 +4,7 @@ import RoomResolver from '../../src/resolvers/room'
 import { EntityManager } from 'typeorm'
 import { Room } from '../../src/db/assessments/entities/room'
 import { UserContentScore } from '../../src/db/assessments/entities/userContentScore'
-import { RoomScoresCalculator } from '../../src/helpers/roomScoresCalculator'
+import { RoomScoresCalculator } from '../../src/providers/roomScoresCalculator'
 import { TeacherCommentBuilder, UserContentScoreBuilder } from '../builders'
 
 describe('roomResolver', () => {

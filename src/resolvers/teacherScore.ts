@@ -21,7 +21,7 @@ import { Content } from '../db/cms/entities/content'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { UserProvider } from '../helpers/userProvider'
+import { UserProvider } from '../providers/userProvider'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { User } from '../web/user'
 

@@ -1,10 +1,10 @@
 import { expect } from 'chai'
 import { Substitute } from '@fluffy-spoon/substitute'
-import { RoomScoresCalculator } from '../../src/helpers/roomScoresCalculator'
-import { RoomAttendanceProvider } from '../../src/helpers/roomAttendanceProvider'
-import { RoomMaterialsProvider } from '../../src/helpers/roomMaterialsProvider'
-import { RoomEventsProvider } from '../../src/helpers/roomEventsProvider'
-import { RoomScoresTemplateProvider } from '../../src/helpers/roomScoresTemplateProvider'
+import { RoomScoresCalculator } from '../../src/providers/roomScoresCalculator'
+import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
+import { RoomMaterialsProvider } from '../../src/providers/roomMaterialsProvider'
+import { RoomEventsProvider } from '../../src/providers/roomEventsProvider'
+import { RoomScoresTemplateProvider } from '../../src/providers/roomScoresTemplateProvider'
 import {
   AttendanceBuilder,
   LessonMaterialBuilder,

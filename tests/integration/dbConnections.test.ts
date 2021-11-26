@@ -1,4 +1,3 @@
-import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { getConnection } from 'typeorm'
 import {
@@ -16,8 +15,6 @@ import {
   getXApiDatabaseConnectionOptions,
   XAPI_CONNECTION_NAME,
 } from '../../src/db/xapi/sql/connectToXApiDatabase'
-import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 
 describe('connectToDatabases', () => {
   const host = process.env.LOCALHOST || 'localhost'

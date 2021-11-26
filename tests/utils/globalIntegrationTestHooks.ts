@@ -12,7 +12,7 @@ import {
 } from './testConnection'
 import createAssessmentServer from '../../src/helpers/createAssessmentServer'
 import { IXApiRepository } from '../../src/db/xapi'
-import { RoomAttendanceApiProvider } from '../../src/helpers/roomAttendanceProvider'
+import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
 import { AttendanceApi, UserApi } from '../../src/web'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })

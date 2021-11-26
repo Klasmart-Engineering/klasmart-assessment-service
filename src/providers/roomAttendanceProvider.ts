@@ -3,8 +3,8 @@ import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { ATTENDANCE_CONNECTION_NAME } from '../db/attendance/connectToAttendanceDatabase'
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
-import { AttendanceApi, Attendance } from '../web/attendance'
 import { getConfig } from '../helpers/configuration'
+import { AttendanceApi, Attendance } from '../web/attendance'
 
 export interface RoomAttendanceProvider {
   getAttendances(roomId: string): Promise<Attendance[]>

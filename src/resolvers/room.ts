@@ -9,14 +9,14 @@ import {
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
+import { withLogger } from 'kidsloop-nodejs-logger'
+import { Logger } from 'winston'
 
 import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
-import { RoomScoresCalculator } from '../helpers/roomScoresCalculator'
+import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { UserID } from '../auth/context'
-import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 
 const logger = withLogger('room')
 
@@ -35,7 +35,7 @@ export default class RoomResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
-  ) { }
+  ) {}
 
   @Authorized()
   @Query(() => Room)

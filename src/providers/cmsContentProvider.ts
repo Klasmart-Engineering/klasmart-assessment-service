@@ -1,6 +1,6 @@
 import { Service } from 'typedi'
-import { throwExpression } from '../helpers/throwExpression'
 import { Content } from '../db/cms/entities/content'
+import { throwExpression } from '../helpers/throwExpression'
 import { CmsContentApi, ContentDto } from '../web/cms'
 
 @Service()

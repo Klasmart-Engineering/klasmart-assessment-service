@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { v4 } from 'uuid'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
-import { RoomEventsProvider } from '../../src/helpers/roomEventsProvider'
+import { RoomEventsProvider } from '../../src/providers/roomEventsProvider'
 import { AttendanceBuilder, XApiRecordBuilder } from '../builders'
 import { IXApiRepository } from '../../src/db/xapi/repo'
 

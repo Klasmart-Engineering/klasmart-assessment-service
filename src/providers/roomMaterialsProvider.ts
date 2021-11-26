@@ -1,12 +1,12 @@
 import { UserInputError } from 'apollo-server-express'
 import { Service } from 'typedi'
-import { In, Repository } from 'typeorm'
-import { Content, Schedule } from '../db/cms/entities'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
-import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
-import { ErrorMessage } from './errorMessages'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Logger } from 'winston'
+
+import { Content } from '../db/cms/entities'
+import { ErrorMessage } from '../helpers/errorMessages'
+import { CmsContentProvider } from '../providers/cmsContentProvider'
+import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 
 @Service()
 export class RoomMaterialsProvider {
@@ -21,7 +21,7 @@ export class RoomMaterialsProvider {
   public constructor(
     private readonly cmsScheduleProvider: CmsScheduleProvider,
     private readonly cmsContentProvider: CmsContentProvider,
-  ) { }
+  ) {}
 
   public async getMaterials(roomId: string): Promise<Content[]> {
     const schedule = await this.cmsScheduleProvider.getSchedule(roomId)

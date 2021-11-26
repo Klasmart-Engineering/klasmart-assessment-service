@@ -1,6 +1,6 @@
-import { XApiRecord } from '../db/xapi'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Logger } from 'winston'
+import { XApiRecord } from '../db/xapi'
 
 type XapiScore = {
   min?: number

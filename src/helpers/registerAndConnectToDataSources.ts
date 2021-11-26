@@ -12,7 +12,7 @@ import { XApiRecordSql } from '../db/xapi/sql/entities'
 import {
   RoomAttendanceApiProvider,
   RoomAttendanceDbProvider,
-} from './roomAttendanceProvider'
+} from '../providers/roomAttendanceProvider'
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from './configuration'
 import { AttendanceApi } from '../web/attendance'

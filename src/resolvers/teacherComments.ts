@@ -11,16 +11,17 @@ import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { UserInputError } from 'apollo-server-express'
 import { InjectManager } from 'typeorm-typedi-extensions'
-
-import { User } from '../web/user'
-import { Context, UserID } from '../auth/context'
-import { TeacherComment } from '../db/assessments/entities'
-import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
-import { UserProvider } from '../helpers/userProvider'
-import { ErrorMessage } from '../helpers/errorMessages'
-import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Logger } from 'winston'
+
+import { Context, UserID } from '../auth/context'
+import { TeacherComment } from '../db/assessments/entities'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
+import { ErrorMessage } from '../helpers/errorMessages'
+import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
+import { UserProvider } from '../providers/userProvider'
+import { User } from '../web/user'
+
 @Service()
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {

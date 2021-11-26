@@ -6,10 +6,10 @@ import {
   LessonMaterialBuilder,
   UserContentScoreBuilder,
 } from '../builders'
-import { RoomAttendanceProvider } from '../../src/helpers/roomAttendanceProvider'
+import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
 import { UserContentScore } from '../../src/db/assessments/entities'
-import { RoomScoresTemplateProvider } from '../../src/helpers/roomScoresTemplateProvider'
-import { UserContentScoreFactory } from '../../src/helpers/userContentScoreFactory'
+import { RoomScoresTemplateProvider } from '../../src/providers/roomScoresTemplateProvider'
+import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
-import { RoomMaterialsProvider } from '../../src/helpers/roomMaterialsProvider'
+import { RoomMaterialsProvider } from '../../src/providers/roomMaterialsProvider'
 import {
   LessonMaterialBuilder,
   LessonPlanBuilder,

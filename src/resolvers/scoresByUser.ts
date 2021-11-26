@@ -3,7 +3,7 @@ import { Service } from 'typedi'
 
 import { Context } from '../auth/context'
 import { UserScores } from '../graphql'
-import { UserProvider } from '../helpers/userProvider'
+import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
 @Service()

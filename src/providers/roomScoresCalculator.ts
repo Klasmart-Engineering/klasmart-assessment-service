@@ -1,14 +1,15 @@
 import { Inject, Service } from 'typedi'
+import { Logger } from 'winston'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
+import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
 import { Attendance } from '../web/attendance'
 import { RoomAttendanceProvider } from './roomAttendanceProvider'
 import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
-import { ParsedXapiEvent } from './parsedXapiEvent'
 import { RoomScoresTemplateProvider } from './roomScoresTemplateProvider'
-import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 
 @Service()
 export class RoomScoresCalculator {

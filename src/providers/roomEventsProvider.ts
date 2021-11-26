@@ -1,8 +1,8 @@
 import { Inject, Service } from 'typedi'
-import { Attendance } from '../web/attendance'
 import { XApiRecord } from '../db/xapi'
 import { IXApiRepository } from '../db/xapi/repo'
-import { ParsedXapiEvent } from './parsedXapiEvent'
+import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
+import { Attendance } from '../web/attendance'
 
 @Service()
 export class RoomEventsProvider {

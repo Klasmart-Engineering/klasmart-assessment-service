@@ -5,12 +5,12 @@ import { InjectRepository } from 'typeorm-typedi-extensions'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import { Attendance } from '../web/attendance'
-import ContentKey from './contentKey'
-import { RoomAttendanceProvider } from './roomAttendanceProvider'
-import { ParsedXapiEvent } from './parsedXapiEvent'
-import { UserContentScoreFactory } from './userContentScoreFactory'
+import ContentKey from '../helpers/contentKey'
+import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
 import { featureFlags } from '../helpers/featureFlags'
+import { Attendance } from '../web/attendance'
+import { RoomAttendanceProvider } from './roomAttendanceProvider'
+import { UserContentScoreFactory } from './userContentScoreFactory'
 
 /**
  * Creates a list of empty UserContentScores for every user-material combination, including subcontent.

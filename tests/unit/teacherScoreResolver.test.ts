@@ -2,7 +2,7 @@ import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { EntityManager, Repository } from 'typeorm'
 import { UserContentScore } from '../../src/db/assessments/entities'
-import { UserProvider } from '../../src/helpers/userProvider'
+import { UserProvider } from '../../src/providers/userProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import TeacherScoreResolver from '../../src/resolvers/teacherScore'
 import {
