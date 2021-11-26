@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.0..v1.5.2) (2021-11-26)
+
+
+### Features
+
+* **DAS-213:** add support to switch between attendance API and attendance DB with a boolean env var ([5b60e29](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/5b60e29a5bab62e3fab9725ca4ed86010a0ddaf7))
+
+
+### Refactor
+
+* **DAS-161:** use attendance service API instead of querying DB ([cf8284d](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/cf8284de7968fd903e0d50b81b024ffffde59a8d))
+* rename userDb to attendanceDb + cleanup ([5dff2fc](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/5dff2fc292134166106134161393dd243cd4be5a))
+
 ### [1.5.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.5.2..v1.5.1) (2021-11-24)
 
 ### [1.5.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.5.1..v1.5.0) (2021-11-24)
