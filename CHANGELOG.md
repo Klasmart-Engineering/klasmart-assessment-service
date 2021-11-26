@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.2..v1.6.1) (2021-11-26)
+
+
+### Refactor
+
+* restructure apis in src/web ([a88299b](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/a88299bf1d4363b0385d840d740bbda02f907f3c))
+* restructure providers ([216b1b2](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/216b1b23f9fd274e7ab89a7d783650cc70c66749))
+
 ### [1.6.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.1..v1.6.0) (2021-11-26)
 
 
