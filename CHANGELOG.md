@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.1..v1.6.0) (2021-11-26)
+
+
+### Refactor
+
+* **DAS-190:** replace internal logger usage with logger from kidsloop-nodejs-logger ([b7e65eb](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/b7e65eb1e7d41c092487c3ea65fa46d7ef6d334b))
+
 ## [1.6.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.0..v1.5.2) (2021-11-26)
 
 
