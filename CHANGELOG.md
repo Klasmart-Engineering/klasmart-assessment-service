@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.3..v1.6.2) (2021-11-29)
+
+
+### Bug Fixes
+
+* **KLA-252:** content.parent_id not assigned in specific case ([5301501](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/5301501be940f852ba24a7a102c63ce26da68ccc))
+
 ### [1.6.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.2..v1.6.1) (2021-11-26)
 
 
