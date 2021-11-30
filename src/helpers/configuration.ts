@@ -33,7 +33,7 @@ const getEnvironmentVariableOrThrow = (name: string): string => {
 
 const getEnrivonmentBooleanFlag = (
   name: string,
-  defaultValue: boolean = false,
+  defaultValue = false,
 ): boolean => {
   if (
     process.env[name] === '1' ||
@@ -107,7 +107,7 @@ export class Configuration {
     logger.info('-----------------')
   }
 
-  checkXapiStorageConfig() {
+  checkXapiStorageConfig(): void {
     if (
       process.env.NODE_ENV !== 'test' &&
       this.USE_XAPI_SQL_DATABASE_FLAG &&
@@ -127,7 +127,7 @@ export class Configuration {
     }
   }
 
-  checkAttendanceConfig() {
+  checkAttendanceConfig(): void {
     if (
       process.env.NODE_ENV !== 'test' &&
       this.USE_ATTENDANCE_API_FLAG &&
@@ -148,6 +148,11 @@ export class Configuration {
   }
 }
 
-export const config = new Configuration()
+let config: Configuration
 
-export const getConfig = (): Configuration => config
+export const getConfig = (): Configuration => {
+  if (!config) {
+    config = new Configuration()
+  }
+  return config
+}
