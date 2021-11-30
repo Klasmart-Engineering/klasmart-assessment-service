@@ -8,7 +8,6 @@ import getContent, {
 } from '../../src/helpers/getContent'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
-import { Container as MutableContainer } from 'typedi'
 
 describe('getContent', function () {
   context(
@@ -23,6 +22,9 @@ describe('getContent', function () {
         const contentParentId = undefined
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(Arg.any())
+          .resolves([])
 
         // Act
         const result = await getContent(

@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { expect } from 'chai'
 import { Substitute } from '@fluffy-spoon/substitute'
 import { RoomScoresCalculator } from '../../src/providers/roomScoresCalculator'
@@ -151,22 +152,22 @@ describe('roomScoresCalculator', () => {
         const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
         const eventsProvider = Substitute.for<RoomEventsProvider>()
         const materialsProvider = Substitute.for<RoomMaterialsProvider>()
-        const scoresTemplateProvider =
+        const roomScoresTemplateProvider =
           Substitute.for<RoomScoresTemplateProvider>()
 
         attendanceProvider.getAttendances(roomId).resolves([attendance])
         materialsProvider.getMaterials(roomId).resolves([material])
         eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
-        scoresTemplateProvider
+        roomScoresTemplateProvider
           .getCompatContentKey(
             roomId,
-            studentId,
+            idOfSomeOtherUser,
             material.contentId,
             material.h5pId,
             undefined,
           )
           .resolves(material.contentId)
-        scoresTemplateProvider
+        roomScoresTemplateProvider
           .getTemplate(
             roomId,
             teacherId,
@@ -180,7 +181,7 @@ describe('roomScoresCalculator', () => {
           attendanceProvider,
           eventsProvider,
           materialsProvider,
-          scoresTemplateProvider,
+          roomScoresTemplateProvider,
         )
 
         // Act
