@@ -1,8 +1,11 @@
 import 'reflect-metadata'
 import 'newrelic'
+import { withLogger } from 'kidsloop-nodejs-logger'
 
 import createAssessmentServer from './helpers/createAssessmentServer'
 import registerAndConnectToDataSources from './helpers/registerAndConnectToDataSources'
+
+const logger = withLogger('main')
 
 async function main() {
   await registerAndConnectToDataSources()
@@ -11,7 +14,7 @@ async function main() {
 
   const port = process.env.PORT || 8080
   app.listen(port, () => {
-    console.log(
+    logger.info(
       `🌎 Server ready at http://localhost:${port}${server.graphqlPath}`,
     )
   })

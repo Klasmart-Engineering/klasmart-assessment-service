@@ -136,11 +136,4 @@ export default class XApiRecordBuilder {
       },
     }
   }
-
-  // public async buildAndPersist(): Promise<XApiRecordSql> {
-  //   console.log('XApiSqlRecordBuilder ===> start', { this: this })
-  //   const entity = this.build()
-  //   console.log({ entity })
-  //   return await getRepository(XApiRecordSql, XAPI_CONNECTION_NAME).save(entity)
-  // }
 }
