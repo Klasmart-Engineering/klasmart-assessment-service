@@ -1,7 +1,6 @@
 import { Container as MutableContainer } from 'typedi'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
@@ -74,16 +73,12 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
         `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
       )
     }
-    const docClientv2 = new DocumentClient({
-      apiVersion: '2012-08-10',
-    })
-    const docClientv3 = new DynamoDBClient({
+    const dynamoDbClient = new DynamoDBClient({
       apiVersion: '2012-08-10',
     })
     const xapiDynamodbRepo = new XApiDynamodbRepository(
       dynamodbTableName,
-      docClientv2,
-      docClientv3,
+      dynamoDbClient,
     )
     MutableContainer.set('IXApiRepository', xapiDynamodbRepo)
     await xapiDynamodbRepo.checkTableIsActive()

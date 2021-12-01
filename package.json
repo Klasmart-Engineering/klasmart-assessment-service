@@ -77,9 +77,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.43.0",
+    "@aws-sdk/util-dynamodb": "^3.43.0",
     "@newrelic/apollo-server-plugin": "^1.0.2",
     "apollo-server-express": "^2.23.0",
-    "aws-sdk": "^2.899.0",
     "class-validator": "^0.13.1",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",

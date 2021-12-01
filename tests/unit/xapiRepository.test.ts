@@ -1,18 +1,23 @@
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import { AWSError, Request } from 'aws-sdk'
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { PromiseResult } from 'aws-sdk/lib/request'
+import {
+  DynamoDBClient,
+  QueryCommandOutput,
+  DescribeTableCommand,
+  DescribeTableCommandOutput,
+} from '@aws-sdk/client-dynamodb'
+import { marshall } from '@aws-sdk/util-dynamodb'
 import { expect } from 'chai'
 import { v4 } from 'uuid'
 import { XApiRecord } from '../../src/db/xapi'
-import { XApiDynamodbRepository } from '../../src/db/xapi/dynamodb/repo'
+import {
+  XApiDynamodbRepository,
+  DynamoDbException,
+} from '../../src/db/xapi/dynamodb/repo'
 
 describe('XApiDynamodbRepository.searchXapiEvents', () => {
   context('dynamodb client returns list containing 1 xapi record', () => {
     it('returns a list containing 1 xapi record', async () => {
-      const documentClient = Substitute.for<DocumentClient>()
-      const transientResult =
-        Substitute.for<Request<DocumentClient.QueryOutput, AWSError>>()
+      const dynamoDbClient = Substitute.for<DynamoDBClient>()
       const record1: XApiRecord = {
         serverTimestamp: Date.now(),
         userId: v4(),
@@ -21,19 +26,17 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
           data: { statement: { result: { response: 'hello' } } },
         },
       }
-      const promiseResult: PromiseResult<DocumentClient.QueryOutput, AWSError> =
-        {
-          $response: Arg.any(),
-          Items: [record1],
-        }
-      transientResult.promise().resolves(promiseResult)
-      documentClient.query(Arg.any()).returns(transientResult)
+      const output: QueryCommandOutput = {
+        $metadata: Arg.any(),
+        Items: [marshall(record1)],
+      }
+      dynamoDbClient.send(Arg.any()).resolves(output)
 
-      const sut = new XApiDynamodbRepository('table-name', documentClient)
+      const sut = new XApiDynamodbRepository('table-name', dynamoDbClient)
       const rawXapiRecords = await sut.searchXApiEvents(
         'user1',
-        Arg.any(),
-        Arg.any(),
+        0,
+        Date.now() + 1,
       )
       expect(rawXapiRecords).to.have.lengthOf(1)
     })
@@ -43,9 +46,7 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
     'dynamodb client returns list containing 1 xapi record, do not specify to and from args',
     () => {
       it('returns a list containing 1 xapi record', async () => {
-        const documentClient = Substitute.for<DocumentClient>()
-        const transientResult =
-          Substitute.for<Request<DocumentClient.QueryOutput, AWSError>>()
+        const dynamoDbClient = Substitute.for<DynamoDBClient>()
         const record1: XApiRecord = {
           serverTimestamp: Date.now(),
           userId: v4(),
@@ -54,17 +55,13 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
             data: { statement: { result: { response: 'hello' } } },
           },
         }
-        const promiseResult: PromiseResult<
-          DocumentClient.QueryOutput,
-          AWSError
-        > = {
-          $response: Arg.any(),
-          Items: [record1],
+        const output: QueryCommandOutput = {
+          $metadata: Arg.any(),
+          Items: [marshall(record1)],
         }
-        transientResult.promise().resolves(promiseResult)
-        documentClient.query(Arg.any()).returns(transientResult)
+        dynamoDbClient.send(Arg.any()).resolves(output)
 
-        const sut = new XApiDynamodbRepository('table-name', documentClient)
+        const sut = new XApiDynamodbRepository('table-name', dynamoDbClient)
         const rawXapiRecords = await sut.searchXApiEvents('user1') // Dont specify to and from.
         expect(rawXapiRecords).to.have.lengthOf(1)
       })
@@ -73,32 +70,85 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
 
   context(`dynamodb client returns undefined xapi record list`, () => {
     it('returns an empty list of xapi records', async () => {
-      const documentClient = Substitute.for<DocumentClient>()
-      const transientResult =
-        Substitute.for<Request<DocumentClient.QueryOutput, AWSError>>()
-      const record1: XApiRecord = {
-        serverTimestamp: Date.now(),
-        userId: v4(),
-        xapi: {
-          clientTimestamp: Date.now(),
-          data: { statement: { result: { response: 'hello' } } },
-        },
+      const dynamoDbClient = Substitute.for<DynamoDBClient>()
+      const output: QueryCommandOutput = {
+        $metadata: Arg.any(),
+        Items: undefined,
       }
-      const promiseResult: PromiseResult<DocumentClient.QueryOutput, AWSError> =
-        {
-          $response: Arg.any(),
-          Items: undefined,
-        }
-      transientResult.promise().resolves(promiseResult)
-      documentClient.query(Arg.any()).returns(transientResult)
+      dynamoDbClient.send(Arg.any()).resolves(output)
 
-      const sut = new XApiDynamodbRepository('table-name', documentClient)
+      const sut = new XApiDynamodbRepository('table-name', dynamoDbClient)
       const rawXapiRecords = await sut.searchXApiEvents(
         'user1',
-        Arg.any(),
-        Arg.any(),
+        0,
+        Date.now() + 1,
       )
       expect(rawXapiRecords).to.be.empty
+    })
+  })
+})
+
+describe('XApiDynamodbRepository.checkTableIsActive', () => {
+  context(
+    'dynamodb client returns table description if the table exists and is active',
+    () => {
+      it('returns true', async () => {
+        const dynamoDbClient = Substitute.for<DynamoDBClient>()
+
+        const tableName = 'xapi-table'
+        const output: DescribeTableCommandOutput = {
+          $metadata: Arg.any(),
+          Table: {
+            TableName: tableName,
+            TableStatus: 'ACTIVE',
+          },
+        }
+        dynamoDbClient
+          .send(Arg.is((obj) => obj instanceof DescribeTableCommand))
+          .resolves(output)
+
+        const sut = new XApiDynamodbRepository(tableName, dynamoDbClient)
+        const tableIsActive = await sut.checkTableIsActive()
+        expect(tableIsActive).to.eq(true)
+      })
+    },
+  )
+
+  context(
+    'dynamodb client returns table description if the table exists and is NOT active',
+    () => {
+      it('throws error', async () => {
+        const dynamoDbClient = Substitute.for<DynamoDBClient>()
+
+        const tableName = 'xapi-table'
+        const output: DescribeTableCommandOutput = {
+          $metadata: Arg.any(),
+          Table: {
+            TableName: tableName,
+            TableStatus: 'INACTIVE',
+          },
+        }
+        dynamoDbClient
+          .send(Arg.is((obj) => obj instanceof DescribeTableCommand))
+          .resolves(output)
+
+        const sut = new XApiDynamodbRepository(tableName, dynamoDbClient)
+        expect(sut.checkTableIsActive()).to.be.rejectedWith(DynamoDbException)
+      })
+    },
+  )
+
+  context('dynamodb client throws error', () => {
+    it('throws error', async () => {
+      const dynamoDbClient = Substitute.for<DynamoDBClient>()
+
+      const tableName = 'xapi-table'
+      dynamoDbClient
+        .send(Arg.is((obj) => obj instanceof DescribeTableCommand))
+        .throws(new Error('failed to connect'))
+
+      const sut = new XApiDynamodbRepository(tableName, dynamoDbClient)
+      expect(sut.checkTableIsActive()).to.be.rejectedWith(DynamoDbException)
     })
   })
 })
