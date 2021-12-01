@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.6..v1.6.5) (2021-12-01)
+
+
+### Refactor
+
+* **DAS-215:** include authentication token in cms api requests ([a2c9718](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/a2c9718330fd69b47b0fbb923729ad3c490244ee))
+
 ### [1.6.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.5..v1.6.4) (2021-12-01)
 
 
