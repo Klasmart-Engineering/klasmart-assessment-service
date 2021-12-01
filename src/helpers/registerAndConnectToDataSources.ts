@@ -2,6 +2,8 @@ import { Container as MutableContainer } from 'typedi'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { withLogger } from 'kidsloop-nodejs-logger'
 
 import { connectToAttendanceDatabase } from '../db/attendance/connectToAttendanceDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
@@ -19,6 +21,7 @@ import { AttendanceApi } from '../web/attendance'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 
 useContainer(TypeormTypediContainer)
+const logger = withLogger('registerAndConnectToDataSources')
 
 // *** Restrict all environment variable access to be done here at the entry point. ***
 export default async function registerAndConnectToDataSources(): Promise<void> {
@@ -52,7 +55,7 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
   connectionPromises.push(connectToAssessmentDatabase(assessmentDatabaseUrl))
 
   if (process.env.USE_XAPI_SQL_DATABASE_FLAG === '1') {
-    console.log('CONFIG: Using Postgres as XApi storage solution')
+    logger.info('CONFIG: Using Postgres as XApi storage solution')
     const xapiEventsDatabaseUrl = process.env.XAPI_DATABASE_URL
     if (!xapiEventsDatabaseUrl) {
       throw new Error('Please specify a value for XAPI_DATABASE_URL')
@@ -64,20 +67,26 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
       new XApiSqlRepository(sqlRepository),
     )
   } else {
-    console.log('CONFIG: Using DynamoDB as XApi storage solution')
+    logger.info('CONFIG: Using DynamoDB as XApi storage solution')
     const dynamodbTableName = process.env.DYNAMODB_TABLE_NAME
     if (!dynamodbTableName) {
       throw new Error(
         `Dynamodb TableName must be set using DYNAMODB_TABLE_NAME environment variable`,
       )
     }
-    const docClient = new DocumentClient({
+    const docClientv2 = new DocumentClient({
       apiVersion: '2012-08-10',
     })
-    MutableContainer.set(
-      'IXApiRepository',
-      new XApiDynamodbRepository(dynamodbTableName, docClient),
+    const docClientv3 = new DynamoDBClient({
+      apiVersion: '2012-08-10',
+    })
+    const xapiDynamodbRepo = new XApiDynamodbRepository(
+      dynamodbTableName,
+      docClientv2,
+      docClientv3,
     )
+    MutableContainer.set('IXApiRepository', xapiDynamodbRepo)
+    await xapiDynamodbRepo.checkTableIsActive()
   }
 
   const cmsContentProvider = MutableContainer.get(CmsContentProvider)
