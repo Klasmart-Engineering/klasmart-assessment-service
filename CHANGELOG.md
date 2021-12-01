@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.5..v1.6.4) (2021-12-01)
+
+
+### Performance
+
+* **DAS-183:** cache cms content retrieval ([e650d44](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/e650d446db119758373459e44289e2d6c22bb629))
+
+
+### Refactor
+
+* lazily evaluate config object ([b7ca64c](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/b7ca64cffc9f01718de746a2471f529cf0ad7d34))
+
 ### [1.6.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.4..v1.6.3) (2021-11-30)
 
 ### [1.6.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.3..v1.6.2) (2021-11-29)
