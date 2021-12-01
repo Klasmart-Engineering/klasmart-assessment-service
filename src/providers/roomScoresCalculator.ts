@@ -33,7 +33,7 @@ export class RoomScoresCalculator {
     roomId: string,
     teacherId: string,
     authenticationToken?: string,
-  ): Promise<UserContentScore[]> {
+  ): Promise<ReadonlyArray<UserContentScore>> {
     const materials = await this.roomMaterialsProvider.getMaterials(
       roomId,
       authenticationToken,
@@ -56,7 +56,9 @@ export class RoomScoresCalculator {
     return userContentScores
   }
 
-  private createH5pIdToContentIdMap(materials: Content[]): Map<string, string> {
+  private createH5pIdToContentIdMap(
+    materials: ReadonlyArray<Content>,
+  ): Map<string, string> {
     const h5pIdToContentIdMap = new Map<string, string>()
     for (const x of materials) {
       if (x.h5pId) {
@@ -69,11 +71,11 @@ export class RoomScoresCalculator {
   private async calculateScores(
     roomId: string,
     teacherId: string,
-    materials: Content[],
-    attendances: Attendance[],
-    xapiEvents: ParsedXapiEvent[],
+    materials: ReadonlyArray<Content>,
+    attendances: ReadonlyArray<Attendance>,
+    xapiEvents: ReadonlyArray<ParsedXapiEvent>,
     h5pIdToContentIdMap: Map<string, string>,
-  ): Promise<UserContentScore[]> {
+  ): Promise<ReadonlyArray<UserContentScore>> {
     const mapKeyToUserContentScoreMap =
       await this.roomScoresTemplateProvider.getTemplate(
         roomId,

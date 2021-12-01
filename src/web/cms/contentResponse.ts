@@ -1,5 +1,5 @@
 export default interface ContentResponse {
-  list: ContentDto[]
+  list: ReadonlyArray<ContentDto>
   total: number
 }
 

@@ -26,7 +26,7 @@ export class RoomMaterialsProvider {
   public async getMaterials(
     roomId: string,
     authenticationToken?: string,
-  ): Promise<Content[]> {
+  ): Promise<ReadonlyArray<Content>> {
     const schedule = await this.cmsScheduleProvider.getSchedule(
       roomId,
       authenticationToken,

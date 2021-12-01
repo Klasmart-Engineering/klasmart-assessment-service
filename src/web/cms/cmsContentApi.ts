@@ -7,7 +7,7 @@ export class CmsContentApi {
   public async getLessonMaterials(
     lessonPlanId: string,
     authenticationToken?: string,
-  ): Promise<ContentDto[]> {
+  ): Promise<ReadonlyArray<ContentDto>> {
     const cmsApiUrl =
       process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
     const contentsApiUrl = `${cmsApiUrl}/contents?plan_id=${lessonPlanId}`
@@ -56,7 +56,7 @@ export class CmsContentApi {
   public async getLessonMaterialsWithSourceId(
     sourceId: string,
     authenticationToken?: string,
-  ): Promise<ContentDto[]> {
+  ): Promise<ReadonlyArray<ContentDto>> {
     const cmsApiUrl =
       process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
     const contentsApiUrl = `${cmsApiUrl}/contents?source_id=${sourceId}`

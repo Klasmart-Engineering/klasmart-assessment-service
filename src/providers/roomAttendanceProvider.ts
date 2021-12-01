@@ -7,18 +7,15 @@ import { getConfig } from '../initialization/configuration'
 import { AttendanceApi, Attendance } from '../web/attendance'
 
 export interface RoomAttendanceProvider {
-  getAttendances(roomId: string): Promise<Attendance[]>
-  handleDuplicateSessionsWithDifferentTimestamps(
-    attendances: Attendance[],
-  ): Attendance[]
-  getUserIds(attendances: Attendance[]): Set<string>
+  getAttendances(roomId: string): Promise<ReadonlyArray<Attendance>>
+  getUserIds(attendances: ReadonlyArray<Attendance>): Set<string>
 }
 
 class BaseRoomAttendanceProvider {
   public readonly configuration = getConfig()
 
-  public handleDuplicateSessionsWithDifferentTimestamps(
-    attendances: Attendance[],
+  protected handleDuplicateSessionsWithDifferentTimestamps(
+    attendances: ReadonlyArray<Attendance>,
   ): Attendance[] {
     const sessionIdToAttendanceMap = new Map<string, Attendance>()
 

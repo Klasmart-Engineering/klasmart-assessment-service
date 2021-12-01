@@ -3,6 +3,8 @@ import { ContentType } from '../enums/contentType'
 
 @Entity({ name: 'cms_contents' })
 export class LessonPlan {
+  private _materialIds: string[] = []
+
   @PrimaryColumn({ name: 'id' })
   readonly contentId!: string
 
@@ -21,20 +23,22 @@ export class LessonPlan {
   @Column({ type: 'bigint', name: 'create_at' })
   readonly createdAt!: number
 
-  materialIds: string[] = []
+  public get materialIds(): ReadonlyArray<string> {
+    return this._materialIds
+  }
 
   @AfterLoad()
   populateMaterialIds(): void {
-    const node = (this.data as unknown) as ILessonMaterialNode
+    const node = this.data as unknown as ILessonMaterialNode
 
-    this.materialIds = []
+    this._materialIds = []
     const q: ILessonMaterialNode[] = []
     q.push(node)
     while (q.length > 0) {
       const current = q.shift()
       if (current) {
         current.next?.forEach((x) => q.push(x))
-        this.materialIds.push(current.materialId)
+        this._materialIds.push(current.materialId)
       }
     }
   }

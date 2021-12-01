@@ -68,7 +68,9 @@ export default class RoomResolver {
   }
 
   @FieldResolver(() => [UserScores])
-  public async scoresByUser(@Root() room: Room): Promise<UserScores[]> {
+  public async scoresByUser(
+    @Root() room: Room,
+  ): Promise<ReadonlyArray<UserScores>> {
     const scoresByUser: Map<string, UserScores> = new Map()
 
     for (const userContentScore of await room.scores) {
@@ -87,7 +89,9 @@ export default class RoomResolver {
   }
 
   @FieldResolver(() => [ContentScores])
-  public async scoresByContent(@Root() room: Room): Promise<ContentScores[]> {
+  public async scoresByContent(
+    @Root() room: Room,
+  ): Promise<ReadonlyArray<ContentScores>> {
     const scoresByContent: Map<string, ContentScores> = new Map()
 
     for (const userContentScore of await room.scores) {
@@ -114,7 +118,7 @@ export default class RoomResolver {
   @FieldResolver(() => [TeacherCommentsByStudent])
   public async teacherCommentsByStudent(
     @Root() room: Room,
-  ): Promise<TeacherCommentsByStudent[]> {
+  ): Promise<ReadonlyArray<TeacherCommentsByStudent>> {
     const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
 
     for (const comment of await room.teacherComments) {

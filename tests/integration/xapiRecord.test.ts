@@ -11,7 +11,7 @@ describe('xApi SQL database interface', () => {
   context('1 student, 1 xapi "score" event', () => {
     let dbConnection: Connection
     let xapiRecord: XApiRecord
-    let xapiRecords: XApiRecord[]
+    let xapiRecords: ReadonlyArray<XApiRecord>
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
     const score = { min: 0, max: 2, raw: 1 }

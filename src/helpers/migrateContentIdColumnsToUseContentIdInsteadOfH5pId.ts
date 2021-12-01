@@ -49,7 +49,10 @@ export async function migrateContentIdColumnsToUseContentIdInsteadOfH5pId(
     }
   >()
 
-  const roomIdToLessonMaterialIdsCache = new Map<string, string[]>()
+  const roomIdToLessonMaterialIdsCache = new Map<
+    string,
+    ReadonlyArray<string>
+  >()
   const contentKeysNotIncludedInLessonPlan = new Set<string>()
 
   for (const ucs of ucsList) {

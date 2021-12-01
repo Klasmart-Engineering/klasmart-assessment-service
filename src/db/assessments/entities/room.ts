@@ -18,7 +18,7 @@ export class Room {
     { lazy: true, cascade: true },
   )
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
-  public scores!: Promise<UserContentScore[]>
+  public scores!: Promise<ReadonlyArray<UserContentScore>>
 
   @Field(() => [TeacherComment])
   @OneToMany(
@@ -27,7 +27,7 @@ export class Room {
     { lazy: true },
   )
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
-  public teacherComments!: Promise<TeacherComment[]>
+  public teacherComments!: Promise<ReadonlyArray<TeacherComment>>
 
   @Column({ type: 'timestamp', nullable: true })
   public startTime?: Date | null

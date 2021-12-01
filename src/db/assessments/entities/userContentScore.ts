@@ -55,7 +55,7 @@ export class UserContentScore {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
-  public teacherScores!: Promise<TeacherScore[]>
+  public teacherScores!: Promise<ReadonlyArray<TeacherScore>>
 
   @Field(() => Boolean)
   @Column({ type: 'bool', default: false })

@@ -18,7 +18,7 @@ export class XApiSqlRepository implements IXApiRepository {
     userId: string,
     from?: number,
     to?: number,
-  ): Promise<XApiRecord[]> {
+  ): Promise<ReadonlyArray<XApiRecord>> {
     let searchParams = {
       userId: Equal(userId),
     }

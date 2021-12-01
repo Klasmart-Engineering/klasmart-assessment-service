@@ -9,6 +9,8 @@ export class ScoreSummary {
   private _max?: number
   private _sum = 0
   private _scoreFrequency = 0
+  private _scores: number[] = []
+  private _answers: Answer[] = []
 
   @Field(() => Float, { nullable: true })
   public get min(): number | undefined {
@@ -39,10 +41,14 @@ export class ScoreSummary {
   }
 
   @Field(() => [Int])
-  public scores: number[] = []
+  public get scores(): ReadonlyArray<number> {
+    return this._scores
+  }
 
   @Field(() => [Answer])
-  public answers: Answer[] = []
+  public get answers(): ReadonlyArray<Answer> {
+    return this._answers
+  }
 
   @Field(() => Float, { nullable: true })
   public median(): number | undefined {
@@ -50,7 +56,7 @@ export class ScoreSummary {
       return
     }
     const middle = this.scores.length >> 1
-    const sorted = this.scores.sort((a, b) => a - b)
+    const sorted = this._scores.sort((a, b) => a - b)
     return sorted[middle]
   }
 
@@ -59,7 +65,7 @@ export class ScoreSummary {
     if (this.scores.length <= 0) {
       return []
     }
-    const sorted = this.scores.sort((a, b) => a - b)
+    const sorted = this._scores.sort((a, b) => a - b)
     const lower = (this.scores.length - 1) >> 1
     const upper = this.scores.length >> 1
     if (sorted[lower] === sorted[upper]) {
@@ -76,7 +82,7 @@ export class ScoreSummary {
   }
 
   public addAnswer(answer: Answer): void {
-    this.answers.push(answer)
+    this._answers.push(answer)
 
     const { score } = answer
     if (score === undefined) {
@@ -91,6 +97,6 @@ export class ScoreSummary {
     }
     this._sum += score
     this._scoreFrequency += 1
-    this.scores.push(score)
+    this._scores.push(score)
   }
 }

@@ -42,10 +42,10 @@ export class RoomScoresTemplateProvider {
   public async getTemplate(
     roomId: string,
     teacherId: string,
-    materials: Content[],
-    attendances: Attendance[],
-    xapiEvents: ParsedXapiEvent[],
-  ): Promise<Map<string, UserContentScore>> {
+    materials: ReadonlyArray<Content>,
+    attendances: ReadonlyArray<Attendance>,
+    xapiEvents: ReadonlyArray<ParsedXapiEvent>,
+  ): Promise<ReadonlyMap<string, UserContentScore>> {
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
     const userIds = this.roomAttendanceProvider.getUserIds(attendances)
 

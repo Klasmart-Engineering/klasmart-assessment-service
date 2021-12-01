@@ -13,11 +13,10 @@ export class CmsContentProvider {
 
   constructor(private readonly cmsContentApi: CmsContentApi) {}
 
-  // TODO: Replace with ReadonlyArray
   public async getLessonMaterials(
     lessonPlanId: string,
     authenticationToken?: string,
-  ): Promise<Content[]> {
+  ): Promise<ReadonlyArray<Content>> {
     const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(lessonPlanId)
     if (cachedMaterialIds) {
       return [
@@ -60,7 +59,7 @@ export class CmsContentProvider {
   public async getLessonMaterialsWithSourceId(
     sourceId: string,
     authenticationToken?: string,
-  ): Promise<Content[]> {
+  ): Promise<ReadonlyArray<Content>> {
     const dtos = await this.cmsContentApi.getLessonMaterialsWithSourceId(
       sourceId,
       authenticationToken,

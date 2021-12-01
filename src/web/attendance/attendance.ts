@@ -74,7 +74,9 @@ const convertAttendanceResultToTypedClass = (
 export class AttendanceApi {
   readonly config: Configuration = getConfig()
 
-  getRoomAttendances = async (roomId: string): Promise<Attendance[]> => {
+  getRoomAttendances = async (
+    roomId: string,
+  ): Promise<ReadonlyArray<Attendance>> => {
     const data: { getClassAttendance: AttendanceResult[] } = await request(
       this.config.ATTENDANCE_SERVICE_ENDPOINT!,
       GET_CLASS_ATTENDANCE_QUERY,

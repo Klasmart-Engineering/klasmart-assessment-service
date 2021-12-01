@@ -5,5 +5,5 @@ export interface IXApiRepository {
     userId: string,
     from?: number,
     to?: number,
-  ): Promise<XApiRecord[]>
+  ): Promise<ReadonlyArray<XApiRecord>>
 }

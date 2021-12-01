@@ -13,8 +13,8 @@ export class RoomEventsProvider {
 
   public async getEvents(
     roomId: string,
-    attendances: Attendance[],
-  ): Promise<ParsedXapiEvent[]> {
+    attendances: ReadonlyArray<Attendance>,
+  ): Promise<ReadonlyArray<ParsedXapiEvent>> {
     const parsedXapiEvents: ParsedXapiEvent[] = []
     for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
       const rawXapiEvents = await this.xapiRepository.searchXApiEvents(
@@ -29,7 +29,7 @@ export class RoomEventsProvider {
 
   private parseEvents(
     roomId: string,
-    rawXapiEvents: XApiRecord[],
+    rawXapiEvents: ReadonlyArray<XApiRecord>,
   ): ParsedXapiEvent[] {
     const parsedXapiEvents: ParsedXapiEvent[] = []
     for (const rawXapiEvent of rawXapiEvents) {

@@ -31,7 +31,7 @@ export class XApiDynamodbRepository implements IXApiRepository {
     userId: string,
     from?: number,
     to?: number,
-  ): Promise<XApiRecord[]> {
+  ): Promise<ReadonlyArray<XApiRecord>> {
     const input: QueryCommandInput = {
       TableName: this.tableName,
       KeyConditionExpression:

@@ -1,5 +1,5 @@
 export default interface ScheduleResponse {
-  data: ScheduleDto[]
+  data: ReadonlyArray<ScheduleDto>
   total: number
 }
 
