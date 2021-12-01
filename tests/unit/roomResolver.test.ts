@@ -1,5 +1,5 @@
 import expect from '../utils/chaiAsPromisedSetup'
-import { Substitute } from '@fluffy-spoon/substitute'
+import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import RoomResolver from '../../src/resolvers/room'
 import { EntityManager } from 'typeorm'
 import { Room } from '../../src/db/assessments/entities/room'
@@ -23,21 +23,26 @@ describe('roomResolver', () => {
           scores: Promise.resolve([]),
           teacherComments: Promise.resolve([]),
         }
+        const authenticationToken = undefined
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
 
         assessmentDB.findOne(Room, roomId, {}).resolves(room)
-        roomScoresCalculator.calculate(roomId, teacherId).resolves(scores)
+        roomScoresCalculator
+          .calculate(roomId, teacherId, authenticationToken)
+          .resolves(scores)
 
         const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
-        const resultRoom = await sut.Room(roomId, teacherId)
+        const resultRoom = await sut.Room(roomId, teacherId, {})
 
         // Assert
         assessmentDB.received(1).findOne(Room, roomId, {})
-        roomScoresCalculator.received(1).calculate(roomId, teacherId)
+        roomScoresCalculator
+          .received(1)
+          .calculate(roomId, teacherId, authenticationToken)
         assessmentDB.received(1).save(room)
         const resultScores = await resultRoom.scores
 
@@ -54,22 +59,27 @@ describe('roomResolver', () => {
         const teacherId = 'teacher1'
         const studentId = 'student1'
         const contentId = 'content1'
+        const authenticationToken = undefined
         const scores = [new UserContentScore(roomId, studentId, contentId)]
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
 
         assessmentDB.findOne(Room, roomId, {}).resolves(undefined)
-        roomScoresCalculator.calculate(roomId, teacherId).resolves(scores)
+        roomScoresCalculator
+          .calculate(roomId, teacherId, authenticationToken)
+          .resolves(scores)
 
         const resolver = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
-        const resultRoom = await resolver.Room(roomId, teacherId)
+        const resultRoom = await resolver.Room(roomId, teacherId, {})
 
         // Assert
         assessmentDB.received(1).findOne(Room, roomId, {})
-        roomScoresCalculator.received(1).calculate(roomId, teacherId)
+        roomScoresCalculator
+          .received(1)
+          .calculate(roomId, teacherId, authenticationToken)
         assessmentDB.received(1).save(resultRoom)
         const resultScores = await resultRoom.scores
 

@@ -32,8 +32,12 @@ export class RoomScoresCalculator {
   public async calculate(
     roomId: string,
     teacherId: string,
+    authenticationToken?: string,
   ): Promise<UserContentScore[]> {
-    const materials = await this.roomMaterialsProvider.getMaterials(roomId)
+    const materials = await this.roomMaterialsProvider.getMaterials(
+      roomId,
+      authenticationToken,
+    )
     const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(materials)
     const attendances = await this.roomAttendanceProvider.getAttendances(roomId)
     const xapiEvents = await this.roomEventsProvider.getEvents(

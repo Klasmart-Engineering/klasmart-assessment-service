@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { CmsScheduleApi, ScheduleDto } from '../../src/web/cms'
 
-describe('cmsScheduleApi', function () {
+describe.skip('cmsScheduleApi', function () {
   describe('getSchedule', () => {
     context('provided scheduleId exists', () => {
       it('returns expected schedule', async () => {

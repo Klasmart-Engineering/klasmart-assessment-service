@@ -71,7 +71,10 @@ export default class TeacherCommentResolver {
     @UserID() teacherId: string,
   ): Promise<TeacherComment | undefined> {
     try {
-      const schedule = await this.scheduleProvider.getSchedule(roomId)
+      const schedule = await this.scheduleProvider.getSchedule(
+        roomId,
+        context.encodedAuthenticationToken,
+      )
       if (!schedule) {
         throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
       }

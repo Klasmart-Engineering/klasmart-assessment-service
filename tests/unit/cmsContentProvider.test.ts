@@ -23,7 +23,9 @@ describe('cmsContentProvider', () => {
           // Arrange
           const lessonPlanId = 'plan1'
           const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
+          cmsContentApi
+            .getLessonMaterials(lessonPlanId, Arg.any())
+            .resolves([contentDto1])
           const sut = new CmsContentProvider(cmsContentApi)
           intervalId = sut.setRecurringCacheClear(100)
 
@@ -33,7 +35,7 @@ describe('cmsContentProvider', () => {
           // Assert
           expect(results).to.have.lengthOf(1)
           expect(results[0]).to.deep.equal(content1)
-          cmsContentApi.received(1).getLessonMaterials(Arg.any())
+          cmsContentApi.received(1).getLessonMaterials(Arg.all())
         })
       },
     )
@@ -45,7 +47,9 @@ describe('cmsContentProvider', () => {
           // Arrange
           const lessonPlanId = 'plan1'
           const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
+          cmsContentApi
+            .getLessonMaterials(lessonPlanId, Arg.any())
+            .resolves([contentDto1])
           const sut = new CmsContentProvider(cmsContentApi)
           intervalId = sut.setRecurringCacheClear(100)
 
@@ -69,22 +73,27 @@ describe('cmsContentProvider', () => {
         it('returns 1 matching lesson material; cache miss', async () => {
           // Arrange
           const lessonPlanId = 'plan1'
+          const authenticationToken = undefined
           const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
+          cmsContentApi
+            .getLessonMaterials(lessonPlanId, authenticationToken)
+            .resolves([contentDto1])
           const sut = new CmsContentProvider(cmsContentApi)
           intervalId = sut.setRecurringCacheClear(100)
 
           // Act
           const results1 = await sut.getLessonMaterials(lessonPlanId)
           cmsContentApi.clearSubstitute()
-          cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
+          cmsContentApi
+            .getLessonMaterials(lessonPlanId, authenticationToken)
+            .resolves([contentDto1])
           await delay(100)
           const results2 = await sut.getLessonMaterials(lessonPlanId)
 
           // Assert
           expect(results2).to.have.lengthOf(1)
           expect(results2[0]).to.deep.equal(content1)
-          cmsContentApi.received(1).getLessonMaterials(Arg.any())
+          cmsContentApi.received(1).getLessonMaterials(Arg.all())
         })
       },
     )
@@ -96,7 +105,9 @@ describe('cmsContentProvider', () => {
         // Arrange
         const lessonMaterialId = content1.contentId
         const cmsContentApi = Substitute.for<CmsContentApi>()
-        cmsContentApi.getLessonMaterial(lessonMaterialId).resolves(contentDto1)
+        cmsContentApi
+          .getLessonMaterial(lessonMaterialId, Arg.any())
+          .resolves(contentDto1)
         const sut = new CmsContentProvider(cmsContentApi)
         intervalId = sut.setRecurringCacheClear(100)
 
@@ -105,7 +116,7 @@ describe('cmsContentProvider', () => {
 
         // Assert
         expect(result).to.deep.equal(content1)
-        cmsContentApi.received(1).getLessonMaterial(Arg.any())
+        cmsContentApi.received(1).getLessonMaterial(Arg.all())
       })
     })
 
@@ -117,7 +128,7 @@ describe('cmsContentProvider', () => {
           const lessonMaterialId = content1.contentId
           const cmsContentApi = Substitute.for<CmsContentApi>()
           cmsContentApi
-            .getLessonMaterial(lessonMaterialId)
+            .getLessonMaterial(lessonMaterialId, Arg.any())
             .resolves(contentDto1)
           const sut = new CmsContentProvider(cmsContentApi)
           intervalId = sut.setRecurringCacheClear(100)
@@ -143,9 +154,10 @@ describe('cmsContentProvider', () => {
         it('returns matching lesson material; cache miss', async () => {
           // Arrange
           const lessonMaterialId = content1.contentId
+          const authenticationToken = undefined
           const cmsContentApi = Substitute.for<CmsContentApi>()
           cmsContentApi
-            .getLessonMaterial(lessonMaterialId)
+            .getLessonMaterial(lessonMaterialId, authenticationToken)
             .resolves(contentDto1)
           const sut = new CmsContentProvider(cmsContentApi)
           intervalId = sut.setRecurringCacheClear(100)
@@ -154,14 +166,14 @@ describe('cmsContentProvider', () => {
           const result1 = await sut.getLessonMaterial(lessonMaterialId)
           cmsContentApi.clearSubstitute()
           cmsContentApi
-            .getLessonMaterial(lessonMaterialId)
+            .getLessonMaterial(lessonMaterialId, authenticationToken)
             .resolves(contentDto1)
           await delay(100)
           const result2 = await sut.getLessonMaterial(lessonMaterialId)
 
           // Assert
           expect(result2).to.deep.equal(content1)
-          cmsContentApi.received(1).getLessonMaterial(Arg.any())
+          cmsContentApi.received(1).getLessonMaterial(Arg.all())
         })
       },
     )
@@ -174,7 +186,9 @@ describe('cmsContentProvider', () => {
           const lessonPlanId = 'plan1'
           const lessonMaterialId = content1.contentId
           const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
+          cmsContentApi
+            .getLessonMaterials(lessonPlanId, Arg.any())
+            .resolves([contentDto1])
           cmsContentApi
             .getLessonMaterial(lessonMaterialId)
             .resolves(contentDto1)
@@ -202,7 +216,7 @@ describe('cmsContentProvider', () => {
         const sourceId = 'source1'
         const cmsContentApi = Substitute.for<CmsContentApi>()
         cmsContentApi
-          .getLessonMaterialsWithSourceId(sourceId)
+          .getLessonMaterialsWithSourceId(sourceId, Arg.any())
           .resolves([contentDto1])
         const sut = new CmsContentProvider(cmsContentApi)
 

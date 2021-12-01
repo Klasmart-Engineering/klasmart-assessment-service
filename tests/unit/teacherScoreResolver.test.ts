@@ -43,7 +43,7 @@ describe('teacherScoreResolver.content', () => {
       )
 
       // Act
-      const resultContent = await sut.content(teacherScore)
+      const resultContent = await sut.content(teacherScore, {})
 
       // Assert
       expect(resultContent).to.not.be.undefined

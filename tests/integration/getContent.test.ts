@@ -8,6 +8,7 @@ import getContent, {
 } from '../../src/helpers/getContent'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
+import { throwExpression } from '../../src/helpers/throwExpression'
 
 describe('getContent', function () {
   context(
@@ -20,10 +21,13 @@ describe('getContent', function () {
         const contentType = undefined
         const contentName = undefined
         const contentParentId = undefined
+        const authenticationToken = undefined
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
         cmsContentProvider
-          .getLessonMaterialsWithSourceId(Arg.any())
+          .getLessonMaterial(contentKey, authenticationToken)
+          .resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(contentKey, authenticationToken)
           .resolves([])
 
         // Act
@@ -54,10 +58,15 @@ describe('getContent', function () {
         const contentType = undefined
         const contentName = undefined
         const contentParentId = undefined
+        const authenticationToken = undefined
         h5pIdToCmsContentIdCache.set(contentKey, contentId)
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
-        cmsContentProvider.getLessonMaterial(contentId).resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterial(contentKey, authenticationToken)
+          .resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterial(contentId, authenticationToken)
+          .resolves(undefined)
 
         // Act
         const result = await getContent(
@@ -86,14 +95,20 @@ describe('getContent', function () {
         const contentType = undefined
         const contentName = undefined
         const contentParentId = undefined
+        const authenticationToken = undefined
         const material = new LessonMaterialBuilder()
           .withPublishStatus('hidden')
           .withSource(FileType.H5P, contentKey)
           .build()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider.getLessonMaterial(contentKey).resolves(undefined)
         cmsContentProvider
-          .getLessonMaterialsWithSourceId(material.h5pId!)
+          .getLessonMaterial(contentKey, authenticationToken)
+          .resolves(undefined)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(
+            material.h5pId ?? throwExpression('h5pId is undefined'),
+            authenticationToken,
+          )
           .resolves([material])
 
         // Act

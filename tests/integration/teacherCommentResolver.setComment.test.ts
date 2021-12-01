@@ -93,7 +93,9 @@ describe('teacherCommentResolver.setComment', () => {
           ),
         )
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(room.roomId).resolves(schedule)
+      cmsScheduleProvider
+        .getSchedule(room.roomId, endUser.token)
+        .resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
@@ -165,7 +167,7 @@ describe('teacherCommentResolver.setComment', () => {
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
@@ -261,7 +263,7 @@ describe('teacherCommentResolver.setComment', () => {
         .withComment(originalCommentText)
         .buildAndPersist()
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
@@ -355,7 +357,9 @@ describe('teacherCommentResolver.setComment', () => {
           .withComment('needs some work')
           .buildAndPersist()
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         // Act
@@ -468,7 +472,9 @@ describe('teacherCommentResolver.setComment', () => {
           .withComment('needs some work')
           .buildAndPersist()
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         // Act

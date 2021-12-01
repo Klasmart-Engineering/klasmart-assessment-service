@@ -294,16 +294,18 @@ describe('teacherScoreResolver.setScore', function () {
           .buildAndPersist()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         cmsContentProvider
           .getLessonMaterial(
             lessonMaterial.h5pId ?? throwExpression('h5pId is undefined'),
+            endUser.token,
           )
           .resolves(undefined)
         cmsContentProvider
           .getLessonMaterialsWithSourceId(
             lessonMaterial.h5pId ?? throwExpression('h5pId is undefined'),
+            endUser.token,
           )
           .resolves([lessonMaterial])
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
@@ -417,7 +419,7 @@ describe('teacherScoreResolver.setScore', function () {
         .buildAndPersist()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -535,7 +537,7 @@ describe('teacherScoreResolver.setScore', function () {
         .buildAndPersist()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 

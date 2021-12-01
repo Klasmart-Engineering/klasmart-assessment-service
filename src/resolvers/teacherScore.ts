@@ -67,6 +67,7 @@ export default class TeacherScoreResolver {
       if (!userContentScore) {
         const content = await this.cmsContentProvider.getLessonMaterial(
           contentId,
+          context.encodedAuthenticationToken,
         )
         if (content?.h5pId) {
           contentKey = ContentKey.construct(content.h5pId, subcontentId)
@@ -126,7 +127,10 @@ export default class TeacherScoreResolver {
   }
 
   @FieldResolver(() => Content, { nullable: true })
-  public async content(@Root() source: TeacherScore): Promise<Content | null> {
+  public async content(
+    @Root() source: TeacherScore,
+    @Ctx() context: Context,
+  ): Promise<Content | null> {
     const userContentScore = await this.assesmentDB.findOne(UserContentScore, {
       where: {
         roomId: source.roomId,
@@ -143,6 +147,7 @@ export default class TeacherScoreResolver {
       contentName,
       contentParentId,
       this.cmsContentProvider,
+      context.encodedAuthenticationToken,
     )
   }
 }

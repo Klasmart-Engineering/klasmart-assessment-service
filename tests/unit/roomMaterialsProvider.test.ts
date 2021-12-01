@@ -17,6 +17,7 @@ describe('roomMaterialsProvider', () => {
     it('returns 1 Material', async () => {
       // Arrange
       const roomId = 'room1'
+      const authenticationToken = undefined
 
       const material = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -30,8 +31,12 @@ describe('roomMaterialsProvider', () => {
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
 
-      cmsScheduleProvider.getSchedule(Arg.any()).resolves(schedule)
-      cmsContentProvider.getLessonMaterials(Arg.any()).resolves([material])
+      cmsScheduleProvider
+        .getSchedule(Arg.any(), authenticationToken)
+        .resolves(schedule)
+      cmsContentProvider
+        .getLessonMaterials(Arg.any(), authenticationToken)
+        .resolves([material])
 
       const sut = new RoomMaterialsProvider(
         cmsScheduleProvider,

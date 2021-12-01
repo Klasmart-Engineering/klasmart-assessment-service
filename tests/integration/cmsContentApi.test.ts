@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { CmsContentApi, ContentDto } from '../../src/web/cms'
 
-describe('cmsContentApi', function () {
+describe.skip('cmsContentApi', function () {
   describe('getLessonMaterials', () => {
     context('provided lessonPlanId exists', () => {
       it('returns expected lesson materials', async () => {

@@ -5,6 +5,7 @@ import {
   Resolver,
   Root,
   Authorized,
+  Ctx,
 } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
@@ -16,7 +17,7 @@ import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
-import { UserID } from '../auth/context'
+import { Context, UserID } from '../auth/context'
 
 const logger = withLogger('room')
 
@@ -43,6 +44,7 @@ export default class RoomResolver {
     // TODO: This shouldn't be nullable.
     @Arg('room_id', { nullable: true }) roomId: string,
     @UserID() teacherId: string,
+    @Ctx() context: Context,
   ): Promise<Room> {
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
@@ -53,6 +55,7 @@ export default class RoomResolver {
       const scores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
+        context.encodedAuthenticationToken,
       )
       room.scores = Promise.resolve(scores)
       room.recalculate = scores.length == 0

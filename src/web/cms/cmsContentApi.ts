@@ -4,13 +4,19 @@ import ContentResponse, { ContentDto } from './contentResponse'
 
 @Service()
 export class CmsContentApi {
-  public async getLessonMaterials(lessonPlanId: string): Promise<ContentDto[]> {
+  public async getLessonMaterials(
+    lessonPlanId: string,
+    authenticationToken?: string,
+  ): Promise<ContentDto[]> {
     const cmsApiUrl =
       process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
     const contentsApiUrl = `${cmsApiUrl}/contents?plan_id=${lessonPlanId}`
 
     const fetchPromise = fetch(contentsApiUrl, {
       method: 'GET',
+      headers: {
+        cookie: authenticationToken ? `access=${authenticationToken}` : '',
+      },
     })
 
     const response = await fetchPromise
@@ -23,6 +29,7 @@ export class CmsContentApi {
 
   public async getLessonMaterial(
     contentId: string,
+    authenticationToken?: string,
   ): Promise<ContentDto | undefined> {
     const cmsApiUrl =
       process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
@@ -30,6 +37,9 @@ export class CmsContentApi {
 
     const fetchPromise = fetch(contentsApiUrl, {
       method: 'GET',
+      headers: {
+        cookie: authenticationToken ? `access=${authenticationToken}` : '',
+      },
     })
 
     const response = await fetchPromise
@@ -45,6 +55,7 @@ export class CmsContentApi {
 
   public async getLessonMaterialsWithSourceId(
     sourceId: string,
+    authenticationToken?: string,
   ): Promise<ContentDto[]> {
     const cmsApiUrl =
       process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
@@ -52,6 +63,9 @@ export class CmsContentApi {
 
     const fetchPromise = fetch(contentsApiUrl, {
       method: 'GET',
+      headers: {
+        cookie: authenticationToken ? `access=${authenticationToken}` : '',
+      },
     })
 
     const response = await fetchPromise

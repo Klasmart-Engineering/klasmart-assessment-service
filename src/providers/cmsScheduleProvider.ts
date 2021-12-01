@@ -7,8 +7,14 @@ import { CmsScheduleApi, ScheduleDto } from '../web/cms'
 export class CmsScheduleProvider {
   constructor(private readonly cmsScheduleApi: CmsScheduleApi) {}
 
-  public async getSchedule(scheduleId: string): Promise<Schedule | undefined> {
-    const dto = await this.cmsScheduleApi.getSchedule(scheduleId)
+  public async getSchedule(
+    scheduleId: string,
+    authenticationToken?: string,
+  ): Promise<Schedule | undefined> {
+    const dto = await this.cmsScheduleApi.getSchedule(
+      scheduleId,
+      authenticationToken,
+    )
     if (!dto) return undefined
     const lessonMaterial = scheduleDtoToEntity(dto)
 

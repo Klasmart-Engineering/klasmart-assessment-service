@@ -23,14 +23,21 @@ export class RoomMaterialsProvider {
     private readonly cmsContentProvider: CmsContentProvider,
   ) {}
 
-  public async getMaterials(roomId: string): Promise<Content[]> {
-    const schedule = await this.cmsScheduleProvider.getSchedule(roomId)
+  public async getMaterials(
+    roomId: string,
+    authenticationToken?: string,
+  ): Promise<Content[]> {
+    const schedule = await this.cmsScheduleProvider.getSchedule(
+      roomId,
+      authenticationToken,
+    )
     if (!schedule) {
       throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
     }
     const lessonPlanId = schedule.lessonPlanId
     const lessonMaterials = await this.cmsContentProvider.getLessonMaterials(
       lessonPlanId,
+      authenticationToken,
     )
     return lessonMaterials
   }

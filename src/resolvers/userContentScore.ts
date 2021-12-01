@@ -31,6 +31,7 @@ export default class UserContentScoreResolver {
   @FieldResolver(() => Content, { nullable: true })
   public async content(
     @Root() source: UserContentScore,
+    @Ctx() context: Context,
   ): Promise<Content | null> {
     return await getContent(
       source.contentKey,
@@ -38,6 +39,7 @@ export default class UserContentScoreResolver {
       source.contentName,
       source.contentParentId,
       this.cmsContentProvider,
+      context.encodedAuthenticationToken,
     )
   }
 }

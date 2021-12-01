@@ -54,6 +54,7 @@ describe('roomScoresCalculator', () => {
         ),
         userContentScore,
       )
+      const authenticationToken = undefined
 
       const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
       const eventsProvider = Substitute.for<RoomEventsProvider>()
@@ -62,7 +63,9 @@ describe('roomScoresCalculator', () => {
         Substitute.for<RoomScoresTemplateProvider>()
 
       attendanceProvider.getAttendances(roomId).resolves([attendance])
-      materialsProvider.getMaterials(roomId).resolves([material])
+      materialsProvider
+        .getMaterials(roomId, authenticationToken)
+        .resolves([material])
       eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
       scoresTemplateProvider
         .getCompatContentKey(
@@ -148,6 +151,7 @@ describe('roomScoresCalculator', () => {
           ),
           userContentScore,
         )
+        const authenticationToken = undefined
 
         const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
         const eventsProvider = Substitute.for<RoomEventsProvider>()
@@ -156,7 +160,9 @@ describe('roomScoresCalculator', () => {
           Substitute.for<RoomScoresTemplateProvider>()
 
         attendanceProvider.getAttendances(roomId).resolves([attendance])
-        materialsProvider.getMaterials(roomId).resolves([material])
+        materialsProvider
+          .getMaterials(roomId, authenticationToken)
+          .resolves([material])
         eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
         roomScoresTemplateProvider
           .getCompatContentKey(

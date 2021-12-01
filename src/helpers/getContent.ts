@@ -11,11 +11,20 @@ export default async function getContent(
   contentName: string | undefined | null,
   contentParentId: string | undefined | null,
   cmsContentProvider: CmsContentProvider,
+  authenticationToken?: string,
 ): Promise<Content | null> {
   const { contentId, subcontentId } = ContentKey.deconstruct(contentKey)
-  let content = (await cmsContentProvider.getLessonMaterial(contentId)) || null
+  let content =
+    (await cmsContentProvider.getLessonMaterial(
+      contentId,
+      authenticationToken,
+    )) || null
   if (!content) {
-    content = await findCmsContentUsingH5pId(cmsContentProvider, contentId)
+    content = await findCmsContentUsingH5pId(
+      cmsContentProvider,
+      contentId,
+      authenticationToken,
+    )
   }
 
   if (content) {
@@ -42,13 +51,22 @@ export default async function getContent(
 async function findCmsContentUsingH5pId(
   cmsContentProvider: CmsContentProvider,
   h5pId: string,
+  authenticationToken?: string,
 ): Promise<Content | null> {
   const contentId = h5pIdToCmsContentIdCache.get(h5pId)
   if (contentId) {
-    return (await cmsContentProvider.getLessonMaterial(contentId)) ?? null
+    return (
+      (await cmsContentProvider.getLessonMaterial(
+        contentId,
+        authenticationToken,
+      )) ?? null
+    )
   }
   const matchingContents =
-    await cmsContentProvider.getLessonMaterialsWithSourceId(h5pId)
+    await cmsContentProvider.getLessonMaterialsWithSourceId(
+      h5pId,
+      authenticationToken,
+    )
 
   if (matchingContents && matchingContents.length > 0) {
     const publishedContent = matchingContents.find(

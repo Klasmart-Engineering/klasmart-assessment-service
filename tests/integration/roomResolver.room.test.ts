@@ -236,15 +236,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -438,15 +438,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -639,15 +639,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -836,15 +836,17 @@ describe('roomResolver.Room', () => {
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord1, xapiRecord2])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -1197,15 +1199,17 @@ describe('roomResolver.Room', () => {
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -1421,18 +1425,20 @@ describe('roomResolver.Room', () => {
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord2, xapiRecord1])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial1, lessonMaterial2])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial1.contentId)
+          .getLessonMaterial(lessonMaterial1.contentId, endUser.token)
           .resolves(lessonMaterial1)
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial2.contentId)
+          .getLessonMaterial(lessonMaterial2.contentId, endUser.token)
           .resolves(lessonMaterial2)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -1717,15 +1723,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord, xapiRecord2])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
     })
@@ -1914,15 +1920,17 @@ describe('roomResolver.Room', () => {
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial2])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial2.contentId)
+          .getLessonMaterial(lessonMaterial2.contentId, endUser.token)
           .resolves(lessonMaterial2)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -2107,15 +2115,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student2.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -2364,15 +2372,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .resolves([])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -2543,15 +2551,15 @@ describe('roomResolver.Room', () => {
         .searchXApiEvents(student.userId, Arg.any(), Arg.any())
         .resolves([])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+      cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId)
+        .getLessonMaterials(lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId)
+        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -2749,15 +2757,17 @@ describe('roomResolver.Room', () => {
           .withStudentId(student.userId)
           .buildAndPersist()
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -3082,15 +3092,17 @@ describe('roomResolver.Room', () => {
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves(xapiRecords)
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -3302,24 +3314,28 @@ describe('roomResolver.Room', () => {
           .withContentName(xapiContentName)
           .buildAndPersist()
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         cmsContentProvider
           .getLessonMaterial(
             lessonMaterial.h5pId ?? throwExpression('h5pId is undefined'),
+            endUser.token,
           )
           .resolves(undefined)
         cmsContentProvider
           .getLessonMaterialsWithSourceId(
             lessonMaterial.h5pId ?? throwExpression('h5pId is undefined'),
+            endUser.token,
           )
           .resolves([lessonMaterial])
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
@@ -3508,10 +3524,10 @@ describe('roomResolver.Room', () => {
           .build()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId)
+          .getLessonMaterials(lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
-          .getLessonMaterial(lessonMaterial.contentId)
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
@@ -3520,7 +3536,9 @@ describe('roomResolver.Room', () => {
           .withLessonPlanId(lessonPlan.contentId)
           .build()
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-        cmsScheduleProvider.getSchedule(roomId).resolves(schedule)
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .resolves(schedule)
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         xapiRecord1 = new XApiRecordBuilder()

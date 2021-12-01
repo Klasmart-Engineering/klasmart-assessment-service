@@ -14,7 +14,10 @@ export class CmsContentProvider {
   constructor(private readonly cmsContentApi: CmsContentApi) {}
 
   // TODO: Replace with ReadonlyArray
-  public async getLessonMaterials(lessonPlanId: string): Promise<Content[]> {
+  public async getLessonMaterials(
+    lessonPlanId: string,
+    authenticationToken?: string,
+  ): Promise<Content[]> {
     const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(lessonPlanId)
     if (cachedMaterialIds) {
       return [
@@ -24,7 +27,10 @@ export class CmsContentProvider {
       ]
     }
 
-    const dtos = await this.cmsContentApi.getLessonMaterials(lessonPlanId)
+    const dtos = await this.cmsContentApi.getLessonMaterials(
+      lessonPlanId,
+      authenticationToken,
+    )
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
     this.cacheLessonPlanResults(lessonPlanId, lessonMaterials)
 
@@ -33,13 +39,17 @@ export class CmsContentProvider {
 
   public async getLessonMaterial(
     contentId: string,
+    authenticationToken?: string,
   ): Promise<Content | undefined> {
     const cachedResult = this.lessonMaterialCache.get(contentId)
     if (cachedResult) {
       return cachedResult
     }
 
-    const dto = await this.cmsContentApi.getLessonMaterial(contentId)
+    const dto = await this.cmsContentApi.getLessonMaterial(
+      contentId,
+      authenticationToken,
+    )
     if (!dto) return undefined
     const lessonMaterial = contentDtoToEntity(dto)
     this.lessonMaterialCache.set(contentId, lessonMaterial)
@@ -49,9 +59,11 @@ export class CmsContentProvider {
 
   public async getLessonMaterialsWithSourceId(
     sourceId: string,
+    authenticationToken?: string,
   ): Promise<Content[]> {
     const dtos = await this.cmsContentApi.getLessonMaterialsWithSourceId(
       sourceId,
+      authenticationToken,
     )
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
 

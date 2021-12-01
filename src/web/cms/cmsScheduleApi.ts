@@ -6,6 +6,7 @@ import ScheduleResponse, { ScheduleDto } from './scheduleResponse'
 export class CmsScheduleApi {
   public async getSchedule(
     scheduleId: string,
+    authenticationToken?: string,
   ): Promise<ScheduleDto | undefined> {
     const cmsApiUrl =
       process.env.CMS_API_URL || 'https://cms.alpha.kidsloop.net/v1/internal'
@@ -13,6 +14,9 @@ export class CmsScheduleApi {
 
     const fetchPromise = fetch(schedulesApiUrl, {
       method: 'GET',
+      headers: {
+        cookie: authenticationToken ? `access=${authenticationToken}` : '',
+      },
     })
 
     const response = await fetchPromise
