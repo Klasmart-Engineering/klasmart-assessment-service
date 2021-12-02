@@ -8,7 +8,7 @@ import { GraphQLSchema } from 'graphql'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Context } from '../auth/context'
-import { ErrorMessage } from './errorMessages'
+import { ErrorMessage } from '../helpers/errorMessages'
 
 const logger = withLogger('createApolloServer')
 

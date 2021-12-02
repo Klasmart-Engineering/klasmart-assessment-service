@@ -1,7 +1,7 @@
 import { gql, request } from 'graphql-request'
 import { Field, ObjectType } from 'type-graphql'
 import { Service } from 'typedi'
-import { getConfig, Configuration } from '../../helpers/configuration'
+import { getConfig, Configuration } from '../../initialization/configuration'
 
 @ObjectType()
 export class User {

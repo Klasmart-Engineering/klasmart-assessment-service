@@ -2,8 +2,8 @@ import 'reflect-metadata'
 import 'newrelic'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-import createAssessmentServer from './helpers/createAssessmentServer'
-import registerAndConnectToDataSources from './helpers/registerAndConnectToDataSources'
+import createAssessmentServer from './initialization/createAssessmentServer'
+import registerAndConnectToDataSources from './initialization/registerAndConnectToDataSources'
 
 const logger = withLogger('main')
 

@@ -3,7 +3,7 @@ import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 import { ATTENDANCE_CONNECTION_NAME } from '../db/attendance/connectToAttendanceDatabase'
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
-import { getConfig } from '../helpers/configuration'
+import { getConfig } from '../initialization/configuration'
 import { AttendanceApi, Attendance } from '../web/attendance'
 
 export interface RoomAttendanceProvider {

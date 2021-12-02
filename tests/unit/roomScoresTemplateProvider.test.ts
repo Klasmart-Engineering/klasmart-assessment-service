@@ -13,7 +13,7 @@ import { UserContentScoreFactory } from '../../src/providers/userContentScoreFac
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
-import { featureFlags } from '../../src/helpers/featureFlags'
+import { featureFlags } from '../../src/initialization/featureFlags'
 
 describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {

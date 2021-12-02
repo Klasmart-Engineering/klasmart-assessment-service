@@ -10,7 +10,7 @@ import {
   createBootstrapPostgresConnection,
   createTestConnections,
 } from './testConnection'
-import createAssessmentServer from '../../src/helpers/createAssessmentServer'
+import createAssessmentServer from '../../src/initialization/createAssessmentServer'
 import { IXApiRepository } from '../../src/db/xapi'
 import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
 import { AttendanceApi, UserApi } from '../../src/web'

@@ -9,7 +9,7 @@ import { TestTitle } from '../utils/testTitles'
 import { XApiRecord } from '../../src/db/xapi'
 import '../utils/globalIntegrationTestHooks'
 import EndUser from '../entities/endUser'
-import { featureFlags } from '../../src/helpers/featureFlags'
+import { featureFlags } from '../../src/initialization/featureFlags'
 
 import {
   dbConnect,
