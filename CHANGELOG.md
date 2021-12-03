@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.0..v1.6.6) (2021-12-03)
+
+
+### Features
+
+* **DAS-212:** check dynamodb table is active on startup ([5a30841](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/5a30841a9ac8dc1e395deb3e9c13cfae2864b792))
+
+
+### Refactor
+
+* use kidsloop-nodejs-logger in more files ([f99f89b](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/f99f89bb95531c557970d89181404dd345693302))
+
+
+### Performance
+
+* **DAS-217:** use aws-sdk dynamodb client v3 instead of v2 to improve xapi query performance ([db3bb7f](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/db3bb7fbe613bd65e34bc3d5fcfe324fc750abba))
+
 ### [1.6.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.6.6..v1.6.5) (2021-12-01)
 
 
