@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.1..v1.7.0) (2021-12-03)
+
+
+### Refactor
+
+* organize initialization logic into new folder ([06a69f7](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/06a69f79a81be01f0ad8c68a3049d8628e1b00ae))
+
 ## [1.7.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.0..v1.6.6) (2021-12-03)
 
 
