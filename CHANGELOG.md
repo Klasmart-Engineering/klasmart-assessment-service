@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.2..v1.7.1) (2021-12-03)
+
+
+### Refactor
+
+* **DAS-193:** use read-only collections where applicable ([19fdeaa](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/19fdeaa88522bdff7c8c0c6a7b668893a9bfbd9a))
+
 ### [1.7.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.1..v1.7.0) (2021-12-03)
 
 
