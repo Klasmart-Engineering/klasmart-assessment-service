@@ -24,6 +24,9 @@ describe('roomEventsProvider', () => {
           .withUserId(studentId)
           .withClientTimestamp(undefined)
           .build()
+        const h5pIdToContentIdMap = new Map<string, string>([
+          [h5pId, 'content1'],
+        ])
 
         const xapiRepository = Substitute.for<IXApiRepository>()
         xapiRepository
@@ -33,9 +36,11 @@ describe('roomEventsProvider', () => {
         const roomEventsProvider = new RoomEventsProvider(xapiRepository)
 
         // Act
-        const resultEvents = await roomEventsProvider.getEvents(roomId, [
-          attendance,
-        ])
+        const resultEvents = await roomEventsProvider.getEvents(
+          roomId,
+          [attendance],
+          h5pIdToContentIdMap,
+        )
 
         // Assert
         expect(resultEvents).to.be.empty

@@ -43,6 +43,7 @@ export class RoomScoresCalculator {
     const xapiEvents = await this.roomEventsProvider.getEvents(
       roomId,
       attendances,
+      h5pIdToContentIdMap,
     )
     const userContentScores = await this.calculateScores(
       roomId,
@@ -58,7 +59,7 @@ export class RoomScoresCalculator {
 
   private createH5pIdToContentIdMap(
     materials: ReadonlyArray<Content>,
-  ): Map<string, string> {
+  ): ReadonlyMap<string, string> {
     const h5pIdToContentIdMap = new Map<string, string>()
     for (const x of materials) {
       if (x.h5pId) {
@@ -74,7 +75,7 @@ export class RoomScoresCalculator {
     materials: ReadonlyArray<Content>,
     attendances: ReadonlyArray<Attendance>,
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
-    h5pIdToContentIdMap: Map<string, string>,
+    h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<UserContentScore>> {
     const mapKeyToUserContentScoreMap =
       await this.roomScoresTemplateProvider.getTemplate(
@@ -88,9 +89,6 @@ export class RoomScoresCalculator {
     for (const xapiEvent of xapiEvents) {
       const contentId = h5pIdToContentIdMap.get(xapiEvent.h5pId)
       if (!contentId) {
-        this.Logger.warn(
-          `h5pId (${xapiEvent.h5pId}) not part of the lesson plan. Skipping event...`,
-        )
         continue
       }
       // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.

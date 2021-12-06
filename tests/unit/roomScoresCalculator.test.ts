@@ -66,7 +66,12 @@ describe('roomScoresCalculator', () => {
       materialsProvider
         .getMaterials(roomId, authenticationToken)
         .resolves([material])
-      eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
+      const h5pIdToContentIdMap = new Map<string, string>([
+        [h5pId, material.contentId],
+      ])
+      eventsProvider
+        .getEvents(roomId, [attendance], h5pIdToContentIdMap)
+        .resolves([xapiRecord])
       scoresTemplateProvider
         .getCompatContentKey(
           roomId,
@@ -163,7 +168,12 @@ describe('roomScoresCalculator', () => {
         materialsProvider
           .getMaterials(roomId, authenticationToken)
           .resolves([material])
-        eventsProvider.getEvents(roomId, [attendance]).resolves([xapiRecord])
+        const h5pIdToContentIdMap = new Map<string, string>([
+          [h5pId, material.contentId],
+        ])
+        eventsProvider
+          .getEvents(roomId, [attendance], h5pIdToContentIdMap)
+          .resolves([xapiRecord])
         roomScoresTemplateProvider
           .getCompatContentKey(
             roomId,
