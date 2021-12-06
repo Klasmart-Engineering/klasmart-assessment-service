@@ -4,6 +4,7 @@ import {
   AuthenticationError,
   ExpressContext,
 } from 'apollo-server-express'
+import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 import { GraphQLSchema } from 'graphql'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
 import { withLogger } from 'kidsloop-nodejs-logger'
@@ -15,11 +16,6 @@ const logger = withLogger('createApolloServer')
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
-    playground: {
-      settings: {
-        'request.credentials': 'include',
-      },
-    },
     introspection: true,
     formatError: (err) => {
       // Override the @Authorized error by TypeGraphQL.
@@ -51,6 +47,12 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
       }
     },
     plugins: [
+      ApolloServerPluginLandingPageGraphQLPlayground({
+        settings: {
+          'request.credentials': 'include',
+          'schema.polling.interval': 60 * 1000,
+        },
+      }),
       // Note: New Relic plugin should always be listed last
       newrelicApolloServerPlugin,
     ],
