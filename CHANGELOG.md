@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.3..v1.7.2) (2021-12-06)
+
+
+### Refactor
+
+* **DAS-175:** update apollo server to v3 ([93168b1](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/93168b1e6aa4e06f636c00fa9349a3304d2dfb40))
+
 ### [1.7.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.2..v1.7.1) (2021-12-03)
 
 
