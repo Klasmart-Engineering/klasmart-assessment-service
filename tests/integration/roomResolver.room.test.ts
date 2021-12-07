@@ -142,6 +142,12 @@ describe('roomResolver.Room', () => {
         const endUser = new EndUserBuilder().authenticate().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .rejects(ErrorMessage.scheduleNotFound(roomId))
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+
         // Act
         const fn = () =>
           roomQueryWithCookie(roomId, { access: endUser.token }, false)
@@ -166,6 +172,12 @@ describe('roomResolver.Room', () => {
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+      cmsScheduleProvider
+        .getSchedule(roomId, endUser.token)
+        .rejects(ErrorMessage.scheduleNotFound(roomId))
+      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -1170,12 +1182,7 @@ describe('roomResolver.Room', () => {
           .build()
         attendanceApi
           .getRoomAttendances(roomId)
-          .returns(
-            Promise.resolve<Attendance[]>([
-              endUserAttendance,
-              studentAttendance,
-            ]),
-          )
+          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -3552,7 +3559,7 @@ describe('roomResolver.Room', () => {
           .build()
         xapiRepository
           .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
-          .returns(Promise.resolve<XApiRecord[]>([]))
+          .resolves([])
         xapiRepository
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord1])

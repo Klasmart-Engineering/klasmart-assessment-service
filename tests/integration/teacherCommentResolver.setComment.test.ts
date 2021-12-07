@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import expect from '../utils/chaiAsPromisedSetup'
 import {
   EndUserBuilder,
   RoomBuilder,
@@ -87,11 +87,7 @@ describe('teacherCommentResolver.setComment', () => {
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi
         .fetchUser(providedStudentId, endUser.token)
-        .returns(
-          Promise.reject(
-            new Error(userServiceUnkownUserErrorMsg(providedStudentId)),
-          ),
-        )
+        .rejects(userServiceUnkownUserErrorMsg(providedStudentId))
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider
         .getSchedule(room.roomId, endUser.token)
@@ -128,6 +124,12 @@ describe('teacherCommentResolver.setComment', () => {
       const student = new UserBuilder().build()
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
       userApi.fetchUser(student.userId, endUser.token).resolves(student)
+
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+      cmsScheduleProvider
+        .getSchedule(room.roomId, endUser.token)
+        .rejects(ErrorMessage.scheduleNotFound(room.roomId))
+      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       // Act
       const fn = () =>

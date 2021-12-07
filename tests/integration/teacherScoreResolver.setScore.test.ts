@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import expect from '../utils/chaiAsPromisedSetup'
 import { v4 } from 'uuid'
 import { FindConditions, getRepository } from 'typeorm'
 import {
@@ -94,6 +94,12 @@ describe('teacherScoreResolver.setScore', function () {
         const providedRoomId = 'room2'
         const lessonMaterial = new LessonMaterialBuilder().build()
 
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
+          .resolves(lessonMaterial)
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
+
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -143,6 +149,13 @@ describe('teacherScoreResolver.setScore', function () {
         const roomId = 'room1'
         const lessonMaterial = new LessonMaterialBuilder().build()
         const providedStudentId = someOtherStudent.userId
+
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
+          .resolves(lessonMaterial)
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
+
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -191,6 +204,13 @@ describe('teacherScoreResolver.setScore', function () {
         const lessonMaterial = new LessonMaterialBuilder().build()
         const someOtherLessonMaterial = new LessonMaterialBuilder().build()
         const providedContentId = someOtherLessonMaterial.contentId
+
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterial(someOtherLessonMaterial.contentId, endUser.token)
+          .resolves(someOtherLessonMaterial)
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
+
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -237,6 +257,12 @@ describe('teacherScoreResolver.setScore', function () {
 
         const roomId = 'room1'
         const providedContentId = v4()
+
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterial(providedContentId, endUser.token)
+          .resolves(undefined)
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
         // Act
         const fn = () =>
