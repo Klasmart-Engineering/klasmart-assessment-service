@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.4..v1.7.3) (2021-12-07)
+
+
+### Refactor
+
+* check cms response status and log error if unsuccessful ([6445522](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/64455228e2d0ce4c7c644c00e0c813dc74823b5e))
+* **DAS-151:** remove log that has been spamming the consoles ([9081933](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/9081933bfc4367fc8616af3e675d0f880a37dc59))
+
 ### [1.7.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.3..v1.7.2) (2021-12-06)
 
 
