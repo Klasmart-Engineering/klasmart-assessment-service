@@ -1,8 +1,15 @@
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import fs from 'fs'
 import path from 'path'
-import { XAPIRepository } from '../src/db/xapi/repo'
+import { XApiDynamodbRepository } from '../src/db/xapi/dynamodb/repo'
 async function main() {
-  const repo = new XAPIRepository()
+  const dynamoDbClient = new DynamoDBClient({
+    apiVersion: '2012-08-10',
+  })
+  const repo = new XApiDynamodbRepository(
+    'kidsloop-alpha-xapi-ace-ray',
+    dynamoDbClient,
+  )
   const userId = 'aaef6d8a-53c4-462c-8c74-4483510c646d'
   const events = await repo.searchXApiEvents(
     userId, //'2c0aa9c2-bd4e-4662-b5e2-990aba436eab',
