@@ -253,7 +253,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -455,7 +455,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -656,7 +656,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -855,7 +855,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -1213,7 +1213,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -1439,7 +1439,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial1, lessonMaterial2])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial1.contentId, endUser.token)
@@ -1735,7 +1735,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -1934,7 +1934,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial2])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial2.contentId, endUser.token)
@@ -2127,7 +2127,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -2384,7 +2384,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -2563,7 +2563,7 @@ describe('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider
-        .getLessonMaterials(lessonPlan.contentId, endUser.token)
+        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
         .resolves([lessonMaterial])
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -2771,7 +2771,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -3106,7 +3106,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -3328,7 +3328,7 @@ describe('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
@@ -3531,7 +3531,7 @@ describe('roomResolver.Room', () => {
           .build()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
-          .getLessonMaterials(lessonPlan.contentId, endUser.token)
+          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
           .resolves([lessonMaterial])
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)

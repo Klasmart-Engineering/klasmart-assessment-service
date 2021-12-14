@@ -14,10 +14,12 @@ export class CmsContentProvider {
   constructor(private readonly cmsContentApi: CmsContentApi) {}
 
   public async getLessonMaterials(
+    roomId: string,
     lessonPlanId: string,
     authenticationToken?: string,
   ): Promise<ReadonlyArray<Content>> {
-    const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(lessonPlanId)
+    const cacheKey = `${roomId}|${lessonPlanId}`
+    const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(cacheKey)
     if (cachedMaterialIds) {
       return [
         ...cachedMaterialIds
@@ -31,7 +33,7 @@ export class CmsContentProvider {
       authenticationToken,
     )
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
-    this.cacheLessonPlanResults(lessonPlanId, lessonMaterials)
+    this.cacheLessonPlanResults(cacheKey, lessonMaterials)
 
     return lessonMaterials
   }
@@ -86,7 +88,7 @@ export class CmsContentProvider {
   }
 
   private cacheLessonPlanResults(
-    lessonPlanId: string,
+    materialIdsCacheKey: string,
     lessonMaterials: ReadonlyArray<Content>,
   ) {
     const lessonMaterialIds: string[] = []
@@ -94,7 +96,7 @@ export class CmsContentProvider {
       lessonMaterialIds.push(lessonMaterial.contentId)
       this.lessonMaterialCache.set(lessonMaterial.contentId, lessonMaterial)
     }
-    this.lessonPlanMaterialIdsCache.set(lessonPlanId, lessonMaterialIds)
+    this.lessonPlanMaterialIdsCache.set(materialIdsCacheKey, lessonMaterialIds)
   }
 
   private static clearCaches(

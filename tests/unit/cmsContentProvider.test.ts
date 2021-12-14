@@ -21,6 +21,7 @@ describe('cmsContentProvider', () => {
       () => {
         it('returns 1 matching lesson material; cache miss', async () => {
           // Arrange
+          const roomId = 'room1'
           const lessonPlanId = 'plan1'
           const cmsContentApi = Substitute.for<CmsContentApi>()
           cmsContentApi
@@ -30,7 +31,7 @@ describe('cmsContentProvider', () => {
           intervalId = sut.setRecurringCacheClear(100)
 
           // Act
-          const results = await sut.getLessonMaterials(lessonPlanId)
+          const results = await sut.getLessonMaterials(roomId, lessonPlanId)
 
           // Assert
           expect(results).to.have.lengthOf(1)
@@ -45,6 +46,7 @@ describe('cmsContentProvider', () => {
       () => {
         it('returns 1 matching lesson material; cache hit', async () => {
           // Arrange
+          const roomId = 'room1'
           const lessonPlanId = 'plan1'
           const cmsContentApi = Substitute.for<CmsContentApi>()
           cmsContentApi
@@ -54,10 +56,10 @@ describe('cmsContentProvider', () => {
           intervalId = sut.setRecurringCacheClear(100)
 
           // Act
-          const results1 = await sut.getLessonMaterials(lessonPlanId)
+          const results1 = await sut.getLessonMaterials(roomId, lessonPlanId)
           cmsContentApi.clearSubstitute()
           cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
-          const results2 = await sut.getLessonMaterials(lessonPlanId)
+          const results2 = await sut.getLessonMaterials(roomId, lessonPlanId)
 
           // Assert
           expect(results2).to.have.lengthOf(1)
@@ -72,6 +74,7 @@ describe('cmsContentProvider', () => {
       () => {
         it('returns 1 matching lesson material; cache miss', async () => {
           // Arrange
+          const roomId = 'room1'
           const lessonPlanId = 'plan1'
           const authenticationToken = undefined
           const cmsContentApi = Substitute.for<CmsContentApi>()
@@ -82,13 +85,13 @@ describe('cmsContentProvider', () => {
           intervalId = sut.setRecurringCacheClear(100)
 
           // Act
-          const results1 = await sut.getLessonMaterials(lessonPlanId)
+          const results1 = await sut.getLessonMaterials(roomId, lessonPlanId)
           cmsContentApi.clearSubstitute()
           cmsContentApi
             .getLessonMaterials(lessonPlanId, authenticationToken)
             .resolves([contentDto1])
           await delay(100)
-          const results2 = await sut.getLessonMaterials(lessonPlanId)
+          const results2 = await sut.getLessonMaterials(roomId, lessonPlanId)
 
           // Assert
           expect(results2).to.have.lengthOf(1)
@@ -183,6 +186,7 @@ describe('cmsContentProvider', () => {
       () => {
         it('returns matching lesson material; cache hit', async () => {
           // Arrange
+          const roomId = 'room1'
           const lessonPlanId = 'plan1'
           const lessonMaterialId = content1.contentId
           const cmsContentApi = Substitute.for<CmsContentApi>()
@@ -197,6 +201,7 @@ describe('cmsContentProvider', () => {
 
           // Act
           const lessonMaterialsForLessonPlan = await sut.getLessonMaterials(
+            roomId,
             lessonPlanId,
           )
           const lessonMaterial = await sut.getLessonMaterial(lessonMaterialId)

@@ -35,7 +35,7 @@ describe('roomMaterialsProvider', () => {
         .getSchedule(Arg.any(), authenticationToken)
         .resolves(schedule)
       cmsContentProvider
-        .getLessonMaterials(Arg.any(), authenticationToken)
+        .getLessonMaterials(roomId, lessonPlan.contentId, authenticationToken)
         .resolves([material])
 
       const sut = new RoomMaterialsProvider(

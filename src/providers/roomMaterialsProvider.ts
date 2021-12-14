@@ -36,6 +36,7 @@ export class RoomMaterialsProvider {
     }
     const lessonPlanId = schedule.lessonPlanId
     const lessonMaterials = await this.cmsContentProvider.getLessonMaterials(
+      roomId,
       lessonPlanId,
       authenticationToken,
     )
