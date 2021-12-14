@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.6..v1.7.5) (2021-12-14)
+
+
+### Bug Fixes
+
+* **KLA-326:** wrong lesson material version returned ([cad380d](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/cad380d4c0bac8b210ae43edd882565ab5f78c4f))
+
 ### [1.7.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.5..v1.7.4) (2021-12-08)
 
 ### [1.7.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.4..v1.7.3) (2021-12-07)
