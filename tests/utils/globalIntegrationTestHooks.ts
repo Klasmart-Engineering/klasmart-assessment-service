@@ -23,8 +23,8 @@ export let testClient: ApolloServerTestClient
 before(async () => {
   await createAssessmentDbIfItDoesntExist()
   useContainer(Container)
-  const { server } = await createAssessmentServer()
-  testClient = createTestClient(server)
+  const { apolloServer } = await createAssessmentServer()
+  testClient = createTestClient(apolloServer)
 })
 
 export async function dbConnect(): Promise<void> {

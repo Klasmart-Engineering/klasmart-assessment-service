@@ -1,0 +1,86 @@
+html
+  head
+    title Assessment Service API
+    link(rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/atom-one-dark.min.css")
+    link(rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css")
+
+    style
+        include styles.css
+  body
+    header
+      div.container
+        h1 Assessment Service
+        p Welcome to the assessment service API documentation.
+        p 
+          mark #{version}
+
+        nav
+          a(href=`${routePrefix}/`) Home
+          a(href=`${routePrefix}/changelog`) Changelog
+          a(href=`${routePrefix}/examples`) Examples
+          a(href=`${routePrefix}/explorer`) GraphiQL Explorer
+          a(href=`${routePrefix}/graphql`) GraphQL Playground
+          a(href=`${routePrefix}/health`) /health
+          a(href=`${routePrefix}/version`) /version
+          a(href="https://bitbucket.org/calmisland/kidsloop-assessment-service" target="_blank") 📖 Source code
+          a(href="https://kidsloop.slack.com/archives/C02F6KA6RQQ" target="_blank") ❓ Slack Channel
+    
+    div.content
+      block content
+
+  block scripts
+    //- syntax highlighting
+    script(src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js")
+    script.
+      //- gql syntax highlighting
+      //- https://github.com/dpeek/highlightjs-graphql
+      function hljsDefineGraphQL(hljs) {
+        return {
+          aliases: ["gql"],
+          keywords: {
+          keyword:
+              "query mutation subscription|10 input schema implements type interface union scalar fragment|10 enum on ...",
+          literal: "ID ID! String Float Int Boolean",
+          variable: "true false null"
+          },
+          contains: [
+          hljs.HASH_COMMENT_MODE,
+          hljs.QUOTE_STRING_MODE,
+          hljs.NUMBER_MODE,
+          {
+            className: "literal",
+            begin: "[^\\w][A-Z][a-z]",
+            end: "\\W",
+            excludeEnd: true
+          },
+          {
+            className: "literal",
+            begin: ":\\s\\[",
+            end: "[\\]!]{1,3}",
+            excludeBegin: true,
+            excludeEnd: true
+          },
+          {
+            className: "type",
+            begin: "[^\\w](?!ID)[A-Z][A-Z]",
+            end: "\\W",
+            excludeEnd: true
+          },
+          {
+            className: "name",
+            begin: "\\$",
+            end: "\\W",
+            excludeEnd: true
+          },
+          {
+            className: "meta",
+            begin: "@",
+            end: "\\W",
+            excludeEnd: true
+          }
+          ],
+          illegal: /([;<']|BEGIN)/
+        };
+      }
+      hljs.registerLanguage("graphql", hljsDefineGraphQL);
+      hljs.highlightAll()

@@ -11,17 +11,17 @@
 
 Consumed by the [cms-backend-service](https://bitbucket.org/calmisland/cms-backend-service/src/ee26db558f8d624d045262d4b28f2daee2ce1591/external/h5p_room_score.go?at=dev%2Fglobal%2Falpha#lines-139), which is then consumed by the cms frontend (link needed).
 
-Branching model: `feature/fix/etc` -> `master` -> `alpha` -> `production`
+Branching model: merge into `master` and a new version gets automatically released, tagged with a version tag e.g. `1.5.2`.
 
 📢 Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md) 📢
 
 ### External KidsLoop dependencies
 
-- [User Service](https://bitbucket.org/calmisland/kidsloop-user-service) GraphQL API for permission checks
-- User database for access to data such as class attendance, user info, and organization memberships
-- CMS Database for access to data such as the content library and class schedules
+- [User Service](https://bitbucket.org/calmisland/kidsloop-user-service) GraphQL API to get basic user information
+- [CMS Service](https://bitbucket.org/calmisland/cms-backend-service/) API to query data such as the content library and class schedules
+- [Attendance Service](https://bitbucket.org/calmisland/kidsloop-attendance-service) API to get the list of attendanees of a given room
 - DynamoDB XAPI table ([H5P library](https://bitbucket.org/calmisland/kidsloop-h5p-library/src/3d34fbc7f25c13b4b42f40bc3fb7c6726019aee1/src/xapi-uploader.ts?at=feature%2Fdocker-token) sends XAPI events, via the [uploader](https://bitbucket.org/calmisland/h5p-xapi-uploader), to the [XAPI server](https://bitbucket.org/calmisland/h5p-xapi-server), which in turn sends them to DynamoDB for us to be able to query here)
-- ***Upcoming***: XAPI database deployed in Postgres
+- XAPI database deployed in Postgres in the case where the environment variable `USE_XAPI_SQL_DATABASE_FLAG` is set to `true` or `1`
 
 ---
 
@@ -31,8 +31,8 @@ Branching model: `feature/fix/etc` -> `master` -> `alpha` -> `production`
 
 #### Installation
 
-- Node v14.x.x
-- Npm v6.x.x
+- Node v14.x.x or higher, Node v16.x.x is preferred
+- Npm v6.x.x or higher
 - Docker (for Postgres and MySQL)
 
 Install the packages and husky git hooks:
@@ -46,16 +46,42 @@ npm run bootstrap
 
 Copy/paste `.env.example` in the root directory, rename it to `.env`, and modify as necessary.
 
+Necessary evironment variables:
+- `ROUTE_PREFIX`
+- `DOMAIN`
+- `ASSESSMENT_DATABASE_URL`
+- `CMS_API_URL`
+- `USER_SERVICE_ENDPOINT`
+
+Some environment variables must be specified depending on how the service is configured.
+
+If you want to use the Attendance API, make sure to set the following:
+- `USE_ATTENDANCE_API = 1`
+- `ATTENDANCE_SERVICE_ENDPOINT`
+
+Alternatively, you can access the Attendance database directly and set:
+- `USE_ATTENDANCE_API = 0` (optional)
+- `ATTENDANCE_DATABASE_URL`
+
+Similarly, if you want to set the service to read XApi data from a DynamoDB table, make sure to set the following:
+- `USE_XAPI_SQL_DATABASE_FLAG = 0` (optional)
+- `DYNAMODB_TABLE_NAME`
+- `AWS_REGION` as well as the AWS credentials (Note: in an AWS environment, `AWS_REGION` and AWS credentials are set automatically, so there's no need to pass them manually)
+
+Alternatively, if you opt for reading XApi data from a Postgres database, set it to:
+- `USE_XAPI_SQL_DATABASE_FLAG = 1`
+- `XAPI_DATABASE_URL`
+
+Other optional environment variables include:
+- `LOG_LEVEL`: default value is `info`
+- `LOG_STYLE`: default value is `STRING_COLOR`
+
+#### Local database
+
 Create Postgres container
 
 ```
-docker run -d --name=assessments-postgres -p 5442:5432 -e POSTGRES_PASSWORD=assessments -e POSTGRES_DB=test_user_db postgres
-```
-
-Create MySQL container
-
-```
-docker run -d --name=assessments-mysql -p 3316:3306 -e MYSQL_ROOT_PASSWORD=assessments -e MYSQL_DATABASE=test_cms_db mysql
+docker run -d --name=assessments-postgres -p 5442:5432 -e POSTGRES_PASSWORD=assessments -e POSTGRES_DB=test_assessment_db postgres
 ```
 
 Create assessment database
@@ -74,19 +100,19 @@ Ensure all dependencies are installed
 npm install
 ```
 
-Ensure Postgres and MySQL are running
+Ensure Postgres is running
 
 ```
-docker start assessments-postgres assessments-mysql
+docker start assessments-postgres
 ```
 
-Run
+Kickstart the server:
 
 ```
 npm start
 ```
 
-Run with nodemon
+Or run it with nodemon to reload automatically when changes occur:
 
 ```
 npm run dev
@@ -135,7 +161,7 @@ We use the [Bitbucket Deployments](https://bitbucket.org/blog/introducing-bitbuc
 - The [Bitbucket view](https://bitbucket.org/calmisland/kidsloop-assessment-service/addon/pipelines/deployments) can be accessed from the sidebar via the Deployments tab.
 - The [Jira view](https://calmisland.atlassian.net/jira/software/c/projects/DAS/deployments?startDate=-3m&endDate=now) can be accessed from the sidebar of Jira via the Deployments tab.
 
-The Bitbucket pipeline builds and pushes a new docker image to the _Kidsloop Infra_ account every time code is merged into the `alpha` or `production` branch. Making the actual deployment requires another step, which differs between alpha and production.
+Everytime a PR is merged into `master`, the Bitbucket pipeline runs the stadard-release process, which pushes a new commit to `master` and tags with the new version. This new commit triggers another pipeline that builds and pushes a new docker image to the _Kidsloop Infra_ account. Making the actual deployment requires another step, which differs between alpha and production.
 
 ### Alpha
 
@@ -198,7 +224,7 @@ aws dynamodb scan --region ap-northeast-2 --table-name kidsloop-alpha-xapi-ace-r
 ./scripts/generateOrmConfig.ts
 ```
 
-#### Generate JWT token with nearly-inifitine expiration date
+#### Generate JWT token with nearly-inifitine expiration date (debug tokens only)
 
 ```
 ./scripts/generateJwt.ts

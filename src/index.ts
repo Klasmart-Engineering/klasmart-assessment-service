@@ -10,12 +10,12 @@ const logger = withLogger('main')
 async function main() {
   await registerAndConnectToDataSources()
 
-  const { app, server } = await createAssessmentServer()
+  const { app, apolloServer } = await createAssessmentServer()
 
   const port = process.env.PORT || 8080
   app.listen(port, () => {
     logger.info(
-      `🌎 Server ready at http://localhost:${port}${server.graphqlPath}`,
+      `🌎 Apollo Server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
     )
   })
 }

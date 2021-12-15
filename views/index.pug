@@ -1,0 +1,23 @@
+extends layout.pug
+
+block content
+  div.container
+    div
+      details
+        summary Metadata
+        div Name: #{name}
+        div Version: #{version}
+
+      details
+        summary Environment
+        div DOMAIN: #{config.DOMAIN}
+        div USE_ATTENDANCE_API_FLAG: #{config.USE_ATTENDANCE_API_FLAG}
+        div USE_XAPI_SQL_DATABASE_FLAG: #{config.USE_XAPI_SQL_DATABASE_FLAG}
+      
+      details
+        summary Feature Flags
+        div FixDisconnectedUserContentScoreNodes: #{featureFlags.FixDisconnectedUserContentScoreNodes}
+    
+    hr
+    
+    include:markdown-it ../README.md

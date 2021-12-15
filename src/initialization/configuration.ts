@@ -51,6 +51,8 @@ const getEnrivonmentBooleanFlag = (
 }
 
 export class Configuration {
+  // General
+  public readonly DOMAIN: string
   // API endpoints
   public readonly ATTENDANCE_SERVICE_ENDPOINT?: string =
     process.env.ATTENDANCE_SERVICE_ENDPOINT
@@ -76,6 +78,7 @@ export class Configuration {
     logger.info('🔧 CONFIGURATION:')
     logger.info('-----------------')
     logger.info(`- NODE_ENV: ${process.env.NODE_ENV}`)
+    this.DOMAIN = getEnvironmentVariableOrThrow('DOMAIN')
     this.CMS_API_URL = getEnvironmentVariableOrThrow('CMS_API_URL')
     this.USER_SERVICE_ENDPOINT = getEnvironmentVariableOrThrow(
       'USER_SERVICE_ENDPOINT',
