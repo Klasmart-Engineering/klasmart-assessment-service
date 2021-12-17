@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.8.0..v1.7.6) (2021-12-17)
+
+
+### Features
+
+* **DAS-218:** create landing page with express and pug templates ([8bf6290](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/8bf6290b09a9262d86fc64af5b83bd86fac6f43e))
+
 ### [1.7.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.7.6..v1.7.5) (2021-12-14)
 
 
