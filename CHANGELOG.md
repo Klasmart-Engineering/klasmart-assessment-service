@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.8.1..v1.8.0) (2021-12-17)
+
+
+### Bug Fixes
+
+* fix docker container command + restrict access to landing page with ENABLE_DOCS ([c1688e3](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/c1688e3324b51e78d5f0f3c138cdd7ff3e620405))
+
 ## [1.8.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.8.0..v1.7.6) (2021-12-17)
 
 
