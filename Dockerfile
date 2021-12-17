@@ -5,4 +5,5 @@ COPY ./node_modules ./node_modules
 ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
-CMD node dist/index.js
+WORKDIR /usr/src/app/dist
+CMD node src/index.js

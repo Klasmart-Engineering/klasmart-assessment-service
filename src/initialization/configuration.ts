@@ -72,6 +72,8 @@ export class Configuration {
   )
   public readonly USE_XAPI_SQL_DATABASE_FLAG: boolean =
     getEnrivonmentBooleanFlag('USE_XAPI_SQL_DATABASE_FLAG')
+  public readonly ENABLE_PAGE_DOCS: boolean =
+    getEnrivonmentBooleanFlag('ENABLE_PAGE_DOCS')
 
   constructor() {
     logger.info('')
@@ -95,6 +97,7 @@ export class Configuration {
     logger.info(
       `- USE_XAPI_SQL_DATABASE_FLAG: ${this.USE_XAPI_SQL_DATABASE_FLAG}`,
     )
+    logger.info(`- ENABLE_PAGE_DOCS: ${this.ENABLE_PAGE_DOCS}`)
     logger.info('🗺️  APIs:')
     logger.info(
       `- ATTENDANCE_SERVICE_ENDPOINT: ${this.ATTENDANCE_SERVICE_ENDPOINT}`,

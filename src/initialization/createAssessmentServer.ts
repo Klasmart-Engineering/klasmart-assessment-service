@@ -33,6 +33,21 @@ const corsOptions: CorsOptions = {
   origin: domainRegex,
 }
 
+const isDevelopment = () => process.env.NODE_ENV === 'development'
+const canViewDocsPage = () => config.ENABLE_PAGE_DOCS
+
+async function restrictDocs(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  if (isDevelopment() || canViewDocsPage()) {
+    next()
+  } else {
+    res.status(404).send(`404: Page doesn't exist`)
+  }
+}
+
 async function validateToken(
   req: express.Request,
   res: express.Response,
@@ -40,14 +55,12 @@ async function validateToken(
 ) {
   try {
     if (process.env.NODE_ENV !== 'development') {
-      console.log(req.cookies.access, req.headers.authorization)
       await checkAuthenticationToken(
         req.headers.authorization || req.cookies.access,
       )
     }
     next()
   } catch (e) {
-    console.log(e)
     res.status(401).send(`Missing or invalid token`)
   }
 }
@@ -70,25 +83,27 @@ function createExpressApp(): Express {
     version: appPackage.version,
   }
 
-  app.get(`${routePrefix}`, validateToken, (_, res) => {
+  app.get(`${routePrefix}`, restrictDocs, validateToken, (_, res) => {
     res.render('index', {
       ...variables,
       name: appPackage.name,
       config: {
         DOMAIN: config.DOMAIN,
+        NODE_ENV: process.env.NODE_ENV,
+        ENABLE_PAGE_DOCS: config.ENABLE_PAGE_DOCS,
         USE_ATTENDANCE_API_FLAG: config.USE_ATTENDANCE_API_FLAG,
         USE_XAPI_SQL_DATABASE_FLAG: config.USE_XAPI_SQL_DATABASE_FLAG,
       },
       featureFlags,
     })
   })
-  app.get(`${routePrefix}/changelog`, validateToken, (_, res) => {
+  app.get(`${routePrefix}/changelog`, restrictDocs, validateToken, (_, res) => {
     res.render('changelog', variables)
   })
-  app.get(`${routePrefix}/examples`, validateToken, (_, res) => {
+  app.get(`${routePrefix}/examples`, restrictDocs, validateToken, (_, res) => {
     res.render('examples', variables)
   })
-  app.get(`${routePrefix}/explorer`, validateToken, (_, res) => {
+  app.get(`${routePrefix}/explorer`, restrictDocs, validateToken, (_, res) => {
     res.render('graphiql', { ...variables, apiRoute })
   })
 
