@@ -1,7 +1,7 @@
 FROM node:16-alpine
 WORKDIR /usr/src/app
-COPY ./dist ./dist
 COPY ./node_modules ./node_modules
+COPY ./dist ./dist
 ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
