@@ -53,6 +53,7 @@ const getEnrivonmentBooleanFlag = (
 export class Configuration {
   // General
   public readonly DOMAIN: string
+  public readonly ROUTE_PREFIX: string
   // API endpoints
   public readonly ATTENDANCE_SERVICE_ENDPOINT?: string =
     process.env.ATTENDANCE_SERVICE_ENDPOINT
@@ -81,6 +82,12 @@ export class Configuration {
     logger.info('-----------------')
     logger.info(`- NODE_ENV: ${process.env.NODE_ENV}`)
     this.DOMAIN = getEnvironmentVariableOrThrow('DOMAIN')
+    logger.info(`- DOMAIN: ${this.DOMAIN}`)
+    const routePrefix = process.env.ROUTE_PREFIX || ''
+    this.ROUTE_PREFIX = routePrefix.endsWith('/')
+      ? routePrefix.slice(0, -1)
+      : routePrefix
+    logger.info(`- ROUTE_PREFIX: ${this.ROUTE_PREFIX}`)
     this.CMS_API_URL = getEnvironmentVariableOrThrow('CMS_API_URL')
     this.USER_SERVICE_ENDPOINT = getEnvironmentVariableOrThrow(
       'USER_SERVICE_ENDPOINT',

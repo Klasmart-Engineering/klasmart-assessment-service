@@ -5,18 +5,21 @@ import cookieParser from 'cookie-parser'
 import cors, { CorsOptions } from 'cors'
 import express, { Express } from 'express'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
+import { withLogger } from 'kidsloop-nodejs-logger'
 import appPackage from '../../package.json'
 import buildDefaultSchema from './buildDefaultSchema'
 import { getConfig } from './configuration'
 import { createApolloServer } from './createApolloServer'
 import { featureFlags } from './featureFlags'
 
-const routePrefix = process.env.ROUTE_PREFIX || ''
+const logger = withLogger('createAssessmentServer')
+const config = getConfig()
+
+const routePrefix = config.ROUTE_PREFIX
 const apiRoute = path.posix.join(
   routePrefix,
   process.env.API_ENDPOINT || '/graphql',
 )
-const config = getConfig()
 
 const escapeStringRegexp = (value: string): string => {
   return value.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d')
@@ -44,6 +47,9 @@ async function restrictDocs(
   if (isDevelopment() || canViewDocsPage()) {
     next()
   } else {
+    logger.info(
+      `restrictDocs: cannot view this page, returns '404: Page doesn't exist'`,
+    )
     res.status(404).send(`404: Page doesn't exist`)
   }
 }
@@ -61,7 +67,10 @@ async function validateToken(
     }
     next()
   } catch (e) {
-    res.status(401).send(`Missing or invalid token`)
+    logger.info(
+      `validateToken: cannot view this page, returns '401: Missing or invalid token'`,
+    )
+    res.status(401).send(`401: Missing or invalid token`)
   }
 }
 
@@ -83,20 +92,26 @@ function createExpressApp(): Express {
     version: appPackage.version,
   }
 
-  app.get(`${routePrefix}`, restrictDocs, validateToken, (_, res) => {
-    res.render('index', {
-      ...variables,
-      name: appPackage.name,
-      config: {
-        DOMAIN: config.DOMAIN,
-        NODE_ENV: process.env.NODE_ENV,
-        ENABLE_PAGE_DOCS: config.ENABLE_PAGE_DOCS,
-        USE_ATTENDANCE_API_FLAG: config.USE_ATTENDANCE_API_FLAG,
-        USE_XAPI_SQL_DATABASE_FLAG: config.USE_XAPI_SQL_DATABASE_FLAG,
-      },
-      featureFlags,
-    })
-  })
+  app.get(
+    [`${routePrefix}`, `${routePrefix}/home`],
+    restrictDocs,
+    validateToken,
+    (_, res) => {
+      res.render('index', {
+        ...variables,
+        name: appPackage.name,
+        config: {
+          NODE_ENV: process.env.NODE_ENV,
+          DOMAIN: config.DOMAIN,
+          ROUTE_PREFIX: config.ROUTE_PREFIX,
+          ENABLE_PAGE_DOCS: config.ENABLE_PAGE_DOCS,
+          USE_ATTENDANCE_API_FLAG: config.USE_ATTENDANCE_API_FLAG,
+          USE_XAPI_SQL_DATABASE_FLAG: config.USE_XAPI_SQL_DATABASE_FLAG,
+        },
+        featureFlags,
+      })
+    },
+  )
   app.get(`${routePrefix}/changelog`, restrictDocs, validateToken, (_, res) => {
     res.render('changelog', variables)
   })
