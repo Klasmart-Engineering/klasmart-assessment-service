@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.8.2..v1.8.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* remove trailing slash from ROUTE_PREFIX + add /home route ([7b43960](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/7b439602078b61c79769f15cfe64b3c479578900))
+
+
+### Performance
+
+* **Dockerfile:** copy ./node_modules before copying ./dist ([9cf0a93](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/9cf0a931d538108ac7d77ee193332347d0e37d10))
+
 ### [1.8.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.8.1..v1.8.0) (2021-12-17)
 
 
