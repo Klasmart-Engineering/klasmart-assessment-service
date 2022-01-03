@@ -1,7 +1,7 @@
 // import {MigrationInterface, QueryRunner} from "typeorm";
 
-// export class AddBackAnswerTable1635404001783 implements MigrationInterface {
-//     name = 'AddBackAnswerTable1635404001783'
+// export class AddBackAnswerTable1641219623976 implements MigrationInterface {
+//     name = 'AddBackAnswerTable1641219623976'
 
 //     public async up(queryRunner: QueryRunner): Promise<void> {
 //         await queryRunner.query(`LOCK TABLE assessment_xapi_migration in ACCESS EXCLUSIVE MODE`)

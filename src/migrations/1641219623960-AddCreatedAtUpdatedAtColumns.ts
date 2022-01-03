@@ -1,7 +1,7 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddCreatedAtUpdatedAtColumns1640249496301 implements MigrationInterface {
-    name = 'AddCreatedAtUpdatedAtColumns1640249496301'
+export class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {
+    name = 'AddCreatedAtUpdatedAtColumns1641219623960'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`LOCK TABLE assessment_xapi_migration in ACCESS EXCLUSIVE MODE`)
@@ -39,11 +39,11 @@ export class AddCreatedAtUpdatedAtColumns1640249496301 implements MigrationInter
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`LOCK TABLE assessment_xapi_migration in ACCESS EXCLUSIVE MODE`)
-        
+
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" DROP COLUMN "version"`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" DROP COLUMN "updated_at"`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" DROP COLUMN "created_at"`)
-        
+
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" DROP COLUMN "version"`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" DROP COLUMN "updated_at"`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" DROP COLUMN "created_at"`)

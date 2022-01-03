@@ -1,7 +1,7 @@
 // import { MigrationInterface, QueryRunner } from 'typeorm'
 
-// export class DropAnswerTable1625183413268 implements MigrationInterface {
-//   name = 'DropAnswerTable1625183413268'
+// export class DropAnswerTable1641219623966 implements MigrationInterface {
+//   name = 'DropAnswerTable1641219623966'
 
 //   public async up(queryRunner: QueryRunner): Promise<void> {
 //     await queryRunner.query(
