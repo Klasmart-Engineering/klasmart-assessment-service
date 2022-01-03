@@ -7,6 +7,7 @@ export class FeatureFlags {
   // https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/cc49d4ed0ba7299a057033774e157e22dbe8d5e7
   // commit 0f60592
   FixDisconnectedUserContentScoreNodes!: boolean
+  UseCreatedAtUpdatedAtVersionColumns!: boolean
 
   constructor() {
     this.reset()
@@ -14,6 +15,7 @@ export class FeatureFlags {
 
   reset() {
     this.FixDisconnectedUserContentScoreNodes = true
+    this.UseCreatedAtUpdatedAtVersionColumns = true
     this.logAllFlags()
   }
 
@@ -23,6 +25,9 @@ export class FeatureFlags {
     logger.info('-----------------')
     logger.info(
       `FixDisconnectedUserContentScoreNodes: ${this.FixDisconnectedUserContentScoreNodes}`,
+    )
+    logger.info(
+      `UseCreatedAtAdnUpdatedAtColumns: ${this.UseCreatedAtUpdatedAtVersionColumns}`,
     )
     // add more flags here ...
     logger.info('-----------------')

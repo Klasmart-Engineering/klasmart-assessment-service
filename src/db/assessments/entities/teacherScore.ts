@@ -6,12 +6,19 @@ import {
   ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
+  BaseEntity,
 } from 'typeorm'
 import { UserContentScore } from './userContentScore'
+import { featureFlags } from '../../../initialization/featureFlags'
+import { BaseWithVersionCol } from './base'
+
+const Base = featureFlags.UseCreatedAtUpdatedAtVersionColumns
+  ? BaseWithVersionCol
+  : BaseEntity
 
 @Entity({ name: 'assessment_xapi_teacher_score' })
 @ObjectType()
-export class TeacherScore {
+export class TeacherScore extends Base {
   @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly roomId: string
 
@@ -36,11 +43,19 @@ export class TeacherScore {
   public userContentScore?: Promise<UserContentScore>
 
   @Field()
-  @CreateDateColumn()
+  @CreateDateColumn({
+    name: featureFlags.UseCreatedAtUpdatedAtVersionColumns
+      ? 'created_at'
+      : 'date',
+  })
   public date!: Date
 
   @Field()
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    name: featureFlags.UseCreatedAtUpdatedAtVersionColumns
+      ? 'updated_at'
+      : 'lastUpdated',
+  })
   public lastUpdated!: Date
 
   @Field()
@@ -53,6 +68,7 @@ export class TeacherScore {
     studentId: string,
     contentKey: string,
   ) {
+    super()
     this.roomId = roomId
     this.teacherId = teacherId
     this.studentId = studentId

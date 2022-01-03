@@ -1,12 +1,13 @@
-import { Field, ObjectType } from 'type-graphql'
 import { v4 } from 'uuid'
+import { Field, ObjectType } from 'type-graphql'
+import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm'
 import { TeacherComment } from './teacherComments'
 import { UserContentScore } from './userContentScore'
-import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm'
+import { Base } from './base'
 
 @Entity({ name: 'assessment_xapi_room' })
 @ObjectType()
-export class Room {
+export class Room extends Base {
   @PrimaryColumn({ name: 'room_id' })
   @Field({ name: 'room_id' })
   public readonly roomId: string
@@ -39,6 +40,7 @@ export class Room {
   public recalculate!: boolean
 
   constructor(roomId = v4(), startTime?: Date, endTime?: Date) {
+    super()
     this.roomId = roomId
     this.startTime = startTime
     this.endTime = endTime

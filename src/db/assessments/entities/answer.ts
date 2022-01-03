@@ -1,10 +1,11 @@
 import { ObjectType, Field } from 'type-graphql'
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm'
+import { Base } from './base'
 import { UserContentScore } from './userContentScore'
 
 @Entity({ name: 'assessment_xapi_answer' })
 @ObjectType()
-export class Answer {
+export class Answer extends Base {
   @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly roomId: string
 
@@ -62,6 +63,7 @@ export class Answer {
     contentKey: string,
     date: Date,
   ) {
+    super()
     this.roomId = roomId
     this.studentId = studentId
     this.contentKey = contentKey

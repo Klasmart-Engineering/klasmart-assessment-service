@@ -8,6 +8,7 @@ import {
   PrimaryColumn,
 } from 'typeorm'
 import { Answer } from './answer'
+import { Base } from './base'
 import { Room } from './room'
 import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
@@ -15,7 +16,7 @@ import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
-export class UserContentScore {
+export class UserContentScore extends Base {
   @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly roomId: string
 
@@ -86,6 +87,7 @@ export class UserContentScore {
   }
 
   constructor(roomId: string, studentId: string, contentKey: string) {
+    super()
     this.roomId = roomId
     this.studentId = studentId
     this.contentKey = contentKey

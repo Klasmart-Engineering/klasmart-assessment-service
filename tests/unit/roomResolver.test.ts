@@ -17,12 +17,16 @@ describe('roomResolver', () => {
         const studentId = 'student1'
         const contentId = 'content1'
         const scores = [new UserContentScore(roomId, studentId, contentId)]
-        const room: Room = {
-          roomId: roomId,
-          recalculate: true,
-          scores: Promise.resolve([]),
-          teacherComments: Promise.resolve([]),
-        }
+        const room: Room = new Room(roomId)
+        room.recalculate = true
+        room.scores = Promise.resolve([])
+        room.teacherComments = Promise.resolve([])
+        // const room: Room = {
+        //   roomId: roomId,
+        //   recalculate: true,
+        //   scores: Promise.resolve([]),
+        //   teacherComments: Promise.resolve([]),
+        // }
         const authenticationToken = undefined
 
         const assessmentDB = Substitute.for<EntityManager>()
@@ -106,12 +110,16 @@ describe('roomResolver', () => {
           .withStudentId(studentId)
           .withComment('comment 2')
           .build()
-        const room: Room = {
-          roomId: roomId,
-          recalculate: true,
-          scores: Promise.resolve([]),
-          teacherComments: Promise.resolve([comment1, comment2]),
-        }
+        // const room: Room = {
+        //   roomId: roomId,
+        //   recalculate: true,
+        //   scores: Promise.resolve([]),
+        //   teacherComments: Promise.resolve([comment1, comment2]),
+        // }
+        const room: Room = new Room(roomId)
+        room.recalculate = true
+        room.scores = Promise.resolve([])
+        room.teacherComments = Promise.resolve([comment1, comment2])
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
@@ -147,12 +155,16 @@ describe('roomResolver', () => {
           .withStudentId(studentId)
           .withContentKey(contentKey2)
           .build()
-        const room: Room = {
-          roomId: roomId,
-          recalculate: true,
-          scores: Promise.resolve([userContentScore1, userContentScore2]),
-          teacherComments: Promise.resolve([]),
-        }
+        // const room: Room = {
+        //   roomId: roomId,
+        //   recalculate: true,
+        //   scores: Promise.resolve([userContentScore1, userContentScore2]),
+        //   teacherComments: Promise.resolve([]),
+        // }
+        const room: Room = new Room(roomId)
+        room.recalculate = true
+        room.scores = Promise.resolve([userContentScore1, userContentScore2])
+        room.teacherComments = Promise.resolve([])
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
@@ -187,12 +199,16 @@ describe('roomResolver', () => {
           .withroomId(roomId)
           .withStudentId(studentId)
           .build()
-        const room: Room = {
-          roomId: roomId,
-          recalculate: true,
-          scores: Promise.resolve([userContentScore1, userContentScore2]),
-          teacherComments: Promise.resolve([]),
-        }
+        // const room: Room = {
+        //   roomId: roomId,
+        //   recalculate: true,
+        //   scores: Promise.resolve([userContentScore1, userContentScore2]),
+        //   teacherComments: Promise.resolve([]),
+        // }
+        const room: Room = new Room(roomId)
+        room.recalculate = true
+        room.scores = Promise.resolve([userContentScore1, userContentScore2])
+        room.teacherComments = Promise.resolve([])
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
@@ -236,16 +252,24 @@ describe('roomResolver', () => {
             .withStudentId(student2Id)
             .withContentKey(contentKeyB)
             .build()
-          const room: Room = {
-            roomId: roomId,
-            recalculate: true,
-            scores: Promise.resolve([
-              student1UserContentScore,
-              student2UserContentScore1,
-              student2UserContentScore2,
-            ]),
-            teacherComments: Promise.resolve([]),
-          }
+          // const room: Room = {
+          //   roomId: roomId,
+          //   recalculate: true,
+          //   scores: Promise.resolve([
+          //     student1UserContentScore,
+          //     student2UserContentScore1,
+          //     student2UserContentScore2,
+          //   ]),
+          //   teacherComments: Promise.resolve([]),
+          // }
+          const room: Room = new Room(roomId)
+          room.recalculate = true
+          room.scores = Promise.resolve([
+            student1UserContentScore,
+            student2UserContentScore1,
+            student2UserContentScore2,
+          ])
+          room.teacherComments = Promise.resolve([])
 
           const assessmentDB = Substitute.for<EntityManager>()
           const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
