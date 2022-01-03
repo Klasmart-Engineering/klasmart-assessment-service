@@ -434,7 +434,7 @@ describe('teacherCommentResolver.setComment', () => {
           date: commentForSomeOtherStudent.date,
           lastUpdated: commentForSomeOtherStudent.lastUpdated,
         }
-        expect(actual).to.deep.equal(expected)
+        expect(actual).to.deep.include(expected)
       })
     },
   )
@@ -549,7 +549,7 @@ describe('teacherCommentResolver.setComment', () => {
           date: commentForSomeOtherRoom.date,
           lastUpdated: commentForSomeOtherRoom.lastUpdated,
         }
-        expect(actual).to.deep.equal(expected)
+        expect(actual).to.deep.include(expected)
       })
     },
   )

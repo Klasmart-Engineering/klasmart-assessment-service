@@ -24,11 +24,11 @@ describe('connectToDatabases', () => {
   const xapiSqlDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_xapi_db`
 
   describe('connectToAssessmentDatabase', () => {
-    it('synchronize is true, dropSchema is undefined, runMigrations is false', async () => {
+    it('synchronize is false, dropSchema is undefined, runMigrations is true', async () => {
       const config = getAssessmentDatabaseConnectionOptions(asessmentDbUrl)
-      expect(config.synchronize).is.true
+      expect(config.synchronize).is.false
       expect(config.dropSchema).is.undefined
-      expect(config.migrationsRun).is.false
+      expect(config.migrationsRun).is.true
     })
 
     it('connects successfully', async () => {
