@@ -27,7 +27,7 @@ export class FeatureFlags {
       `FixDisconnectedUserContentScoreNodes: ${this.FixDisconnectedUserContentScoreNodes}`,
     )
     logger.info(
-      `UseCreatedAtAdnUpdatedAtColumns: ${this.UseCreatedAtUpdatedAtVersionColumns}`,
+      `UseCreatedAtUpdatedAtVersionColumns: ${this.UseCreatedAtUpdatedAtVersionColumns}`,
     )
     // add more flags here ...
     logger.info('-----------------')
