@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.0..v1.8.2) (2022-01-05)
+
+
+### Features
+
+* **DAS-222:** add or rename created_at, updated_at and version columns to all tables ([25b769a](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/25b769ad0f9e43166fb6357d134730364715cb31))
+
+
+### Bug Fixes
+
+* **tests:** add CreateDatabase Migration script for test database initialization ([01aa735](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/01aa735ddec282933cde88004d0d632cbc9cc7df))
+* **tests:** fix and comment out DropAnswerTable migration test ([cee7e24](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/cee7e24c8a9b38f0048205af542d89bc0b834878))
+
 ### [1.8.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.8.2..v1.8.1) (2021-12-20)
 
 
