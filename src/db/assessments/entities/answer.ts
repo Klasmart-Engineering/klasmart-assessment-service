@@ -15,19 +15,16 @@ export class Answer extends Base {
   @PrimaryColumn({ name: 'content_id', nullable: false })
   public readonly contentKey: string
 
-  // @PrimaryColumn({
-  //   name: 'timestamp_epoch',
-  //   type: 'bigint',
-  //   default: 0,
-  //   transformer: {
-  //     to: (entityValue: number) => entityValue,
-  //     from: (databaseValue: string): number => Number(databaseValue),
-  //   },
-  // })
-  // public readonly timestamp!: number
-
-  @PrimaryColumn()
-  public readonly timestamp: Date
+  @PrimaryColumn({
+    name: 'timestamp_epoch',
+    type: 'bigint',
+    default: 0,
+    transformer: {
+      to: (entityValue: number) => entityValue,
+      from: (databaseValue: string): number => Number(databaseValue),
+    },
+  })
+  public readonly timestamp!: number
 
   @Field(() => Date)
   public get date(): Date {
@@ -69,7 +66,7 @@ export class Answer extends Base {
     this.contentKey = contentKey
     // This null check is needed because TypeOrm calls constructors
     // with null parameters when loading entities.
-    this.timestamp = date // BIGINT: this.timestamp = date?.getTime() ?? 0
+    this.timestamp = this.timestamp = date?.getTime() ?? 0
   }
 
   public static new(
