@@ -1,5 +1,6 @@
 import path from 'path'
 import dotenv from 'dotenv'
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
 import { Container as MutableContainer } from 'typedi'
@@ -15,8 +16,6 @@ import { IXApiRepository } from '../../src/db/xapi'
 import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
 import { AttendanceApi, UserApi } from '../../src/web'
 import DiKeys from '../../src/initialization/diKeys'
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 export let connections: Connection[]
 export let testClient: ApolloServerTestClient
