@@ -15,7 +15,7 @@ export class FeatureFlags {
 
   reset() {
     this.FixDisconnectedUserContentScoreNodes = true
-    this.UseCreatedAtUpdatedAtVersionColumns = true
+    this.UseCreatedAtUpdatedAtVersionColumns = false
     this.logAllFlags()
   }
 

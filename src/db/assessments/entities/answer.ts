@@ -16,6 +16,7 @@ export class Answer extends Base {
   public readonly contentKey: string
 
   // @PrimaryColumn({
+  //   name: 'timestamp_epoch',
   //   type: 'bigint',
   //   default: 0,
   //   transformer: {
@@ -26,7 +27,6 @@ export class Answer extends Base {
   // public readonly timestamp!: number
 
   @PrimaryColumn()
-  @Field(() => Date)
   public readonly timestamp: Date
 
   @Field(() => Date)
