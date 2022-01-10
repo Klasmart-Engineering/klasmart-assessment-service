@@ -14,6 +14,7 @@ import createAssessmentServer from '../../src/initialization/createAssessmentSer
 import { IXApiRepository } from '../../src/db/xapi'
 import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
 import { AttendanceApi, UserApi } from '../../src/web'
+import DiKeys from '../../src/initialization/diKeys'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
@@ -85,7 +86,7 @@ export const createSubstitutesToExpectedInjectableServices = () => {
   const userApi = Substitute.for<UserApi>()
   MutableContainer.set(UserApi, userApi)
   const xapiRepository = Substitute.for<IXApiRepository>()
-  MutableContainer.set('IXApiRepository', xapiRepository)
+  MutableContainer.set(DiKeys.IXApiRepository, xapiRepository)
   return {
     attendanceApi,
     userApi,

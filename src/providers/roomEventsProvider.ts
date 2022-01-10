@@ -6,6 +6,7 @@ import { XApiRecord } from '../db/xapi'
 import { IXApiRepository } from '../db/xapi/repo'
 import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
 import { Attendance } from '../web/attendance'
+import DiKeys from '../initialization/diKeys'
 
 @Service()
 export class RoomEventsProvider {
@@ -18,7 +19,7 @@ export class RoomEventsProvider {
   }
 
   constructor(
-    @Inject('IXApiRepository')
+    @Inject(DiKeys.IXApiRepository)
     private readonly xapiRepository: IXApiRepository,
   ) {}
 

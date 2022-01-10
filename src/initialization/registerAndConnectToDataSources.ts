@@ -18,6 +18,7 @@ import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from './configuration'
 import { AttendanceApi } from '../web/attendance'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
+import DiKeys from './diKeys'
 
 useContainer(TypeormTypediContainer)
 const logger = withLogger('registerAndConnectToDataSources')
@@ -62,7 +63,7 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
     const conn = await connectToXApiDatabase(xapiEventsDatabaseUrl)
     const sqlRepository = conn.getRepository(XApiRecordSql)
     MutableContainer.set(
-      'IXApiRepository',
+      DiKeys.IXApiRepository,
       new XApiSqlRepository(sqlRepository),
     )
   } else {
@@ -80,10 +81,11 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
       dynamodbTableName,
       dynamoDbClient,
     )
-    MutableContainer.set('IXApiRepository', xapiDynamodbRepo)
+    MutableContainer.set(DiKeys.IXApiRepository, xapiDynamodbRepo)
     await xapiDynamodbRepo.checkTableIsActive()
   }
 
+  MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)
   const cmsContentProvider = MutableContainer.get(CmsContentProvider)
   cmsContentProvider.setRecurringCacheClear(24 * 60 * 60 * 1000)
 
