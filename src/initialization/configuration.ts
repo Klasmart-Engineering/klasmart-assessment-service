@@ -24,11 +24,11 @@ class BadConfiguration extends Error {
 }
 
 const getEnvironmentVariableOrThrow = (name: string): string => {
-  const attendanceServiceEnpoint = process.env[name]
-  if (!attendanceServiceEnpoint && !(process.env.NODE_ENV === 'test')) {
-    throw new BadEnvironmentVariable(name, attendanceServiceEnpoint)
+  const value = process.env[name]
+  if (!value && !(process.env.NODE_ENV === 'test')) {
+    throw new BadEnvironmentVariable(name, value)
   }
-  return attendanceServiceEnpoint || ''
+  return value || ''
 }
 
 const getEnrivonmentBooleanFlag = (
