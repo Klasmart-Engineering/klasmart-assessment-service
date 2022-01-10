@@ -59,6 +59,7 @@ import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
 import { Attendance } from '../../src/web/attendance'
 import { User } from '../../src/web/user'
+import DiKeys from '../../src/initialization/diKeys'
 
 /**
  * - scores 0 the first time
@@ -92,6 +93,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       createSubstitutesToExpectedInjectableServices()
+      MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
@@ -136,6 +138,7 @@ describe('roomResolver.Room', () => {
         // Arrange
         await dbConnect()
         createSubstitutesToExpectedInjectableServices()
+        MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
         const roomId = 'room1'
         const { userApi } = createSubstitutesToExpectedInjectableServices()
@@ -167,6 +170,7 @@ describe('roomResolver.Room', () => {
       // Arrange
       await dbConnect()
       createSubstitutesToExpectedInjectableServices()
+      MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()

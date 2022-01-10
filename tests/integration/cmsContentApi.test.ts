@@ -1,13 +1,16 @@
 import { expect } from 'chai'
 import { CmsContentApi, ContentDto } from '../../src/web/cms'
+import { FetchWrapper } from '../../src/web/fetchWrapper'
 
 describe.skip('cmsContentApi', function () {
+  const baseUrl = 'https://cms.alpha.kidsloop.net/v1/internal'
+
   describe('getLessonMaterials', () => {
     context('provided lessonPlanId exists', () => {
       it('returns expected lesson materials', async () => {
         // Arrange
         const lessonPlanId = '6099c3111f42c08c3e3d44d2'
-        const sut = new CmsContentApi()
+        const sut = new CmsContentApi(new FetchWrapper(), baseUrl)
 
         // Act
         const result = await sut.getLessonMaterials(lessonPlanId)
@@ -33,7 +36,7 @@ describe.skip('cmsContentApi', function () {
       it('returns expected lesson material', async () => {
         // Arrange
         const lessonMaterialId = '6099c28a1f42c08c3e3d447e'
-        const sut = new CmsContentApi()
+        const sut = new CmsContentApi(new FetchWrapper(), baseUrl)
 
         // Act
         const result = await sut.getLessonMaterial(lessonMaterialId)
@@ -58,7 +61,7 @@ describe.skip('cmsContentApi', function () {
       it('returns expected lesson materials', async () => {
         // Arrange
         const sourceId = '6099c2832069df0014dc34cb'
-        const sut = new CmsContentApi()
+        const sut = new CmsContentApi(new FetchWrapper(), baseUrl)
 
         // Act
         const result = await sut.getLessonMaterialsWithSourceId(sourceId)

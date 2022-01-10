@@ -1,13 +1,16 @@
 import { expect } from 'chai'
 import { CmsScheduleApi, ScheduleDto } from '../../src/web/cms'
+import { FetchWrapper } from '../../src/web/fetchWrapper'
 
 describe.skip('cmsScheduleApi', function () {
+  const baseUrl = 'https://cms.alpha.kidsloop.net/v1/internal'
+
   describe('getSchedule', () => {
     context('provided scheduleId exists', () => {
       it('returns expected schedule', async () => {
         // Arrange
         const scheduleId = '6099c496e05f6e940027387c'
-        const sut = new CmsScheduleApi()
+        const sut = new CmsScheduleApi(new FetchWrapper(), baseUrl)
 
         // Act
         const result = await sut.getSchedule(scheduleId)

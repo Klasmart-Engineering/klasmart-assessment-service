@@ -1,5 +1,7 @@
 export class ErrorMessage {
   static readonly notAuthenticated = `User not authenticated. Please authenticate to proceed`
+  static readonly authenticationTokenUndefined =
+    'authenticationToken is undefined'
 
   static scheduleNotFound(roomId: string): string {
     return `Room(${roomId}) cannot be found in the Schedule`

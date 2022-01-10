@@ -31,6 +31,7 @@ import Substitute from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { Container as MutableContainer } from 'typedi'
 import { throwExpression } from '../../src/helpers/throwExpression'
+import DiKeys from '../../src/initialization/diKeys'
 
 /**
  * - throws when not authenticated
@@ -50,6 +51,7 @@ describe('teacherScoreResolver.setScore', function () {
       // Arrange
       await dbConnect()
       const { userApi } = createSubstitutesToExpectedInjectableServices()
+      MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()

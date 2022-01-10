@@ -27,6 +27,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 import Substitute from '@fluffy-spoon/substitute'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { Container as MutableContainer } from 'typedi'
+import DiKeys from '../../src/initialization/diKeys'
 
 /**
  * - throws when not authenticated
@@ -47,6 +48,8 @@ describe('teacherCommentResolver.setComment', () => {
       // Arrange
       await dbConnect()
       const { userApi } = createSubstitutesToExpectedInjectableServices()
+      MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
+
       const roomId = 'room1'
       const comment = 'great job!'
       const endUser = new EndUserBuilder().dontAuthenticate().build()
