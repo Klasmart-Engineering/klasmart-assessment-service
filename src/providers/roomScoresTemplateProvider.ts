@@ -60,15 +60,13 @@ export class RoomScoresTemplateProvider {
       h5pIdToSubIdsMap.set(x.h5pId, subIds)
       subIds.add(x.h5pSubId)
 
-      if (featureFlags.FixDisconnectedUserContentScoreNodes) {
-        // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
-        // Because without a subcontent API, we can't know about it.
-        // But now we use the fact that an xAPI event will include a parent ID if the activity
-        // that generated the event is a sub-activity. So we now use that parent ID to generate a
-        // UserContentScore for that parent, even though the parent may not emit an event.
-        if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
-          subIds.add(x.h5pParentId)
-        }
+      // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
+      // Because without a subcontent API, we can't know about it.
+      // But now we use the fact that an xAPI event will include a parent ID if the activity
+      // that generated the event is a sub-activity. So we now use that parent ID to generate a
+      // UserContentScore for that parent, even though the parent may not emit an event.
+      if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
+        subIds.add(x.h5pParentId)
       }
     }
 
@@ -139,12 +137,10 @@ export class RoomScoresTemplateProvider {
       h5pType = h5pKeyToXapiEventMap.get(h5pKey)?.h5pType
       h5pName = h5pKeyToXapiEventMap.get(h5pKey)?.h5pName
       h5pParentId = h5pKeyToXapiEventMap.get(h5pKey)?.h5pParentId
-      if (featureFlags.FixDisconnectedUserContentScoreNodes) {
-        if (subcontentId != null && h5pParentId == null) {
-          // subcontent.parentId is always non-null if the parent is another subcontent.
-          // In this case, h5pParentId is null so the parent must be the root h5p id.
-          h5pParentId = material.h5pId
-        }
+      if (subcontentId != null && h5pParentId == null) {
+        // subcontent.parentId is always non-null if the parent is another subcontent.
+        // In this case, h5pParentId is null so the parent must be the root h5p id.
+        h5pParentId = material.h5pId
       }
     }
     mapKeyToUserContentScoreMap.set(

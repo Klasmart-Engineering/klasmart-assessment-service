@@ -93,30 +93,15 @@ describe('roomScoresTemplateProvider', () => {
             userContentScoreFactory,
           )
 
-          // FEATURE_FLAG: FixDisconnectedUserContentScoreNodes
-          // Act 1
-          featureFlags.setFixDisconnectedUserContentScoreNodes(true)
-          const result1 = await sut.getTemplate(
+          // Act
+          const result = await sut.getTemplate(
             roomId,
             teacherId,
             materials,
             attendances,
             xapiEvents,
           )
-          expect(result1).to.have.lengthOf(3)
-
-          // Act 2
-          featureFlags.setFixDisconnectedUserContentScoreNodes(false)
-          const result2 = await sut.getTemplate(
-            roomId,
-            teacherId,
-            materials,
-            attendances,
-            xapiEvents,
-          )
-          expect(result2).to.have.lengthOf(2)
-
-          featureFlags.reset()
+          expect(result).to.have.lengthOf(3)
         })
       },
     )

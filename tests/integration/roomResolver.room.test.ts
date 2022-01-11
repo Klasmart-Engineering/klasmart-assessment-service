@@ -3568,8 +3568,6 @@ describe('roomResolver.Room', () => {
           .searchXApiEvents(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord1])
 
-        // FEATURE_FLAG: FixDisconnectedUserContentScoreNodes
-        featureFlags.setFixDisconnectedUserContentScoreNodes(true)
         gqlRoom = await roomQuery(roomId, endUser)
       })
 

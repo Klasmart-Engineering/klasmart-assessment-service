@@ -3,10 +3,6 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 const logger = withLogger('featureFlags')
 
 export class FeatureFlags {
-  // fix: disconnected UserContentScore nodes
-  // https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/cc49d4ed0ba7299a057033774e157e22dbe8d5e7
-  // commit 0f60592
-  FixDisconnectedUserContentScoreNodes!: boolean
   UseCreatedAtUpdatedAtVersionColumns!: boolean
 
   constructor() {
@@ -14,7 +10,6 @@ export class FeatureFlags {
   }
 
   reset() {
-    this.FixDisconnectedUserContentScoreNodes = true
     this.UseCreatedAtUpdatedAtVersionColumns = false
     this.logAllFlags()
   }
@@ -24,18 +19,10 @@ export class FeatureFlags {
     logger.info('🚩 FEATURE FLAGS:')
     logger.info('-----------------')
     logger.info(
-      `FixDisconnectedUserContentScoreNodes: ${this.FixDisconnectedUserContentScoreNodes}`,
-    )
-    logger.info(
       `UseCreatedAtUpdatedAtVersionColumns: ${this.UseCreatedAtUpdatedAtVersionColumns}`,
     )
     // add more flags here ...
     logger.info('-----------------')
-  }
-
-  setFixDisconnectedUserContentScoreNodes(value: boolean) {
-    this.FixDisconnectedUserContentScoreNodes = value
-    logger.info(`🚩 Setting FixDisconnectedUserContentScoreNodes => ${value}`)
   }
 }
 
