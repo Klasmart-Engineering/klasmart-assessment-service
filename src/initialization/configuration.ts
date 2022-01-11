@@ -25,7 +25,7 @@ class BadConfiguration extends Error {
 
 const getEnvironmentVariableOrThrow = (name: string): string => {
   const value = process.env[name]
-  if (!value && !(process.env.NODE_ENV === 'test')) {
+  if (!value) {
     throw new BadEnvironmentVariable(name, value)
   }
   return value || ''
@@ -121,16 +121,11 @@ export class Configuration {
   }
 
   checkXapiStorageConfig(): void {
-    if (
-      process.env.NODE_ENV !== 'test' &&
-      this.USE_XAPI_SQL_DATABASE_FLAG &&
-      !this.XAPI_DATABASE_URL
-    ) {
+    if (this.USE_XAPI_SQL_DATABASE_FLAG && !this.XAPI_DATABASE_URL) {
       throw new BadConfiguration(
         '❌ When USE_XAPI_SQL_DATABASE_FLAG=1 you must provide XAPI_DATABASE_URL',
       )
     } else if (
-      process.env.NODE_ENV !== 'test' &&
       !this.USE_XAPI_SQL_DATABASE_FLAG &&
       (!this.AWS_REGION || !this.DYNAMODB_TABLE_NAME)
     ) {
@@ -141,19 +136,11 @@ export class Configuration {
   }
 
   checkAttendanceConfig(): void {
-    if (
-      process.env.NODE_ENV !== 'test' &&
-      this.USE_ATTENDANCE_API_FLAG &&
-      !this.ATTENDANCE_SERVICE_ENDPOINT
-    ) {
+    if (this.USE_ATTENDANCE_API_FLAG && !this.ATTENDANCE_SERVICE_ENDPOINT) {
       throw new BadConfiguration(
         '❌ When USE_ATTENDANCE_API_FLAG=1 you must provide ATTENDANCE_SERVICE_ENDPOINT',
       )
-    } else if (
-      process.env.NODE_ENV !== 'test' &&
-      !this.USE_ATTENDANCE_API_FLAG &&
-      !this.ATTENDANCE_DATABASE_URL
-    ) {
+    } else if (!this.USE_ATTENDANCE_API_FLAG && !this.ATTENDANCE_DATABASE_URL) {
       throw new BadConfiguration(
         '❌ When USE_ATTENDANCE_API_FLAG=0 you must provide ATTENDANCE_DATABASE_URL',
       )
