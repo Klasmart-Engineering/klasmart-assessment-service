@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm"
 import { featureFlags } from '../initialization/featureFlags'
 
 class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {

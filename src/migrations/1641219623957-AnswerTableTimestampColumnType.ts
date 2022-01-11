@@ -1,4 +1,4 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm"
 
 export class AddBackAnswerTable1641219623957 implements MigrationInterface {
     name = 'AddBackAnswerTable1641219623957'
