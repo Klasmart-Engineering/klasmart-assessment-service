@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.5..v1.9.4) (2022-01-11)
+
+
+### Refactor
+
+* remove "disconnected nodes fix" feature flag ([d99a05e](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/d99a05ea065e91637d32a05d60fc185481d5b8d8))
+
 ### [1.9.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.4..v1.9.3) (2022-01-11)
 
 ### [1.9.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.3..v1.9.2) (2022-01-11)
