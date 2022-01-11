@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.2..v1.9.1) (2022-01-11)
+
+
+### Refactor
+
+* **DAS-178:** implement Answer table timestamp BIGINT migration without table drop + rename ([0bcf6fa](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/0bcf6fa7da5d4e48cb0d31c4799eb4eb6b52cf05))
+
 ### [1.9.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.1..v1.9.0) (2022-01-11)
 
 
