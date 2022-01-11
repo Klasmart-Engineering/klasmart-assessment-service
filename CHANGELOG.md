@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.3..v1.9.2) (2022-01-11)
+
+
+### Refactor
+
+* fix variable naming ([a444ab6](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/a444ab6393202a7286c37b9caa72da68fdb623db))
+* introduce string constants for dependency injection ([3b657c2](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/3b657c22a88c5370a3080f723808636b048a8c1b))
+* modularize node-fetch logic into dedicated class ([d0df80b](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/d0df80b7c71e2fc194c9282c1bbd5c0adc2a290c))
+
 ### [1.9.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.2..v1.9.1) (2022-01-11)
 
 
