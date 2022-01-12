@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.6..v1.9.5) (2022-01-12)
+
+
+### Bug Fixes
+
+* **db-assessments:** typeorm migration directory config for compiled js ([3f3ec83](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/3f3ec83e6a58b595b5b8c762f96f190c95f2f01a))
+
 ### [1.9.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.5..v1.9.4) (2022-01-11)
 
 
