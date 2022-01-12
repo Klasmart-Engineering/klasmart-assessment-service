@@ -118,6 +118,34 @@ Or run it with nodemon to reload automatically when changes occur:
 npm run dev
 ```
 
+### Running in docker
+
+Make sure to compile the Typescript into JS
+
+```sh
+npm run build
+```
+
+Next build the container
+
+```sh
+docker build -t kl-assessment .
+```
+
+Now run the container and make sure to pass it the right environment variables. For simplicity you can pass it your `.env` file that you use locally and then overwrite with `--env`
+
+```sh
+docker run --rm -it \
+  --env-file .env \
+  --env PORT=8080 \
+  --env AWS_ACCESS_KEY_ID \
+  --env AWS_SECRET_ACCESS_KEY \
+  --env AWS_SESSION_TOKEN \
+  --env ASSESSMENT_DATABASE_URL=postgres://postgres:assessments@kl_postgres:5432/assessment_db \
+  -p 8081:8080 \
+  kl-assessment
+```
+
 ### Debugging
 
 1. Navigate to the VS Code sidebar debug panel
