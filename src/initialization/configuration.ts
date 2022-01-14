@@ -59,6 +59,8 @@ export class Configuration {
     process.env.ATTENDANCE_SERVICE_ENDPOINT
   public readonly CMS_API_URL: string
   public readonly USER_SERVICE_ENDPOINT: string
+  //caching
+  public readonly REDIS_URL?: string = process.env.REDIS_URL
   // storage
   public readonly ASSESSMENT_DATABASE_URL: string
   public readonly ATTENDANCE_DATABASE_URL?: string =
@@ -117,6 +119,7 @@ export class Configuration {
     logger.info(`- DYNAMODB_TABLE_NAME: ${this.DYNAMODB_TABLE_NAME}`)
     logger.info(`- AWS_REGION: ${this.AWS_REGION}`)
     logger.info(`- XAPI_DATABASE_URL: ${this.XAPI_DATABASE_URL}`)
+    logger.info(`- REDIS_URL: ${this.REDIS_URL}`)
     logger.info('-----------------')
   }
 

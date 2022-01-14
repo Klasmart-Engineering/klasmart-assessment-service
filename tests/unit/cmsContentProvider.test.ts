@@ -5,6 +5,7 @@ import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { CmsContentApi, ContentDto } from '../../src/web'
 import { Content } from '../../src/db/cms/entities'
 import { delay } from '../../src/helpers/delay'
+import { InMemoryCache } from '../../src/cache'
 
 describe('cmsContentProvider', () => {
   let intervalId: NodeJS.Timeout | undefined
@@ -27,8 +28,9 @@ describe('cmsContentProvider', () => {
           cmsContentApi
             .getLessonMaterials(lessonPlanId, Arg.any())
             .resolves([contentDto1])
-          const sut = new CmsContentProvider(cmsContentApi)
-          intervalId = sut.setRecurringCacheClear(100)
+          const cache = new InMemoryCache()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(100)
 
           // Act
           const results = await sut.getLessonMaterials(roomId, lessonPlanId)
@@ -52,8 +54,9 @@ describe('cmsContentProvider', () => {
           cmsContentApi
             .getLessonMaterials(lessonPlanId, Arg.any())
             .resolves([contentDto1])
-          const sut = new CmsContentProvider(cmsContentApi)
-          intervalId = sut.setRecurringCacheClear(100)
+          const cache = new InMemoryCache()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(100)
 
           // Act
           const results1 = await sut.getLessonMaterials(roomId, lessonPlanId)
@@ -81,8 +84,9 @@ describe('cmsContentProvider', () => {
           cmsContentApi
             .getLessonMaterials(lessonPlanId, authenticationToken)
             .resolves([contentDto1])
-          const sut = new CmsContentProvider(cmsContentApi)
-          intervalId = sut.setRecurringCacheClear(100)
+          const cache = new InMemoryCache()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(100)
 
           // Act
           const results1 = await sut.getLessonMaterials(roomId, lessonPlanId)
@@ -111,8 +115,9 @@ describe('cmsContentProvider', () => {
         cmsContentApi
           .getLessonMaterial(lessonMaterialId, Arg.any())
           .resolves(contentDto1)
-        const sut = new CmsContentProvider(cmsContentApi)
-        intervalId = sut.setRecurringCacheClear(100)
+        const cache = new InMemoryCache()
+        const sut = new CmsContentProvider(cmsContentApi, cache)
+        intervalId = sut.cache.setRecurringFlush(100)
 
         // Act
         const result = await sut.getLessonMaterial(lessonMaterialId)
@@ -133,8 +138,9 @@ describe('cmsContentProvider', () => {
           cmsContentApi
             .getLessonMaterial(lessonMaterialId, Arg.any())
             .resolves(contentDto1)
-          const sut = new CmsContentProvider(cmsContentApi)
-          intervalId = sut.setRecurringCacheClear(100)
+          const cache = new InMemoryCache()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(100)
 
           // Act
           const result1 = await sut.getLessonMaterial(lessonMaterialId)
@@ -162,8 +168,9 @@ describe('cmsContentProvider', () => {
           cmsContentApi
             .getLessonMaterial(lessonMaterialId, authenticationToken)
             .resolves(contentDto1)
-          const sut = new CmsContentProvider(cmsContentApi)
-          intervalId = sut.setRecurringCacheClear(100)
+          const cache = new InMemoryCache()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(100)
 
           // Act
           const result1 = await sut.getLessonMaterial(lessonMaterialId)
@@ -196,8 +203,9 @@ describe('cmsContentProvider', () => {
           cmsContentApi
             .getLessonMaterial(lessonMaterialId)
             .resolves(contentDto1)
-          const sut = new CmsContentProvider(cmsContentApi)
-          intervalId = sut.setRecurringCacheClear(200)
+          const cache = new InMemoryCache()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(200)
 
           // Act
           const lessonMaterialsForLessonPlan = await sut.getLessonMaterials(
@@ -223,7 +231,8 @@ describe('cmsContentProvider', () => {
         cmsContentApi
           .getLessonMaterialsWithSourceId(sourceId, Arg.any())
           .resolves([contentDto1])
-        const sut = new CmsContentProvider(cmsContentApi)
+        const cache = new InMemoryCache()
+        const sut = new CmsContentProvider(cmsContentApi, cache)
 
         // Act
         const results = await sut.getLessonMaterialsWithSourceId(sourceId)

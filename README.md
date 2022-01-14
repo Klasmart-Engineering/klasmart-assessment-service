@@ -90,6 +90,11 @@ Create assessment database
 docker container exec -it assessments-postgres psql -U postgres -c "create database assessment_db; create database xapi_db;"
 ```
 
+Redis
+```sh
+docker run -it --name kl-redis -d redis:6-alpine
+```
+
 ### Running
 
 Ensure [AWS credentials are configured](https://aws.amazon.com/blogs/security/aws-single-sign-on-now-enables-command-line-interface-access-for-aws-accounts-using-corporate-credentials/) (for access to DynamoDB)

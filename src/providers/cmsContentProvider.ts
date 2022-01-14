@@ -1,17 +1,17 @@
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
+import { ICache } from '../cache/interface'
 import { Content } from '../db/cms/entities/content'
 import { throwExpression } from '../helpers/throwExpression'
+import DiKeys from '../initialization/diKeys'
 import { CmsContentApi, ContentDto } from '../web/cms'
 
 @Service()
 export class CmsContentProvider {
-  private readonly lessonMaterialCache = new Map<string, Content>()
-  private readonly lessonPlanMaterialIdsCache = new Map<
-    string,
-    ReadonlyArray<string>
-  >()
-
-  constructor(private readonly cmsContentApi: CmsContentApi) {}
+  constructor(
+    private readonly cmsContentApi: CmsContentApi,
+    @Inject(DiKeys.ICache)
+    public readonly cache: ICache,
+  ) {}
 
   public async getLessonMaterials(
     roomId: string,
@@ -19,13 +19,9 @@ export class CmsContentProvider {
     authenticationToken?: string,
   ): Promise<ReadonlyArray<Content>> {
     const cacheKey = `${roomId}|${lessonPlanId}`
-    const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(cacheKey)
-    if (cachedMaterialIds) {
-      return [
-        ...cachedMaterialIds
-          .map((id) => this.lessonMaterialCache.get(id))
-          .filter(removeNulls),
-      ]
+    const cacheHit = await this.cache.getLessonPlanMaterials(cacheKey)
+    if (cacheHit) {
+      return cacheHit
     }
 
     const dtos = await this.cmsContentApi.getLessonMaterials(
@@ -33,7 +29,7 @@ export class CmsContentProvider {
       authenticationToken,
     )
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
-    this.cacheLessonPlanResults(cacheKey, lessonMaterials)
+    await this.cache.setLessonPlanMaterials(cacheKey, lessonMaterials)
 
     return lessonMaterials
   }
@@ -42,9 +38,9 @@ export class CmsContentProvider {
     contentId: string,
     authenticationToken?: string,
   ): Promise<Content | undefined> {
-    const cachedResult = this.lessonMaterialCache.get(contentId)
-    if (cachedResult) {
-      return cachedResult
+    const cacheHit = await this.cache.getLessonMaterial(contentId)
+    if (cacheHit) {
+      return cacheHit
     }
 
     const dto = await this.cmsContentApi.getLessonMaterial(
@@ -53,7 +49,7 @@ export class CmsContentProvider {
     )
     if (!dto) return undefined
     const lessonMaterial = contentDtoToEntity(dto)
-    this.lessonMaterialCache.set(contentId, lessonMaterial)
+    await this.cache.setLessonMaterial(lessonMaterial)
 
     return lessonMaterial
   }
@@ -70,42 +66,6 @@ export class CmsContentProvider {
 
     return lessonMaterials
   }
-
-  /**
-   * Clears the caches every [ms] milliseconds
-   * @param ms milliseconds
-   * @returns intervalId that can be used to stop the recurring function via clearInterval(intervalId)
-   */
-  public setRecurringCacheClear(ms: number): NodeJS.Timeout {
-    return setInterval(
-      () =>
-        CmsContentProvider.clearCaches(
-          this.lessonMaterialCache,
-          this.lessonPlanMaterialIdsCache,
-        ),
-      ms,
-    )
-  }
-
-  private cacheLessonPlanResults(
-    materialIdsCacheKey: string,
-    lessonMaterials: ReadonlyArray<Content>,
-  ) {
-    const lessonMaterialIds: string[] = []
-    for (const lessonMaterial of lessonMaterials) {
-      lessonMaterialIds.push(lessonMaterial.contentId)
-      this.lessonMaterialCache.set(lessonMaterial.contentId, lessonMaterial)
-    }
-    this.lessonPlanMaterialIdsCache.set(materialIdsCacheKey, lessonMaterialIds)
-  }
-
-  private static clearCaches(
-    m1: Map<unknown, unknown>,
-    m2: Map<unknown, unknown>,
-  ) {
-    m1.clear()
-    m2.clear()
-  }
 }
 
 function contentDtoToEntity(dto: ContentDto) {
@@ -120,5 +80,3 @@ function contentDtoToEntity(dto: ContentDto) {
       throwExpression('content.publish_status is undefined'),
   )
 }
-
-const removeNulls = <S>(value: S | undefined): value is S => value != null

@@ -4,6 +4,12 @@ import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
+import {
+  connectToRedisCache,
+  RedisCache,
+  InMemoryCache,
+  ICache,
+} from '../cache'
 import { connectToAttendanceDatabase } from '../db/attendance/connectToAttendanceDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { connectToXApiDatabase } from '../db/xapi/sql/connectToXApiDatabase'
@@ -17,7 +23,7 @@ import {
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from './configuration'
 import { AttendanceApi } from '../web/attendance'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
+// import { CmsContentProvider } from '../providers/cmsContentProvider'
 import DiKeys from './diKeys'
 
 useContainer(TypeormTypediContainer)
@@ -27,7 +33,7 @@ const logger = withLogger('registerAndConnectToDataSources')
 export default async function registerAndConnectToDataSources(): Promise<void> {
   const config = getConfig()
 
-  const connectionPromises: Promise<void>[] = []
+  const connectionPromises: Promise<any>[] = []
 
   if (config.USE_ATTENDANCE_API_FLAG) {
     const api = new AttendanceApi()
@@ -82,12 +88,23 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
       dynamoDbClient,
     )
     MutableContainer.set(DiKeys.IXApiRepository, xapiDynamodbRepo)
-    await xapiDynamodbRepo.checkTableIsActive()
+    connectionPromises.push(xapiDynamodbRepo.checkTableIsActive())
   }
 
+  let cache: ICache
+  if (config.REDIS_URL) {
+    logger.info('CONFIG: Using Redis as Caching solution')
+    const redisClient = await connectToRedisCache(config.REDIS_URL)
+    cache = new RedisCache(redisClient)
+  } else {
+    logger.info('CONFIG: Using InMemory as Caching solution')
+    cache = new InMemoryCache()
+  }
+  MutableContainer.set(DiKeys.ICache, cache)
+  cache.setRecurringFlush(24 * 60 * 60 * 1000)
+
   MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)
-  const cmsContentProvider = MutableContainer.get(CmsContentProvider)
-  cmsContentProvider.setRecurringCacheClear(24 * 60 * 60 * 1000)
+  // const cmsContentProvider = MutableContainer.get(CmsContentProvider)
 
   await Promise.all(connectionPromises)
 }
