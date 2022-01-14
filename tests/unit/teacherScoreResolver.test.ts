@@ -1,6 +1,6 @@
 import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
-import { EntityManager, Repository } from 'typeorm'
+import { EntityManager } from 'typeorm'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { UserProvider } from '../../src/providers/userProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
@@ -13,7 +13,7 @@ import {
 
 describe('teacherScoreResolver.content', () => {
   context('contentName and contentType are undefined', () => {
-    it('', async () => {
+    it('returns expected content', async () => {
       const content = new LessonMaterialBuilder().build()
       const userContentScore = new UserContentScoreBuilder()
         .withContentName(undefined)
@@ -35,6 +35,9 @@ describe('teacherScoreResolver.content', () => {
           },
         })
         .resolves(null)
+      cmsContentProvider
+        .getLessonMaterial(content.contentId, undefined)
+        .resolves(content)
 
       const sut = new TeacherScoreResolver(
         userProvider,
@@ -46,7 +49,7 @@ describe('teacherScoreResolver.content', () => {
       const resultContent = await sut.content(teacherScore, {})
 
       // Assert
-      expect(resultContent).to.not.be.undefined
+      expect(resultContent).to.deep.include(content)
     })
   })
 })
