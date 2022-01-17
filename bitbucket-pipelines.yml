@@ -160,6 +160,9 @@ pipelines:
       - step: *version-release
       - step: *slack-notification-version-release
 
+    slack-notify-commits:
+      - step: *test-slack-notification
+
   tags:
     '*':
       - step: *npm-install-and-build
