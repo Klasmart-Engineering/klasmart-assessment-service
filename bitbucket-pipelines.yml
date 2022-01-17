@@ -6,6 +6,8 @@ definitions:
         POSTGRES_DB: test_user_db
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: assessments
+    redis:
+      image: redis
 
   caches:
     nodemodules: ./node_modules
@@ -53,6 +55,7 @@ definitions:
         image: node:16
         services:
           - postgres
+          - redis
         script:
           - *skip-bitbucket-authored-commits
           - export HUSKY=0
