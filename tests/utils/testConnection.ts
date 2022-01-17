@@ -1,3 +1,4 @@
+import path from 'path'
 import { Connection, createConnection } from 'typeorm'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import { ATTENDANCE_CONNECTION_NAME } from '../../src/db/attendance/connectToAttendanceDatabase'
@@ -26,7 +27,10 @@ export const createAssessmentDbConnection = (): Promise<Connection> => {
     username: 'postgres',
     password: 'assessments',
     database: 'test_assessment_db',
-    synchronize: true,
+    synchronize: false,
+    migrations: [path.join(__dirname, '../../src/migrations/*.ts')],
+    migrationsTableName: 'assessment_xapi_migration',
+    migrationsRun: true,
     dropSchema: true,
     entities: ['src/db/assessments/entities/*.ts'],
   })

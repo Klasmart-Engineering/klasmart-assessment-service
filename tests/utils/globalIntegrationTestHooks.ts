@@ -12,6 +12,7 @@ import {
   createTestConnections,
 } from './testConnection'
 import createAssessmentServer from '../../src/initialization/createAssessmentServer'
+import { ICache, InMemoryCache } from '../../src/cache'
 import { IXApiRepository } from '../../src/db/xapi'
 import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
 import { AttendanceApi, UserApi } from '../../src/web'
@@ -86,9 +87,12 @@ export const createSubstitutesToExpectedInjectableServices = () => {
   MutableContainer.set(UserApi, userApi)
   const xapiRepository = Substitute.for<IXApiRepository>()
   MutableContainer.set(DiKeys.IXApiRepository, xapiRepository)
+  const cache: ICache = new InMemoryCache()
+  MutableContainer.set(DiKeys.ICache, cache)
   return {
     attendanceApi,
     userApi,
     xapiRepository,
+    cache,
   }
 }

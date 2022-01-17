@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import { getConnection } from 'typeorm'
+import { connectToRedisCache } from '../../src/cache/redis'
 import {
   ASSESSMENTS_CONNECTION_NAME,
   connectToAssessmentDatabase,
@@ -22,6 +23,7 @@ describe('connectToDatabases', () => {
   const asessmentDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_assessment_db`
   const attendanceDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_attendance_db`
   const xapiSqlDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_xapi_db`
+  const redisUrl = `redis://${host}:6379`
 
   describe('connectToAssessmentDatabase', () => {
     it('synchronize is false, dropSchema is undefined, runMigrations is true', async () => {
@@ -82,6 +84,21 @@ describe('connectToDatabases', () => {
       it('rethrows', async () => {
         const badUrl = `postgres://xxxxxxx:assessments@${host}:${postgresDbPort}/test_attendance_db`
         const fn = () => connectToAttendanceDatabase(badUrl)
+        await expect(fn()).to.be.rejected
+      })
+    })
+  })
+
+  describe('connectToRedis', () => {
+    it('connects successfully', async () => {
+      const redisClient = await connectToRedisCache(redisUrl)
+      await redisClient.quit()
+    })
+
+    context('invalid url (wrong port)', () => {
+      it('rethrows', async () => {
+        const badUrl = `redis://${host}:1111`
+        const fn = () => connectToRedisCache(badUrl)
         await expect(fn()).to.be.rejected
       })
     })
