@@ -22,6 +22,7 @@ Branching model: merge into `master` and a new version gets automatically releas
 - [Attendance Service](https://bitbucket.org/calmisland/kidsloop-attendance-service) API to get the list of attendanees of a given room
 - DynamoDB XAPI table ([H5P library](https://bitbucket.org/calmisland/kidsloop-h5p-library/src/3d34fbc7f25c13b4b42f40bc3fb7c6726019aee1/src/xapi-uploader.ts?at=feature%2Fdocker-token) sends XAPI events, via the [uploader](https://bitbucket.org/calmisland/h5p-xapi-uploader), to the [XAPI server](https://bitbucket.org/calmisland/h5p-xapi-server), which in turn sends them to DynamoDB for us to be able to query here)
 - XAPI database deployed in Postgres in the case where the environment variable `USE_XAPI_SQL_DATABASE_FLAG` is set to `true` or `1`
+- Redis Cache instance (optional)
 
 ---
 
@@ -90,9 +91,19 @@ Create assessment database
 docker container exec -it assessments-postgres psql -U postgres -c "create database assessment_db; create database xapi_db;"
 ```
 
-Redis
+Create a Redis cache
+
 ```sh
 docker run -it --name kl-redis -d redis:6-alpine
+```
+
+Ssh into the Redis instance and access the CLI:
+
+```
+# start shell inside the running container
+docker exec -it kl-redis sh
+# start redis-cli interactive mode
+redis-cli
 ```
 
 ### Running
