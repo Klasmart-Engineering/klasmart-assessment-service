@@ -130,6 +130,16 @@ definitions:
               WEBHOOK_URL: $SLACK_WEBHOOK
               MESSAGE: '"🚀 A new build of Assessment Service ($BITBUCKET_TAG) has been pushed to ECR"'
 
+    - step: &test-slack-notification
+        name: '🔔 Slack: Build'
+        script:
+          - pipe: docker://cabauman/slack-notify-commits:0.5.0
+            variables:
+              WEBHOOK_URL: $SLACK_WEBHOOK
+              MESSAGE: '"🧪 This is a test notification."'
+              BITBUCKET_USER: $PIPELINE_READER_BITBUCKET_USER
+              BITBUCKET_APP_PASSWORD: $PIPELINE_READER_BITBUCKET_APP_PASSWORD
+
 pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
