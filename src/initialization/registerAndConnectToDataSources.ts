@@ -23,7 +23,6 @@ import {
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from './configuration'
 import { AttendanceApi } from '../web/attendance'
-// import { CmsContentProvider } from '../providers/cmsContentProvider'
 import DiKeys from './diKeys'
 
 useContainer(TypeormTypediContainer)
@@ -100,11 +99,9 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
     logger.info('CONFIG: Using InMemory as Caching solution')
     cache = new InMemoryCache()
   }
+  MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)
   MutableContainer.set(DiKeys.ICache, cache)
   cache.setRecurringFlush(24 * 60 * 60 * 1000)
-
-  MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)
-  // const cmsContentProvider = MutableContainer.get(CmsContentProvider)
 
   await Promise.all(connectionPromises)
 }

@@ -20,8 +20,8 @@ export const connectToRedisCache = async (
     url,
   })
   client.on('error', (err) => {
-    logger.error('Redis Client Error', err)
-    throw new RedisError(`Redis Client Error ${err}`)
+    logger.error('Redis Client Error', err.message)
+    throw new RedisError(`Redis Client Error ${err.message}`)
   })
   try {
     await client.connect()
@@ -52,6 +52,7 @@ export const RedisErrorRecovery =
         const result = await originalMethod.apply(this, args)
         return result
       } catch (error) {
+        logger.debug('Redis Error Recovery', error.message)
         if (error instanceof RedisError) {
           return undefined
         }
