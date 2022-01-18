@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.10.0..v1.9.8) (2022-01-18)
+
+
+### Features
+
+* **DAS-207:** replace User with the UserNode field from the user-service API ([e6b1278](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/e6b1278d465f5cbbd93eda23dae6990352d3bca0))
+
 ### [1.9.8](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.8..v1.9.7) (2022-01-18)
 
 ### [1.9.7](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.9.7..v1.9.6) (2022-01-17)
