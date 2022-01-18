@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.0..v1.10.0) (2022-01-18)
+
+
+### Features
+
+* **DAS-219:** implement Redis caching + abstract into ICache with InMemory caching ([b7da0f5](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/b7da0f523fbd809ccc104e2121081622430426e1))
+
+
+### Refactor
+
+* **redis:** improve error logging ([f142b04](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/f142b0467b520f2356137220311bf8f908051770))
+
 ## [1.10.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.10.0..v1.9.8) (2022-01-18)
 
 
