@@ -118,8 +118,8 @@ definitions:
         image: node:16-alpine
         script:
           - npm i
-          - npm prune --production
           - npm run build
+          - npm prune --production
         caches:
           - nodemodules
         artifacts:
