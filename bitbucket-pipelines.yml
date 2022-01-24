@@ -115,9 +115,10 @@ definitions:
     ##
     - step: &npm-install-and-build
         name: '⚡ npm install and build'
-        image: node:16
+        image: node:16-alpine
         script:
           - npm i
+          - npm prune --production
           - npm run build
         caches:
           - nodemodules
