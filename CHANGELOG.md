@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.4](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.4..v1.11.3) (2022-01-25)
+
+
+### Bug Fixes
+
+* add ./scripts to the container to run typeorm migrations CLI from the container ([699a2a7](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/699a2a755a76bdb252e652f153af7c45a7e70dfa))
+
 ### [1.11.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.3..v1.11.2) (2022-01-24)
 
 ### [1.11.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.2..v1.11.1) (2022-01-24)
