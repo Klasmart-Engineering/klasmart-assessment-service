@@ -94,14 +94,14 @@ docker container exec -it assessments-postgres psql -U postgres -c "create datab
 Create a Redis cache
 
 ```sh
-docker run -it --name kl-redis -d redis:6-alpine
+docker run -it --name kl_redis -d redis:6-alpine
 ```
 
 Ssh into the Redis instance and access the CLI:
 
 ```
 # start shell inside the running container
-docker exec -it kl-redis sh
+docker exec -it kl_redis sh
 # start redis-cli interactive mode
 redis-cli
 ```
@@ -158,6 +158,7 @@ docker run --rm -it \
   --env AWS_SECRET_ACCESS_KEY \
   --env AWS_SESSION_TOKEN \
   --env ASSESSMENT_DATABASE_URL=postgres://postgres:assessments@kl_postgres:5432/assessment_db \
+  --env REDIS_URL=redis://kl_redis:6379 \
   -p 8081:8080 \
   kl-assessment
 ```
@@ -251,6 +252,17 @@ To manually create a migration, make sure there's an `ormConfig.json` file prese
 
 ```sh
 npm run typeorm migration:generate -- --config ormConfig.json -c assessments -n MigrationName
+```
+
+### Revert migrations with the docker container
+
+Torevert a migration from the docker container, run the following command to generate the `ormConfig.json` and subsequently revert the migration using the typeorm cli:
+
+```sh
+docker run --rm -it \
+  --env ASSESSMENT_DATABASE_URL=postgres://postgres:assessments@kl_postgres:5432/assessment_db \
+  kl-assessment \
+  /bin/sh -c "node scripts/generateOrmConfig.js && npx typeorm migration:revert --config ormConfig.json -c assessments"
 ```
 
 
