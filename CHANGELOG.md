@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.6..v1.11.5) (2022-02-03)
+
+
+### Bug Fixes
+
+* **DAS-249:** remove GraphQL Playground and Explorer in production ([56b1bda](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/56b1bda4b3d072e29dc530442c7d9b5610c51cc3))
+
 ### [1.11.5](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.5..v1.11.4) (2022-01-27)
 
 
