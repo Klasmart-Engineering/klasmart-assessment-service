@@ -39,6 +39,21 @@ const corsOptions: CorsOptions = {
 const isDevelopment = () => process.env.NODE_ENV === 'development'
 const canViewDocsPage = () => config.ENABLE_PAGE_DOCS
 
+async function onlyAllowInDevelopment(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  if (isDevelopment()) {
+    next()
+  } else {
+    logger.info(
+      `onlyAllowInDevelopment: cannot view this page, returns '404: Page doesn't exist'`,
+    )
+    res.status(404).send(`404: Page doesn't exist`)
+  }
+}
+
 async function restrictDocs(
   req: express.Request,
   res: express.Response,
@@ -118,9 +133,14 @@ function createExpressApp(): Express {
   app.get(`${routePrefix}/examples`, restrictDocs, validateToken, (_, res) => {
     res.render('examples', variables)
   })
-  app.get(`${routePrefix}/explorer`, restrictDocs, validateToken, (_, res) => {
-    res.render('graphiql', { ...variables, apiRoute })
-  })
+  app.get(
+    `${routePrefix}/explorer`,
+    onlyAllowInDevelopment,
+    validateToken,
+    (_, res) => {
+      res.render('graphiql', { ...variables, apiRoute })
+    },
+  )
 
   app.get(`${routePrefix}/health`, (_, res) => {
     res.status(200).json({

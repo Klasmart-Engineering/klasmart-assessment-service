@@ -4,7 +4,10 @@ import {
   AuthenticationError,
   ExpressContext,
 } from 'apollo-server-express'
-import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
+import {
+  ApolloServerPluginLandingPageGraphQLPlayground,
+  ApolloServerPluginLandingPageDisabled,
+} from 'apollo-server-core'
 import { GraphQLSchema } from 'graphql'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
 import { withLogger } from 'kidsloop-nodejs-logger'
@@ -12,6 +15,7 @@ import { Context } from '../auth/context'
 import { ErrorMessage } from '../helpers/errorMessages'
 
 const logger = withLogger('createApolloServer')
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
@@ -47,12 +51,14 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
       }
     },
     plugins: [
-      ApolloServerPluginLandingPageGraphQLPlayground({
-        settings: {
-          'request.credentials': 'include',
-          'schema.polling.interval': 60 * 1000,
-        },
-      }),
+      isDevelopment
+        ? ApolloServerPluginLandingPageGraphQLPlayground({
+            settings: {
+              'request.credentials': 'include',
+              'schema.polling.interval': 60 * 1000,
+            },
+          })
+        : ApolloServerPluginLandingPageDisabled(),
       // Note: New Relic plugin should always be listed last
       newrelicApolloServerPlugin,
     ],
