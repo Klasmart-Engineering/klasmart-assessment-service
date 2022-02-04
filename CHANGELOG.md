@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.7](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.7..v1.11.6) (2022-02-04)
+
+
+### Bug Fixes
+
+* **DAS-258:** redis MGET command doesn't accept empty arrays, check beforehand ([4f7113d](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/4f7113df4e7876e17aae9e9f80be28625455dd66))
+
 ### [1.11.6](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.6..v1.11.5) (2022-02-03)
 
 
