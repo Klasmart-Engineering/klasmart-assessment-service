@@ -31,9 +31,7 @@
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",
       "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"],
-      "env": {
-        "NODE_ENV": "test"
-      }
+      "envFile": "${workspaceFolder}/tests/.env"
     },
     {
       "type": "pwa-node",

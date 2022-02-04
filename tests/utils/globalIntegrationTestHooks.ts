@@ -1,6 +1,4 @@
 import path from 'path'
-import dotenv from 'dotenv'
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
 import { Connection, useContainer } from 'typeorm'
 import { Container } from 'typeorm-typedi-extensions'
 import { Container as MutableContainer } from 'typedi'
