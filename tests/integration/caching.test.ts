@@ -66,6 +66,40 @@ describe('Redis caching and InMermory caching', () => {
     })
   })
 
+  context('LessonPlan with empty materials workflow: set, get, flush', () => {
+    const lessonPlan = new LessonPlanBuilder().build()
+    const cacheKey = `key:${lessonPlan.contentId}`
+
+    it('setLessonMaterials successfully', async () => {
+      await redisCache.setLessonPlanMaterials(cacheKey, [])
+      await inMemorycache.setLessonPlanMaterials(cacheKey, [])
+      expect(true).to.be.equal(true)
+    })
+
+    it('getLessonMaterials returns the same value', async () => {
+      const lessonPlanMaterialsFromRedis =
+        await redisCache.getLessonPlanMaterials(cacheKey)
+      const lessonPlanMaterialsFromInMemory =
+        await inMemorycache.getLessonPlanMaterials(cacheKey)
+
+      expect([]).to.deep.equal(lessonPlanMaterialsFromRedis)
+      expect([]).to.deep.equal(lessonPlanMaterialsFromInMemory)
+    })
+
+    it('flushes successfully', async () => {
+      await redisCache.flush()
+      await inMemorycache.flush()
+
+      const lessonPlanMaterialsFromRedis =
+        await redisCache.getLessonPlanMaterials(cacheKey)
+      const lessonPlanMaterialsFromInMemory =
+        await inMemorycache.getLessonPlanMaterials(cacheKey)
+
+      expect(lessonPlanMaterialsFromRedis).to.be.undefined
+      expect(lessonPlanMaterialsFromInMemory).to.be.undefined
+    })
+  })
+
   context('LessonPlan workflow: set, get, flush', () => {
     const lessonMaterial1 = new LessonMaterialBuilder()
       .withSubcontentId('')
