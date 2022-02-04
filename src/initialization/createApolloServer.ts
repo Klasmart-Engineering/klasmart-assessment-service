@@ -9,10 +9,13 @@ import {
   ApolloServerPluginLandingPageDisabled,
 } from 'apollo-server-core'
 import { GraphQLSchema } from 'graphql'
+import { ApolloServerLoaderPlugin } from 'type-graphql-dataloader'
+import { getConnection } from 'typeorm'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Context } from '../auth/context'
 import { ErrorMessage } from '../helpers/errorMessages'
+import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 
 const logger = withLogger('createApolloServer')
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -59,6 +62,9 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
             },
           })
         : ApolloServerPluginLandingPageDisabled(),
+      ApolloServerLoaderPlugin({
+        typeormGetConnection: () => getConnection(ASSESSMENTS_CONNECTION_NAME),
+      }),
       // Note: New Relic plugin should always be listed last
       newrelicApolloServerPlugin,
     ],

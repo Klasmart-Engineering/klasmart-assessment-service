@@ -24,10 +24,12 @@ import { TestTitle } from '../utils/testTitles'
 import { v4 } from 'uuid'
 import { TeacherComment } from '../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
-import Substitute from '@fluffy-spoon/substitute'
+import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { Container as MutableContainer } from 'typedi'
 import DiKeys from '../../src/initialization/diKeys'
+import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
+import { ApolloError } from 'apollo-server-core'
 
 /**
  * - throws when not authenticated
@@ -54,8 +56,9 @@ describe('teacherCommentResolver.setComment', () => {
       const comment = 'great job!'
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       // Act
       const fn = () =>
@@ -87,10 +90,22 @@ describe('teacherCommentResolver.setComment', () => {
       const userServiceUnkownUserErrorMsg = (userId: string) =>
         `UserConnectionNode ${userId} doesn't exist.`
       const endUser = new EndUserBuilder().authenticate().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi
-        .fetchUser(providedStudentId, endUser.token)
-        .rejects(userServiceUnkownUserErrorMsg(providedStudentId))
+
+      userApi.batchFetchUsers(Arg.any(), endUser.token).resolves(
+        generateBatchFetchUserRepsonse([
+          endUser,
+          {
+            user: {
+              ...endUser,
+              userId: providedStudentId,
+            },
+            error: new ApolloError(
+              userServiceUnkownUserErrorMsg(providedStudentId),
+            ),
+          },
+        ]),
+      )
+
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider
         .getSchedule(room.roomId, endUser.token)
@@ -125,8 +140,9 @@ describe('teacherCommentResolver.setComment', () => {
       const room = await new RoomBuilder().buildAndPersist()
       const endUser = new EndUserBuilder().authenticate().build()
       const student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider
@@ -166,8 +182,9 @@ describe('teacherCommentResolver.setComment', () => {
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
@@ -256,8 +273,9 @@ describe('teacherCommentResolver.setComment', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
@@ -347,9 +365,15 @@ describe('teacherCommentResolver.setComment', () => {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         someOtherStudent = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        userApi.fetchUser(someOtherStudent.userId).resolves(someOtherStudent)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(
+            generateBatchFetchUserRepsonse([
+              endUser,
+              student,
+              someOtherStudent,
+            ]),
+          )
 
         const room = await new RoomBuilder()
           .withRoomId(roomId)
@@ -460,8 +484,9 @@ describe('teacherCommentResolver.setComment', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const room = await new RoomBuilder()
           .withRoomId(roomId)

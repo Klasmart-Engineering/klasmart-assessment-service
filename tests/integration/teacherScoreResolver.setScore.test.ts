@@ -27,11 +27,12 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 import { TestTitle } from '../utils/testTitles'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import ContentKey from '../../src/helpers/contentKey'
-import Substitute from '@fluffy-spoon/substitute'
+import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { Container as MutableContainer } from 'typedi'
 import { throwExpression } from '../../src/helpers/throwExpression'
 import DiKeys from '../../src/initialization/diKeys'
+import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
 
 /**
  * - throws when not authenticated
@@ -55,8 +56,9 @@ describe('teacherScoreResolver.setScore', function () {
 
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const roomId = 'room1'
       const lessonMaterial = new LessonMaterialBuilder().build()
@@ -89,8 +91,9 @@ describe('teacherScoreResolver.setScore', function () {
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const roomId = 'room1'
         const providedRoomId = 'room2'
@@ -144,9 +147,15 @@ describe('teacherScoreResolver.setScore', function () {
         const endUser = new EndUserBuilder().authenticate().build()
         const someOtherStudent = new UserBuilder().build()
         const student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
-        userApi.fetchUser(someOtherStudent.userId).resolves(someOtherStudent)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(
+            generateBatchFetchUserRepsonse([
+              endUser,
+              student,
+              someOtherStudent,
+            ]),
+          )
 
         const roomId = 'room1'
         const lessonMaterial = new LessonMaterialBuilder().build()
@@ -199,8 +208,9 @@ describe('teacherScoreResolver.setScore', function () {
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const roomId = 'room1'
         const lessonMaterial = new LessonMaterialBuilder().build()
@@ -254,8 +264,9 @@ describe('teacherScoreResolver.setScore', function () {
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const roomId = 'room1'
         const providedContentId = v4()
@@ -309,8 +320,9 @@ describe('teacherScoreResolver.setScore', function () {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const userContentScore = await new UserContentScoreBuilder()
@@ -434,8 +446,9 @@ describe('teacherScoreResolver.setScore', function () {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const userContentScore = await new UserContentScoreBuilder()
@@ -545,8 +558,9 @@ describe('teacherScoreResolver.setScore', function () {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       lessonMaterial = new LessonMaterialBuilder()
         .withSubcontentId(v4())

@@ -84,6 +84,8 @@ export class RoomScoresCalculator {
     h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<UserContentScore>> {
     logger.debug(`calculateScores >> roomId: ${roomId}`)
+    const start = new Date()
+
     const mapKeyToUserContentScoreMap =
       await this.roomScoresTemplateProvider.getTemplate(
         roomId,
@@ -119,6 +121,11 @@ export class RoomScoresCalculator {
       }
       await userContentScore.applyEvent(xapiEvent)
     }
+
+    const end = new Date()
+    const diff = end.getTime() - start.getTime()
+    logger.info(`Diff: ${diff}`)
+
     return [...mapKeyToUserContentScoreMap.values()]
   }
 }

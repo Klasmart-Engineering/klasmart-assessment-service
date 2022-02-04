@@ -87,6 +87,15 @@ export class UserContentScore extends Base {
     await this.addAnswer(xapiEvent)
   }
 
+  public async applyEvents(xapiEvents: ParsedXapiEvent[]): Promise<void> {
+    this.seen = true
+    const filteredXapiEvents = xapiEvents.filter(
+      (xapiEvent) =>
+        xapiEvent.score !== undefined && xapiEvent.response !== undefined,
+    )
+    await this.addAnswers(filteredXapiEvents)
+  }
+
   constructor(roomId: string, studentId: string, contentKey: string) {
     super()
     this.roomId = roomId
@@ -123,5 +132,21 @@ export class UserContentScore extends Base {
       xapiEvent.score?.max,
     )
     answers.push(answer)
+  }
+
+  protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<void> {
+    const answers = await this.answers
+    const newAnswers = xapiEvents.map((xapiEvent) =>
+      Answer.new(
+        this,
+        new Date(xapiEvent.timestamp),
+        xapiEvent.response,
+        // TODO: Maybe pass whole score object, instead.
+        xapiEvent.score?.raw,
+        xapiEvent.score?.min,
+        xapiEvent.score?.max,
+      ),
+    )
+    answers.push(...newAnswers)
   }
 }

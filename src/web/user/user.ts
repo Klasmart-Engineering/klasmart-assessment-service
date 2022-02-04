@@ -1,4 +1,10 @@
-import { gql, request } from 'graphql-request'
+import { ApolloError } from 'apollo-server-express'
+import {
+  gql,
+  request,
+  batchRequests,
+  BatchRequestDocument,
+} from 'graphql-request'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Field, ObjectType } from 'type-graphql'
 import { Service } from 'typedi'
@@ -54,6 +60,25 @@ interface UserResult {
   email?: string
 }
 
+type BatchedQueryUserResult = {
+  data: {
+    user: UserResult | undefined
+  }
+  errors: any
+}
+
+export type BatchedQueryUser =
+  | {
+      data: {
+        user: User
+      }
+      errors: undefined
+    }
+  | {
+      data: undefined
+      errors: ApolloError[]
+    }
+
 // to deprecate
 const convertUserResultToTypedUser = (result: UserResult): User => {
   const user = {
@@ -68,7 +93,7 @@ const convertUserResultToTypedUser = (result: UserResult): User => {
 // to deprecate
 @Service()
 export class UserApi {
-  readonly config: Configuration = getConfig()
+  public readonly config: Configuration = getConfig()
 
   fetchUser = async (
     id: string,
@@ -90,6 +115,39 @@ export class UserApi {
       return undefined
     }
     return convertUserResultToTypedUser(data.user)
+  }
+
+  public batchFetchUsers = async (
+    userIds: ReadonlyArray<string>,
+    authorizationToken?: string,
+  ): Promise<Map<string, BatchedQueryUser>> => {
+    logger.debug(`batchFetchUsers >> userIds count: ${userIds.length}`)
+
+    const requestHeaders = {
+      authorization: authorizationToken || '',
+    }
+    const requests: BatchRequestDocument[] = userIds.map((userId) => ({
+      document: GET_USER,
+      variables: { id: userId },
+    }))
+
+    const results: BatchedQueryUserResult[] = await batchRequests(
+      this.config.USER_SERVICE_ENDPOINT,
+      requests,
+      requestHeaders,
+    )
+
+    const map = new Map<string, BatchedQueryUser>()
+    results.forEach(({ data, errors }, idx) => {
+      map.set(userIds[idx], {
+        data: data.user
+          ? { user: convertUserResultToTypedUser(data.user) }
+          : undefined,
+        errors,
+      })
+    })
+
+    return map
   }
 }
 

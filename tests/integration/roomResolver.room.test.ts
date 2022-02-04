@@ -58,7 +58,7 @@ import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
 import { User } from '../../src/web/user'
 import DiKeys from '../../src/initialization/diKeys'
-import { delay } from '../../src/helpers/delay'
+import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
 
 /**
  * - scores 0 the first time
@@ -97,7 +97,9 @@ describe('roomResolver.Room', () => {
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().dontAuthenticate().build()
-      userApi.fetchUser(endUser.userId, Arg.any()).resolves(endUser)
+      userApi
+        .batchFetchUsers([endUser.userId], Arg.any())
+        .resolves(generateBatchFetchUserRepsonse([endUser]))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -118,7 +120,9 @@ describe('roomResolver.Room', () => {
       const roomId = 'room1'
       const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().expiredToken().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi
+        .batchFetchUsers([endUser.userId], endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser]))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -143,7 +147,9 @@ describe('roomResolver.Room', () => {
         const { userApi, attendanceApi } =
           createSubstitutesToExpectedInjectableServices()
         const endUser = new EndUserBuilder().authenticate().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+        userApi
+          .batchFetchUsers([endUser.userId], endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser]))
 
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -177,7 +183,9 @@ describe('roomResolver.Room', () => {
       const { userApi, attendanceApi } =
         createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
+      userApi
+        .batchFetchUsers([endUser.userId], endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser]))
 
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider
@@ -217,8 +225,10 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      // can't pass a list of multiple user_ids as mocked Arg because Substitute expects a primitive value
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -434,8 +444,9 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -649,8 +660,9 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -838,8 +850,10 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
+
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1247,8 +1261,10 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
+
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -1475,8 +1491,9 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -1810,8 +1827,9 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -2052,8 +2070,9 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -2239,9 +2258,9 @@ describe('roomResolver.Room', () => {
       endUser = new EndUserBuilder().authenticate().build()
       student1 = new UserBuilder().build()
       student2 = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student1.userId, endUser.token).resolves(student1)
-      userApi.fetchUser(student2.userId, endUser.token).resolves(student2)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student1, student2]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -2525,8 +2544,9 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -2702,8 +2722,9 @@ describe('roomResolver.Room', () => {
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-      userApi.fetchUser(student.userId, endUser.token).resolves(student)
+      userApi
+        .batchFetchUsers(Arg.any(), endUser.token)
+        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -2888,8 +2909,10 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
+
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
           .withUserId(endUser.userId)
@@ -2955,6 +2978,7 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
         gqlRoom = await roomQuery(roomId, endUser)
+        console.log(gqlRoom)
       })
 
       after(async () => await dbDisconnect())
@@ -3221,8 +3245,9 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -3491,8 +3516,9 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -3739,8 +3765,9 @@ describe('roomResolver.Room', () => {
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
-        userApi.fetchUser(student.userId, endUser.token).resolves(student)
+        userApi
+          .batchFetchUsers(Arg.any(), endUser.token)
+          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
