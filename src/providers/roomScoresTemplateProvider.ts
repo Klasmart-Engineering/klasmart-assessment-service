@@ -1,6 +1,8 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { Inject, Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
+import { Logger } from 'winston'
 
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { UserContentScore } from '../db/assessments/entities'
@@ -21,6 +23,15 @@ import { UserContentScoreFactory } from './userContentScoreFactory'
  */
 @Service()
 export class RoomScoresTemplateProvider {
+  private static _logger: Logger
+  private get Logger(): Logger {
+    return (
+      RoomScoresTemplateProvider._logger ||
+      (RoomScoresTemplateProvider._logger = withLogger(
+        'RoomScoresTemplateProvider',
+      ))
+    )
+  }
   private roomIdToContentKeyUsesH5pIdMap = new Map<string, boolean>()
 
   constructor(
@@ -46,6 +57,11 @@ export class RoomScoresTemplateProvider {
     attendances: ReadonlyArray<Attendance>,
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
   ): Promise<ReadonlyMap<string, UserContentScore>> {
+    this.Logger.debug(
+      `getTemplate >> roomId: ${roomId}, teacherId: ${teacherId}, materials count: ${materials.length}, ` +
+        `attendances count: ${attendances.length}, xapiEvents count: ${xapiEvents.length}`,
+    )
+
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
     const userIds = this.roomAttendanceProvider.getUserIds(attendances)
 

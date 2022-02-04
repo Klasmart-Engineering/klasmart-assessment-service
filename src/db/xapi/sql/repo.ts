@@ -1,3 +1,4 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { XApiRecord } from '..'
 import { IXApiRepository } from '../repo'
 import {
@@ -8,6 +9,8 @@ import {
   MoreThanOrEqual,
 } from 'typeorm'
 import { XApiRecordSql } from './entities'
+
+const logger = withLogger('XApiSqlRepository')
 
 export class XApiSqlRepository implements IXApiRepository {
   constructor(
@@ -40,6 +43,11 @@ export class XApiSqlRepository implements IXApiRepository {
     const records = (await this.xapiEventRepository.find(
       searchParams,
     )) as XApiRecord[]
+
+    logger.debug(
+      `searchXApiEvents >> userId: ${userId}, from: ${from}, ` +
+        ` to: ${to} => records found: ${records.length}`,
+    )
     return records
   }
 }

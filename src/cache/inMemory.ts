@@ -1,5 +1,8 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { ICache } from './interface'
 import { Content } from '../db/cms/entities/content'
+
+const logger = withLogger('InMemoryCache')
 
 export class InMemoryCache implements ICache {
   private readonly lessonMaterialCache = new Map<string, Content>()
@@ -12,10 +15,16 @@ export class InMemoryCache implements ICache {
     contentId: string,
   ): Promise<Content | undefined> {
     const lessonMaterial = this.lessonMaterialCache.get(contentId)
+    logger.debug(
+      `getLessonMaterial >> contentId: ${contentId}, ${
+        lessonMaterial ? 'HIT' : 'MISS'
+      }`,
+    )
     return lessonMaterial
   }
 
   public async setLessonMaterial(material: Content): Promise<void> {
+    logger.debug(`setLessonMaterial >> contentId: ${material.contentId}`)
     this.lessonMaterialCache.set(material.contentId, material)
   }
 
@@ -23,6 +32,10 @@ export class InMemoryCache implements ICache {
     cacheKey: string,
   ): Promise<Content[] | undefined> {
     const cachedMaterialIds = this.lessonPlanMaterialIdsCache.get(cacheKey)
+    logger.debug(
+      `getLessonPlanMaterials >> cacheKey: ${cacheKey}, materials found:` +
+        ` ${cachedMaterialIds?.length}`,
+    )
     if (cachedMaterialIds) {
       return [
         ...cachedMaterialIds
@@ -38,6 +51,10 @@ export class InMemoryCache implements ICache {
     materials: Content[],
   ): Promise<void> {
     const materialIds: string[] = []
+    logger.debug(
+      `setLessonPlanMaterials >> cacheKey: ${cacheKey}, ` +
+        `materials count: ${materials.length}`,
+    )
     for (const material of materials) {
       materialIds.push(material.contentId)
       this.lessonMaterialCache.set(material.contentId, material)
@@ -46,11 +63,17 @@ export class InMemoryCache implements ICache {
   }
 
   public async flush(): Promise<void> {
+    logger.debug(
+      `flush >> keys found: ${
+        this.lessonMaterialCache.size + this.lessonPlanMaterialIdsCache.size
+      }`,
+    )
     this.lessonMaterialCache.clear()
     this.lessonPlanMaterialIdsCache.clear()
   }
 
   public setRecurringFlush(ms: number): NodeJS.Timeout {
+    logger.debug(`setRecurringFlush >> ms: ${ms}`)
     return setInterval(() => this.flush(), ms)
   }
 }

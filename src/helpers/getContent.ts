@@ -1,6 +1,9 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { Content } from '../db/cms/entities/content'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import ContentKey from './contentKey'
+
+const logger = withLogger('helpers:getContent')
 
 // TODO: Remove after content_id migration.
 export const h5pIdToCmsContentIdCache = new Map<string, string>()
@@ -13,6 +16,7 @@ export default async function getContent(
   cmsContentProvider: CmsContentProvider,
   authenticationToken?: string,
 ): Promise<Content | null> {
+  logger.debug(`getContent >> contentKey: ${contentKey}`)
   const { contentId, subcontentId } = ContentKey.deconstruct(contentKey)
   let content =
     (await cmsContentProvider.getLessonMaterial(

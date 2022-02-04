@@ -49,6 +49,10 @@ export default class TeacherCommentResolver {
     @Arg('comment') comment: string,
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
+    this.Logger.debug(
+      `Mutation >> setComment >> roomId: ${roomId}, ` +
+        `studentId: ${studentId}, comment: ${comment.substr(0, 20)}...`,
+    )
     return await this.addComment(
       context,
       roomId,
@@ -70,6 +74,10 @@ export default class TeacherCommentResolver {
     @Arg('comment') comment: string,
     @UserID() teacherId: string,
   ): Promise<TeacherComment | undefined> {
+    this.Logger.debug(
+      `Mutation >> addComment >> roomId: ${roomId}, ` +
+        `studentId: ${studentId}, comment: ${comment.substr(0, 20)}...`,
+    )
     try {
       const schedule = await this.scheduleProvider.getSchedule(
         roomId,
@@ -109,6 +117,9 @@ export default class TeacherCommentResolver {
     @Root() source: TeacherComment,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
+    this.Logger.debug(
+      `TeacherScore { teacherId: ${source.teacherId} } >> teacher`,
+    )
     return await this.userProvider.getUser(
       source.teacherId,
       context.encodedAuthenticationToken,
@@ -120,6 +131,9 @@ export default class TeacherCommentResolver {
     @Root() source: TeacherComment,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
+    this.Logger.debug(
+      `TeacherScore { teacherId: ${source.teacherId} } >> student`,
+    )
     return await this.userProvider.getUser(
       source.studentId,
       context.encodedAuthenticationToken,

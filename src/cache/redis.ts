@@ -4,7 +4,7 @@ import { ICache } from './interface'
 import { Content } from '../db/cms/entities/content'
 
 export type RedisClientType = ReturnType<typeof createClient>
-const logger = withLogger('redis')
+const logger = withLogger('RedisCache')
 
 export class RedisError extends Error {
   constructor(message: string) {
@@ -72,7 +72,7 @@ export class RedisCache implements ICache {
     const hit = await this.client.get(materialKey(contentId))
     logger.debug(
       `getLessonMaterial >> contentId: ${contentId}, ${
-        hit ? `HIT: ${hit.substr(0, 30)}` : 'MISS'
+        hit ? `HIT: ${hit.substr(0, 30)}...` : 'MISS'
       }`,
     )
     if (hit) {
@@ -131,7 +131,8 @@ export class RedisCache implements ICache {
     const materialMapKeys = materialMap.map((x) => x[0])
     const planCacheKey = planKey(cacheKey)
     logger.debug(
-      `setLessonPlanMaterials >> cacheKey: ${planCacheKey}, materials count: ${materialMap.length}`,
+      `setLessonPlanMaterials >> cacheKey: ${planCacheKey}, ` +
+        `materials count: ${materialMap.length}`,
     )
     if (materialMap.length > 0) {
       await this.client

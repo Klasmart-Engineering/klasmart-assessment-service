@@ -40,6 +40,10 @@ export class RoomMaterialsProvider {
       lessonPlanId,
       authenticationToken,
     )
+    this.Logger.debug(
+      `getMaterials >> roomId: ${roomId} => lessonPlanId: ${lessonPlanId} ` +
+        `=> lessonMaterials found: ${lessonMaterials.length}`,
+    )
     return lessonMaterials
   }
 }

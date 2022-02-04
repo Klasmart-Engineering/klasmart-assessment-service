@@ -54,6 +54,11 @@ export default class TeacherScoreResolver {
     @UserID() teacherId: string,
     @Arg('subcontent_id', { nullable: true }) subcontentId?: string,
   ): Promise<TeacherScore> {
+    this.Logger.debug(
+      `Mutation >> setScore >> roomId: ${roomId}, studentId: ${studentId}, ` +
+        `contentId: ${contentId}, score: ${score}, teacherId: ${teacherId}, ` +
+        `subcontentId: ${subcontentId}`,
+    )
     try {
       let contentKey = ContentKey.construct(contentId, subcontentId)
       let userContentScore = await this.assesmentDB.findOne(UserContentScore, {
@@ -109,6 +114,9 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
+    this.Logger.debug(
+      `TeacherScore { teacherId: ${source.teacherId} } >> teacher`,
+    )
     return await this.userProvider.getUser(
       source.teacherId,
       context.encodedAuthenticationToken,
@@ -120,6 +128,9 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
+    this.Logger.debug(
+      `TeacherScore { studentId: ${source.studentId} } >> student`,
+    )
     return await this.userProvider.getUser(
       source.studentId,
       context.encodedAuthenticationToken,
@@ -131,6 +142,10 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
     @Ctx() context: Context,
   ): Promise<Content | null> {
+    this.Logger.debug(
+      `TeacherScore { roomId: ${source.roomId}, studentId: ${source.studentId}, ` +
+        `contentKey: ${source.contentKey} } >> content`,
+    )
     const userContentScore = await this.assesmentDB.findOne(UserContentScore, {
       where: {
         roomId: source.roomId,

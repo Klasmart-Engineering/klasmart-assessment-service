@@ -8,6 +8,8 @@ import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
 import { Attendance } from '../web/attendance'
 import DiKeys from '../initialization/diKeys'
 
+const logger = withLogger('RoomEventsProvider')
+
 @Service()
 export class RoomEventsProvider {
   private static _logger: Logger
@@ -29,6 +31,9 @@ export class RoomEventsProvider {
     h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<ParsedXapiEvent>> {
     const parsedXapiEvents: ParsedXapiEvent[] = []
+    logger.debug(
+      `getEvents >> roomId ${roomId}, attendances count: ${attendances.length}`,
+    )
     for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
       const rawXapiEvents = await this.xapiRepository.searchXApiEvents(
         userId,

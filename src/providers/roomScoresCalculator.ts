@@ -34,17 +34,30 @@ export class RoomScoresCalculator {
     teacherId: string,
     authenticationToken?: string,
   ): Promise<ReadonlyArray<UserContentScore>> {
+    this.Logger.debug(`calculate >> roomId: ${roomId}, teacherId: ${teacherId}`)
     const materials = await this.roomMaterialsProvider.getMaterials(
       roomId,
       authenticationToken,
     )
+    this.Logger.debug(
+      `calculate >> roomId: ${roomId} >> materials found: ${materials.length}`,
+    )
+
     const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(materials)
     const attendances = await this.roomAttendanceProvider.getAttendances(roomId)
+    this.Logger.debug(
+      `calculate >> roomId: ${roomId} >> attendances found: ${attendances.length}`,
+    )
+
     const xapiEvents = await this.roomEventsProvider.getEvents(
       roomId,
       attendances,
       h5pIdToContentIdMap,
     )
+    this.Logger.debug(
+      `calculate >> roomId: ${roomId} >> xapiEvents found: ${xapiEvents.length}`,
+    )
+
     const userContentScores = await this.calculateScores(
       roomId,
       teacherId,
@@ -52,6 +65,9 @@ export class RoomScoresCalculator {
       attendances,
       xapiEvents,
       h5pIdToContentIdMap,
+    )
+    this.Logger.debug(
+      `calculate >> roomId: ${roomId} >> userContentScores calculated: ${userContentScores.length}`,
     )
 
     return userContentScores
@@ -77,6 +93,7 @@ export class RoomScoresCalculator {
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
     h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<UserContentScore>> {
+    this.Logger.debug(`calculateScores >> roomId: ${roomId}`)
     const mapKeyToUserContentScoreMap =
       await this.roomScoresTemplateProvider.getTemplate(
         roomId,

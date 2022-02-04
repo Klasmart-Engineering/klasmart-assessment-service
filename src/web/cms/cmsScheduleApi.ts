@@ -35,6 +35,11 @@ export class CmsScheduleApi {
     )
 
     const dtos = response?.data ?? []
+    logger.debug(
+      `getSchedule >> scheduleId: ${scheduleId}, ` +
+        `Schedules found: ${dtos.length}`,
+    )
+
     if (dtos.length === 0) {
       return undefined
     }

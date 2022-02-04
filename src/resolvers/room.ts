@@ -19,8 +19,6 @@ import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context, UserID } from '../auth/context'
 
-const logger = withLogger('room')
-
 @Service()
 @Resolver(() => Room)
 export default class RoomResolver {
@@ -46,10 +44,12 @@ export default class RoomResolver {
     @UserID() teacherId: string,
     @Ctx() context: Context,
   ): Promise<Room> {
+    this.Logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
       if (!room) {
         room = new Room(roomId)
+        this.Logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
       }
 
       const scores = await this.roomScoresCalculator.calculate(
@@ -60,6 +60,7 @@ export default class RoomResolver {
       room.scores = Promise.resolve(scores)
       room.recalculate = scores.length == 0
       await this.assessmentDB.save(room)
+      this.Logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
       return room
     } catch (e) {
       this.Logger.error(e)
@@ -71,9 +72,12 @@ export default class RoomResolver {
   public async scoresByUser(
     @Root() room: Room,
   ): Promise<ReadonlyArray<UserScores>> {
+    this.Logger.debug(`Room room_id: ${room.roomId} >> scoresByUser`)
+
     const scoresByUser: Map<string, UserScores> = new Map()
 
-    for (const userContentScore of await room.scores) {
+    const allScores = await room.scores
+    for (const userContentScore of allScores) {
       const userScores = scoresByUser.get(userContentScore.studentId)
       if (userScores) {
         userScores.scores.push(userContentScore)
@@ -84,6 +88,10 @@ export default class RoomResolver {
         )
       }
     }
+    this.Logger.debug(
+      `Room >> scoresByUser >> users count: ${scoresByUser.size}, ` +
+        `total scores count: ${allScores.length}`,
+    )
 
     return [...scoresByUser.values()]
   }
@@ -92,9 +100,12 @@ export default class RoomResolver {
   public async scoresByContent(
     @Root() room: Room,
   ): Promise<ReadonlyArray<ContentScores>> {
+    this.Logger.debug(`Room room_id: ${room.roomId} >> scoresByContent`)
+
     const scoresByContent: Map<string, ContentScores> = new Map()
 
-    for (const userContentScore of await room.scores) {
+    const allScores = await room.scores
+    for (const userContentScore of allScores) {
       const contentScores = scoresByContent.get(userContentScore.contentKey)
       if (contentScores) {
         contentScores.scores.push(userContentScore)
@@ -111,6 +122,10 @@ export default class RoomResolver {
         )
       }
     }
+    this.Logger.debug(
+      `Room room_id: ${room.roomId} >> scoresByContent >> content count: ${scoresByContent.size}, ` +
+        `total scores count: ${allScores.length}`,
+    )
 
     return [...scoresByContent.values()]
   }
@@ -119,8 +134,12 @@ export default class RoomResolver {
   public async teacherCommentsByStudent(
     @Root() room: Room,
   ): Promise<ReadonlyArray<TeacherCommentsByStudent>> {
+    this.Logger.debug(
+      `Room room_id: ${room.roomId} >> teacherCommentsByStudent`,
+    )
     const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
 
+    const allTeacherComments = await room.teacherComments
     for (const comment of await room.teacherComments) {
       const teacherComments = commentsByStudent.get(comment.studentId)
       if (teacherComments) {
@@ -132,6 +151,11 @@ export default class RoomResolver {
         )
       }
     }
+    this.Logger.debug(
+      `Room room_id: ${room.roomId} >> teacherCommentsByStudent >> ` +
+        `students count: ${commentsByStudent.size}, ` +
+        `total comments count: ${allTeacherComments.length}`,
+    )
 
     return [...commentsByStudent.values()]
   }

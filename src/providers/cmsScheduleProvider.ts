@@ -1,7 +1,10 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import { Schedule } from '../db/cms/entities/schedule'
 import { throwExpression } from '../helpers/throwExpression'
 import { CmsScheduleApi, ScheduleDto } from '../web/cms'
+
+const logger = withLogger('CmsScheduleProvider')
 
 @Service()
 export class CmsScheduleProvider {
@@ -15,6 +18,7 @@ export class CmsScheduleProvider {
       scheduleId,
       authenticationToken,
     )
+    logger.debug(`getSchedule >> Schedule with ID ${scheduleId} FOUND`)
     if (!dto) return undefined
     const lessonMaterial = scheduleDtoToEntity(dto)
 

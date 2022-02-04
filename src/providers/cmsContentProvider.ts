@@ -1,9 +1,12 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { Inject, Service } from 'typedi'
 import { ICache } from '../cache/interface'
 import { Content } from '../db/cms/entities/content'
 import { throwExpression } from '../helpers/throwExpression'
 import DiKeys from '../initialization/diKeys'
 import { CmsContentApi, ContentDto } from '../web/cms'
+
+const logger = withLogger('CmsContentProvider')
 
 @Service()
 export class CmsContentProvider {
@@ -18,6 +21,10 @@ export class CmsContentProvider {
     lessonPlanId: string,
     authenticationToken?: string,
   ): Promise<ReadonlyArray<Content>> {
+    logger.debug(
+      `getLessonMaterials >> roomId: ${roomId}, lessonPlanId: ${lessonPlanId}`,
+    )
+
     const cacheKey = `${roomId}|${lessonPlanId}`
     const cacheHit = await this.cache.getLessonPlanMaterials(cacheKey)
     if (cacheHit) {
@@ -38,6 +45,8 @@ export class CmsContentProvider {
     contentId: string,
     authenticationToken?: string,
   ): Promise<Content | undefined> {
+    logger.debug(`getLessonMaterial >> contentId: ${contentId}`)
+
     const cacheHit = await this.cache.getLessonMaterial(contentId)
     if (cacheHit) {
       return cacheHit
@@ -58,6 +67,8 @@ export class CmsContentProvider {
     sourceId: string,
     authenticationToken?: string,
   ): Promise<ReadonlyArray<Content>> {
+    logger.debug(`getLessonMaterialsWithSourceId >> sourceId: ${sourceId}`)
+
     const dtos = await this.cmsContentApi.getLessonMaterialsWithSourceId(
       sourceId,
       authenticationToken,

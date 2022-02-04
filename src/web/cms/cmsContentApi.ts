@@ -35,6 +35,10 @@ export class CmsContentApi {
     )
 
     const dtos = response?.list ?? []
+    logger.debug(
+      `getLessonMaterials >> lessonPlanId: ${lessonPlanId}, ` +
+        `ContentDto count: ${dtos.length}`,
+    )
 
     return dtos
   }
@@ -59,6 +63,12 @@ export class CmsContentApi {
     )
 
     const dtos = response?.list ?? []
+    logger.debug(
+      `getLessonMaterial >> contentId: ${contentId}, ${
+        dtos.length > 0 ? 'FOUND' : 'NOT FOUND'
+      }`,
+    )
+
     if (dtos.length === 0) {
       return undefined
     }
@@ -86,6 +96,10 @@ export class CmsContentApi {
     )
 
     const dtos = response?.list ?? []
+    logger.debug(
+      `getLessonMaterials >> sourceId: ${sourceId}, ` +
+        `ContentDto count: ${dtos.length}`,
+    )
 
     return dtos
   }

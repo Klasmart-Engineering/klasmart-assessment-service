@@ -1,7 +1,10 @@
 import { gql, request } from 'graphql-request'
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { Field, ObjectType } from 'type-graphql'
 import { Service } from 'typedi'
 import { getConfig, Configuration } from '../../initialization/configuration'
+
+const logger = withLogger('UserApi')
 
 @ObjectType()
 export class User {
@@ -82,12 +85,7 @@ export class UserApi {
       requestHeaders,
     )
 
-    // if (!data.userNode) {
-    //   return undefined
-    // }
-    // return convertUserNodeResultToTypedUser(data.userNode)
-
-    // to deprecate
+    logger.debug(`fetchUser >> id: ${id}, ${data.user ? 'FOUND' : 'NOT FOUND'}`)
     if (!data.user) {
       return undefined
     }

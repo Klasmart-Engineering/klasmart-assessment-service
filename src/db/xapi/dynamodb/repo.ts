@@ -11,7 +11,7 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 import { XApiRecord } from '../interfaces'
 import { IXApiRepository } from '../repo'
 
-const logger = withLogger('XapiDynamodbReposiroty')
+const logger = withLogger('XApiDynamodbRepository')
 
 export class DynamoDbException extends Error {
   constructor(message: string) {
@@ -32,6 +32,9 @@ export class XApiDynamodbRepository implements IXApiRepository {
     from?: number,
     to?: number,
   ): Promise<ReadonlyArray<XApiRecord>> {
+    logger.debug(
+      `searchXApiEvents >> userId: ${userId}, from: ${from}, to: ${to}`,
+    )
     const input: QueryCommandInput = {
       TableName: this.tableName,
       KeyConditionExpression:
@@ -45,6 +48,11 @@ export class XApiDynamodbRepository implements IXApiRepository {
     const command: QueryCommand = new QueryCommand(input)
     const result: QueryCommandOutput = await this.client.send(command)
     const data = result.Items?.map((x) => unmarshall(x) as XApiRecord) || []
+
+    logger.debug(
+      `searchXApiEvents >> userId: ${userId}, from: ${from}, ` +
+        ` to: ${to} => items found: ${data.length}`,
+    )
     return data
   }
 

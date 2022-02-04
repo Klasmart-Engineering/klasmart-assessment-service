@@ -1,3 +1,4 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import { Inject, Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
@@ -5,6 +6,8 @@ import { ATTENDANCE_CONNECTION_NAME } from '../db/attendance/connectToAttendance
 import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from '../initialization/configuration'
 import { AttendanceApi, Attendance } from '../web/attendance'
+
+const logger = withLogger('AttendanceProvider')
 
 export interface RoomAttendanceProvider {
   getAttendances(roomId: string): Promise<ReadonlyArray<Attendance>>
@@ -52,10 +55,16 @@ export class RoomAttendanceApiProvider
   }
 
   public async getAttendances(roomId: string): Promise<Attendance[]> {
+    logger.debug(`getAttendances >> roomId ${roomId}`)
+
     let attendances = await this.attendanceApi.getRoomAttendances(roomId)
     attendances =
       this.handleDuplicateSessionsWithDifferentTimestamps(attendances)
 
+    logger.debug(
+      `getAttendances >> roomId ${roomId}, deduplicated attendances ` +
+        `count: ${attendances.length}`,
+    )
     return [...attendances.values()]
   }
 }
@@ -73,12 +82,18 @@ export class RoomAttendanceDbProvider
   }
 
   public async getAttendances(roomId: string): Promise<Attendance[]> {
+    logger.debug(`getAttendances >> roomId ${roomId}`)
+
     let attendances = (await this.attendanceRepository.find({
       where: { roomId },
     })) as Attendance[]
     attendances =
       this.handleDuplicateSessionsWithDifferentTimestamps(attendances)
 
+    logger.debug(
+      `getAttendances >> roomId ${roomId}, deduplicated attendances ` +
+        `count: ${attendances.length}`,
+    )
     return [...attendances.values()]
   }
 }

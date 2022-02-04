@@ -3,7 +3,7 @@ import { Service } from 'typedi'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { getConfig, Configuration } from '../../initialization/configuration'
 
-const logger = withLogger('connectToUserDatabase')
+const logger = withLogger('AttendanceApi')
 
 class AttendanceApiBadResult extends Error {
   constructor(message: string) {
@@ -84,6 +84,9 @@ export class AttendanceApi {
     )
     const attendances = data.getClassAttendance.map((att) =>
       convertAttendanceResultToTypedClass(att),
+    )
+    logger.debug(
+      `getRoomAttendances >> roomId: ${roomId}, attendances found: ${attendances.length}`,
     )
     return attendances
   }
