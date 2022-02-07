@@ -73,9 +73,14 @@ Alternatively, if you opt for reading XApi data from a Postgres database, set it
 - `USE_XAPI_SQL_DATABASE_FLAG = 1`
 - `XAPI_DATABASE_URL`
 
+The service will cache some of the results in either local Memory or Redis. To use Redis specify its url:
+- `REDIS_URL`
+
 Other optional environment variables include:
-- `LOG_LEVEL`: default value is `info`
+- `LOG_LEVEL`: default value is `info`, set it to `debug` if you wish to see more detailed logs
 - `LOG_STYLE`: default value is `STRING_COLOR`
+- `NODE_ENV`: the service assumes that we're running in production unless you set this to `development`. Make sure to set it to `development` to enable the GraphQL Playground
+- `ENABLE_PAGE_DOCS`: default value is `false. Shows the API and service documentation page
 
 #### Local database
 
