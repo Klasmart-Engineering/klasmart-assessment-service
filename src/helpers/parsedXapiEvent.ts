@@ -1,6 +1,7 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 import { XApiRecord } from '../db/xapi'
+
+const logger = withLogger('ParsedXapiEvent')
 
 type XapiScore = {
   min?: number
@@ -35,8 +36,9 @@ export class ParsedXapiEvent {
       extensions && extensions['http://h5p.org/x-api/h5p-subContentId']
 
     if (!statement?.object?.definition || !userId || !h5pId || !timestamp) {
-      ParsedXapiEvent.Logger.info(
-        `XAPI event didn't include all required info (roomId:${roomId}, userId:${userId}, h5pId:${h5pId}, timestamp:${timestamp}). Skipping...`,
+      logger.info(
+        `XAPI event didn't include all required info (roomId:${roomId}, ` +
+          `userId:${userId}, h5pId:${h5pId}, timestamp:${timestamp}). Skipping...`,
       )
       return null
     }
@@ -78,13 +80,5 @@ export class ParsedXapiEvent {
       verb,
       timestamp,
     }
-  }
-
-  private static _logger: Logger
-  private static get Logger(): Logger {
-    return (
-      ParsedXapiEvent._logger ||
-      (ParsedXapiEvent._logger = withLogger('ParsedXapiEvent'))
-    )
   }
 }

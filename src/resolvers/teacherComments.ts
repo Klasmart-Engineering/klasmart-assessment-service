@@ -12,7 +12,6 @@ import { EntityManager } from 'typeorm'
 import { UserInputError } from 'apollo-server-express'
 import { InjectManager } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 
 import { Context, UserID } from '../auth/context'
 import { TeacherComment } from '../db/assessments/entities'
@@ -22,17 +21,11 @@ import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
+const logger = withLogger('TeacherCommentResolver')
+
 @Service()
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {
-  private static _logger: Logger
-  private get Logger(): Logger {
-    return (
-      TeacherCommentResolver._logger ||
-      (TeacherCommentResolver._logger = withLogger('TeacherCommentResolver'))
-    )
-  }
-
   constructor(
     private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
@@ -49,7 +42,7 @@ export default class TeacherCommentResolver {
     @Arg('comment') comment: string,
     @UserID() teacher_id: string,
   ): Promise<TeacherComment | undefined> {
-    this.Logger.debug(
+    logger.debug(
       `Mutation >> setComment >> roomId: ${roomId}, ` +
         `studentId: ${studentId}, comment: ${comment.substr(0, 20)}...`,
     )
@@ -74,7 +67,7 @@ export default class TeacherCommentResolver {
     @Arg('comment') comment: string,
     @UserID() teacherId: string,
   ): Promise<TeacherComment | undefined> {
-    this.Logger.debug(
+    logger.debug(
       `Mutation >> addComment >> roomId: ${roomId}, ` +
         `studentId: ${studentId}, comment: ${comment.substr(0, 20)}...`,
     )
@@ -107,7 +100,7 @@ export default class TeacherCommentResolver {
 
       return teacherComment
     } catch (e) {
-      this.Logger.error(e)
+      logger.error(e)
       throw e
     }
   }
@@ -117,9 +110,7 @@ export default class TeacherCommentResolver {
     @Root() source: TeacherComment,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
-    this.Logger.debug(
-      `TeacherScore { teacherId: ${source.teacherId} } >> teacher`,
-    )
+    logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
     return await this.userProvider.getUser(
       source.teacherId,
       context.encodedAuthenticationToken,
@@ -131,9 +122,7 @@ export default class TeacherCommentResolver {
     @Root() source: TeacherComment,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
-    this.Logger.debug(
-      `TeacherScore { teacherId: ${source.teacherId} } >> student`,
-    )
+    logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> student`)
     return await this.userProvider.getUser(
       source.studentId,
       context.encodedAuthenticationToken,

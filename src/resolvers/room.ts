@@ -11,7 +11,6 @@ import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 
 import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
@@ -19,17 +18,11 @@ import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context, UserID } from '../auth/context'
 
+const logger = withLogger('RoomResolver')
+
 @Service()
 @Resolver(() => Room)
 export default class RoomResolver {
-  private static _logger: Logger
-  private get Logger(): Logger {
-    return (
-      RoomResolver._logger ||
-      (RoomResolver._logger = withLogger('RoomResolver'))
-    )
-  }
-
   constructor(
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
@@ -44,12 +37,12 @@ export default class RoomResolver {
     @UserID() teacherId: string,
     @Ctx() context: Context,
   ): Promise<Room> {
-    this.Logger.debug(`Room >> roomId: ${roomId}`)
+    logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
       if (!room) {
         room = new Room(roomId)
-        this.Logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
+        logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
       }
 
       const scores = await this.roomScoresCalculator.calculate(
@@ -60,10 +53,10 @@ export default class RoomResolver {
       room.scores = Promise.resolve(scores)
       room.recalculate = scores.length == 0
       await this.assessmentDB.save(room)
-      this.Logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
+      logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
       return room
     } catch (e) {
-      this.Logger.error(e)
+      logger.error(e)
       throw e
     }
   }
@@ -72,7 +65,7 @@ export default class RoomResolver {
   public async scoresByUser(
     @Root() room: Room,
   ): Promise<ReadonlyArray<UserScores>> {
-    this.Logger.debug(`Room room_id: ${room.roomId} >> scoresByUser`)
+    logger.debug(`Room room_id: ${room.roomId} >> scoresByUser`)
 
     const scoresByUser: Map<string, UserScores> = new Map()
 
@@ -88,7 +81,7 @@ export default class RoomResolver {
         )
       }
     }
-    this.Logger.debug(
+    logger.debug(
       `Room >> scoresByUser >> users count: ${scoresByUser.size}, ` +
         `total scores count: ${allScores.length}`,
     )
@@ -100,7 +93,7 @@ export default class RoomResolver {
   public async scoresByContent(
     @Root() room: Room,
   ): Promise<ReadonlyArray<ContentScores>> {
-    this.Logger.debug(`Room room_id: ${room.roomId} >> scoresByContent`)
+    logger.debug(`Room room_id: ${room.roomId} >> scoresByContent`)
 
     const scoresByContent: Map<string, ContentScores> = new Map()
 
@@ -122,8 +115,9 @@ export default class RoomResolver {
         )
       }
     }
-    this.Logger.debug(
-      `Room room_id: ${room.roomId} >> scoresByContent >> content count: ${scoresByContent.size}, ` +
+    logger.debug(
+      `Room room_id: ${room.roomId} >> scoresByContent >> ` +
+        `content count: ${scoresByContent.size}, ` +
         `total scores count: ${allScores.length}`,
     )
 
@@ -134,9 +128,7 @@ export default class RoomResolver {
   public async teacherCommentsByStudent(
     @Root() room: Room,
   ): Promise<ReadonlyArray<TeacherCommentsByStudent>> {
-    this.Logger.debug(
-      `Room room_id: ${room.roomId} >> teacherCommentsByStudent`,
-    )
+    logger.debug(`Room room_id: ${room.roomId} >> teacherCommentsByStudent`)
     const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
 
     const allTeacherComments = await room.teacherComments
@@ -151,7 +143,7 @@ export default class RoomResolver {
         )
       }
     }
-    this.Logger.debug(
+    logger.debug(
       `Room room_id: ${room.roomId} >> teacherCommentsByStudent >> ` +
         `students count: ${commentsByStudent.size}, ` +
         `total comments count: ${allTeacherComments.length}`,

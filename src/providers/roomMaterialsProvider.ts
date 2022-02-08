@@ -1,23 +1,16 @@
 import { UserInputError } from 'apollo-server-express'
 import { Service } from 'typedi'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Logger } from 'winston'
 
 import { Content } from '../db/cms/entities'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 
+const logger = withLogger('RoomEventsProvider')
+
 @Service()
 export class RoomMaterialsProvider {
-  private static _logger: Logger
-  private get Logger(): Logger {
-    return (
-      RoomMaterialsProvider._logger ||
-      (RoomMaterialsProvider._logger = withLogger('RoomMaterialsProvider'))
-    )
-  }
-
   public constructor(
     private readonly cmsScheduleProvider: CmsScheduleProvider,
     private readonly cmsContentProvider: CmsContentProvider,
@@ -40,7 +33,7 @@ export class RoomMaterialsProvider {
       lessonPlanId,
       authenticationToken,
     )
-    this.Logger.debug(
+    logger.debug(
       `getMaterials >> roomId: ${roomId} => lessonPlanId: ${lessonPlanId} ` +
         `=> lessonMaterials found: ${lessonMaterials.length}`,
     )

@@ -1,7 +1,6 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Ctx, FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
-import { Logger } from 'winston'
 
 import { Context } from '../auth/context'
 import { UserContentScore } from '../db/assessments/entities'
@@ -11,19 +10,11 @@ import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
+const logger = withLogger('UserContentScoreResolver')
+
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
-  private static _logger: Logger
-  private get Logger(): Logger {
-    return (
-      UserContentScoreResolver._logger ||
-      (UserContentScoreResolver._logger = withLogger(
-        'UserContentScoreResolver',
-      ))
-    )
-  }
-
   constructor(
     private readonly userProvider: UserProvider,
     private readonly cmsContentProvider: CmsContentProvider,
@@ -34,7 +25,7 @@ export default class UserContentScoreResolver {
     @Root() source: UserContentScore,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
-    this.Logger.debug(
+    logger.debug(
       `UserContentScore { studentId: ${source.studentId} } >> student`,
     )
     return await this.userProvider.getUser(
@@ -48,7 +39,7 @@ export default class UserContentScoreResolver {
     @Root() source: UserContentScore,
     @Ctx() context: Context,
   ): Promise<Content | null> {
-    this.Logger.debug(
+    logger.debug(
       `UserContentScore { contentKey: ${source.contentKey} } >> content`,
     )
     return await getContent(

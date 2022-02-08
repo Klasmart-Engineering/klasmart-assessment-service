@@ -11,7 +11,6 @@ import {
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
-import { Logger } from 'winston'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
 import { Context, UserID } from '../auth/context'
@@ -25,17 +24,11 @@ import { UserProvider } from '../providers/userProvider'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { User } from '../web/user'
 
+const logger = withLogger('TeacherScoreResolver')
+
 @Service()
 @Resolver(() => TeacherScore)
 export default class TeacherScoreResolver {
-  private static _logger: Logger
-  private get Logger(): Logger {
-    return (
-      TeacherScoreResolver._logger ||
-      (TeacherScoreResolver._logger = withLogger('TeacherScoreResolver'))
-    )
-  }
-
   constructor(
     private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
@@ -54,7 +47,7 @@ export default class TeacherScoreResolver {
     @UserID() teacherId: string,
     @Arg('subcontent_id', { nullable: true }) subcontentId?: string,
   ): Promise<TeacherScore> {
-    this.Logger.debug(
+    logger.debug(
       `Mutation >> setScore >> roomId: ${roomId}, studentId: ${studentId}, ` +
         `contentId: ${contentId}, score: ${score}, teacherId: ${teacherId}, ` +
         `subcontentId: ${subcontentId}`,
@@ -104,7 +97,7 @@ export default class TeacherScoreResolver {
 
       return teacherScore
     } catch (e) {
-      this.Logger.error(e)
+      logger.error(e)
       throw e
     }
   }
@@ -114,9 +107,7 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
-    this.Logger.debug(
-      `TeacherScore { teacherId: ${source.teacherId} } >> teacher`,
-    )
+    logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
     return await this.userProvider.getUser(
       source.teacherId,
       context.encodedAuthenticationToken,
@@ -128,9 +119,7 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
     @Ctx() context: Context,
   ): Promise<User | undefined> {
-    this.Logger.debug(
-      `TeacherScore { studentId: ${source.studentId} } >> student`,
-    )
+    logger.debug(`TeacherScore { studentId: ${source.studentId} } >> student`)
     return await this.userProvider.getUser(
       source.studentId,
       context.encodedAuthenticationToken,
@@ -142,7 +131,7 @@ export default class TeacherScoreResolver {
     @Root() source: TeacherScore,
     @Ctx() context: Context,
   ): Promise<Content | null> {
-    this.Logger.debug(
+    logger.debug(
       `TeacherScore { roomId: ${source.roomId}, studentId: ${source.studentId}, ` +
         `contentKey: ${source.contentKey} } >> content`,
     )

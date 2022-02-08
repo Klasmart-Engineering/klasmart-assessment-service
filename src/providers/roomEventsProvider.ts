@@ -1,5 +1,4 @@
 import { Inject, Service } from 'typedi'
-import { Logger } from 'winston'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
 import { XApiRecord } from '../db/xapi'
@@ -12,14 +11,6 @@ const logger = withLogger('RoomEventsProvider')
 
 @Service()
 export class RoomEventsProvider {
-  private static _logger: Logger
-  private get Logger(): Logger {
-    return (
-      RoomEventsProvider._logger ||
-      (RoomEventsProvider._logger = withLogger('RoomScoresCalculator'))
-    )
-  }
-
   constructor(
     @Inject(DiKeys.IXApiRepository)
     private readonly xapiRepository: IXApiRepository,
@@ -66,7 +57,7 @@ export class RoomEventsProvider {
     }
     if (h5pIdsThatArentPartOfLessonPlan.size > 0) {
       const h5pIds = h5pIdsThatArentPartOfLessonPlan.toString()
-      this.Logger.debug(
+      logger.debug(
         `Filtered out events that aren't part of the lesson plan for roomId [${roomId}]. h5pIds: ${h5pIds}`,
       )
     }
