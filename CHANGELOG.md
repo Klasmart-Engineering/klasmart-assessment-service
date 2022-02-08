@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.13](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.13..v1.11.12) (2022-02-08)
+
+
+### Bug Fixes
+
+* dynamodb connection was missing the AWS_SESSION_TOKEN to connect to AWS ([7da60b4](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/7da60b408ce1bb8b747fc75344eaa743fa5c2494))
+
 ### [1.11.12](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.12..v1.11.11) (2022-02-08)
 
 
