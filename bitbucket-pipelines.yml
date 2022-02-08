@@ -19,9 +19,8 @@ definitions:
       environment:
         SERVICES: dynamodb
         AWS_DEFAULT_REGION: ap-northeast-2
-        EDGE_PORT: 4566
       ports:
-        - "4566:4566"
+        - 4566:4566
 
   caches:
     nodemodules: ./node_modules
@@ -99,6 +98,7 @@ definitions:
           - docker
         size: 2x
         script:
+          - apk add --no-cache git
           - *skip-bitbucket-authored-commits
           - /bin/sh ./scripts/run-container.sh
   
