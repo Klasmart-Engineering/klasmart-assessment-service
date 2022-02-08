@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.12](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.12..v1.11.11) (2022-02-08)
+
+
+### Refactor
+
+* **DAS-259:** add logger debug statements in resolvers, api methods and providers ([e31d409](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/e31d409fac0ff9fbf773506cde4e9757fe01165a))
+* replace lazy static class loggers with regular top-of-the-file const loggers ([5da5591](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/5da55910b1308ca4d0c043e49ad08f10f98065a1))
+
 ### [1.11.11](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.11..v1.11.10) (2022-02-08)
 
 ### [1.11.10](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.10..v1.11.9) (2022-02-08)
