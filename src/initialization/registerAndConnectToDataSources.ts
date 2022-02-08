@@ -89,8 +89,9 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
         secretAccessKey:
           process.env.AWS_SECRET_ACCESS_KEY ??
           throwExpression('AWS_SECRET_ACCESS_KEY is undefined'),
+        sessionToken: process.env.AWS_SESSION_TOKEN || undefined,
       },
-      endpoint: process.env.LOCALSTACK_ENDPOINT,
+      endpoint: process.env.LOCALSTACK_ENDPOINT || undefined,
     })
     const xapiDynamodbRepo = new XApiDynamodbRepository(
       dynamodbTableName,
