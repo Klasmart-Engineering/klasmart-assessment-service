@@ -1,13 +1,27 @@
+options:
+  docker: true
+  size: 2x
+
 definitions:
   services:
+    docker:
+      memory: 4096
     postgres:
       image: postgres
       environment:
-        POSTGRES_DB: test_user_db
+        POSTGRES_DB: test_assessment_db
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: assessments
     redis:
       image: redis
+    localstack:
+      image: localstack/localstack
+      environment:
+        SERVICES: dynamodb
+        AWS_DEFAULT_REGION: ap-northeast-2
+        EDGE_PORT: 4566
+      ports:
+        - "4566:4566"
 
   caches:
     nodemodules: ./node_modules
@@ -75,19 +89,24 @@ definitions:
         artifacts:
           - dist/**
 
-    - step: &docker-build
-        name: '🐳 Docker build'
+    - step: &docker-build-and-run
+        name: '🐳 docker build and run'
+        image: python:3.9-alpine
         services:
+          - postgres
+          - redis
+          - localstack
           - docker
+        size: 2x
         script:
           - *skip-bitbucket-authored-commits
-          - docker build -t kidsloop-assessment .
+          - /bin/sh ./scripts/run-container.sh
   
     - step: &version-release
         name: '🏷️ Release Version Bump'
         image: node:16
         caches:
-        - nodemodules
+          - nodemodules
         script:
           - *skip-bitbucket-authored-commits
           - if [[ $BITBUCKET_BRANCH != master ]]; then echo "This can only be performed on master branch" && exit 1; fi
@@ -146,13 +165,13 @@ pipelines:
           script:
             - /bin/bash commitlint-pipeline-check.sh
       - step: *npm-build
-      - step: *docker-build
+      - step: *docker-build-and-run
 
   branches:
     master:
       - step: *npm-install-and-test
       - step: *npm-build
-      - step: *docker-build
+      - step: *docker-build-and-run
       - step: *version-release
       - step: *slack-notification-version-release
 
