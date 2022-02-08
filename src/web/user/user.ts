@@ -43,29 +43,26 @@ export class UserClass {
   }
 }
 
-interface UserNodeResult {
-  id: string
-  givenName?: string
-  familyName?: string
-  avatar?: string
-  contactInfo: ContactInfo
-}
-
-interface ContactInfo {
+// to deprecate
+interface UserResult {
+  user_id: string
+  full_name?: string
+  given_name?: string
   email?: string
-  phone?: string
 }
 
-const convertUserNodeResultToTypedUser = (result: UserNodeResult): User => {
+// to deprecate
+const convertUserResultToTypedUser = (result: UserResult): User => {
   const user = {
-    userId: result.id,
-    givenName: result.givenName,
-    familyName: result.familyName,
-    email: result.contactInfo?.email,
+    userId: result.user_id,
+    givenName: result.given_name,
+    familyName: result.full_name,
+    email: result?.email,
   }
   return user
 }
 
+// to deprecate
 @Service()
 export class UserApi {
   readonly config: Configuration = getConfig()
@@ -78,31 +75,97 @@ export class UserApi {
       authorization: authorizationToken || '',
     }
 
-    const data: { userNode: UserNodeResult } = await request(
+    const data: { user: UserResult } = await request(
       this.config.USER_SERVICE_ENDPOINT,
-      GET_USER_NODE,
+      GET_USER,
       { id },
       requestHeaders,
     )
 
-    if (!data.userNode) {
+    // if (!data.userNode) {
+    //   return undefined
+    // }
+    // return convertUserNodeResultToTypedUser(data.userNode)
+
+    // to deprecate
+    if (!data.user) {
       return undefined
     }
-    return convertUserNodeResultToTypedUser(data.userNode)
+    return convertUserResultToTypedUser(data.user)
   }
 }
 
-const GET_USER_NODE = gql`
+// to deprecate
+const GET_USER = gql`
   query Query($id: ID!) {
-    userNode(id: $id) {
-      id
-      givenName
-      familyName
-      avatar
-      contactInfo {
-        email
-        phone
-      }
+    user(user_id: $id) {
+      user_id
+      full_name
+      given_name
+      email
     }
   }
 `
+
+// interface UserNodeResult {
+//   id: string
+//   givenName?: string
+//   familyName?: string
+//   avatar?: string
+//   contactInfo: ContactInfo
+// }
+
+// interface ContactInfo {
+//   email: string
+//   phone: string
+// }
+
+// const convertUserNodeResultToTypedUser = (result: UserNodeResult): User => {
+//   const user = {
+//     userId: result.id,
+//     givenName: result.givenName,
+//     familyName: result.familyName,
+//     email: result.contactInfo?.email,
+//   }
+//   return user
+// }
+
+// export class UserApi {
+//   readonly config: Configuration = getConfig()
+
+//   fetchUser = async (
+//     id: string,
+//     authorizationToken?: string,
+//   ): Promise<User | undefined> => {
+//     const requestHeaders = {
+//       authorization: authorizationToken || '',
+//     }
+
+//     const data: { userNode: UserNodeResult } = await request(
+//       this.config.USER_SERVICE_ENDPOINT,
+//       GET_USER_NODE,
+//       { id },
+//       requestHeaders,
+//     )
+
+//     if (!data.userNode) {
+//       return undefined
+//     }
+//     return convertUserNodeResultToTypedUser(data.userNode)
+//   }
+// }
+
+// const GET_USER_NODE = gql`
+//   query Query($id: ID!) {
+//     userNode(id: $id) {
+//       id
+//       givenName
+//       familyName
+//       avatar
+//       contactInfo {
+//         email
+//         phone
+//       }
+//     }
+//   }
+// `
