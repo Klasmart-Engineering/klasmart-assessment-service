@@ -10,7 +10,7 @@ export class FeatureFlags {
   }
 
   reset() {
-    this.UseCreatedAtUpdatedAtVersionColumns = true
+    this.UseCreatedAtUpdatedAtVersionColumns = false
     this.logAllFlags()
   }
 
