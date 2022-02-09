@@ -1,6 +1,6 @@
 import { gql, request } from 'graphql-request'
 import { Service } from 'typedi'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withCorrelation, withLogger } from 'kidsloop-nodejs-logger'
 import { getConfig, Configuration } from '../../initialization/configuration'
 
 const logger = withLogger('connectToUserDatabase')
@@ -41,7 +41,7 @@ const convertAttendanceResultToTypedClass = (
     const joinTimestampDate = new Date(result.joinTimestamp)
     joinTimestamp = new Date(
       joinTimestampDate.getTime() -
-        joinTimestampDate.getTimezoneOffset() * 60000,
+      joinTimestampDate.getTimezoneOffset() * 60000,
     )
   } catch (e) {
     logger.error(e)
@@ -53,7 +53,7 @@ const convertAttendanceResultToTypedClass = (
     const leaveTimestampDate = new Date(result.leaveTimestamp)
     leaveTimestamp = new Date(
       leaveTimestampDate.getTime() -
-        leaveTimestampDate.getTimezoneOffset() * 60000,
+      leaveTimestampDate.getTimezoneOffset() * 60000,
     )
   } catch (e) {
     logger.error(e)
@@ -77,6 +77,7 @@ export class AttendanceApi {
   getRoomAttendances = async (
     roomId: string,
   ): Promise<ReadonlyArray<Attendance>> => {
+    console.log(`Correlation in getRoomAttendances: ${withCorrelation()}`)
     const data: { getClassAttendance: AttendanceResult[] } = await request(
       this.config.ATTENDANCE_SERVICE_ENDPOINT!,
       GET_CLASS_ATTENDANCE_QUERY,

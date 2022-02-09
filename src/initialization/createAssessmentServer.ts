@@ -5,12 +5,13 @@ import cookieParser from 'cookie-parser'
 import cors, { CorsOptions } from 'cors'
 import express, { Express } from 'express'
 import { checkAuthenticationToken } from 'kidsloop-token-validation'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { correlationMiddleware, withCorrelation, withLogger } from 'kidsloop-nodejs-logger'
 import appPackage from '../../package.json'
 import buildDefaultSchema from './buildDefaultSchema'
 import { getConfig } from './configuration'
 import { createApolloServer } from './createApolloServer'
 import { featureFlags } from './featureFlags'
+import { nextTick } from 'process'
 
 const logger = withLogger('createAssessmentServer')
 const config = getConfig()
@@ -30,7 +31,12 @@ const domainRegex = new RegExp(
 )
 
 const corsOptions: CorsOptions = {
-  allowedHeaders: ['Authorization', 'Content-Type', 'Correlation-ID'],
+  allowedHeaders: [
+    'Authorization',
+    'Content-Type',
+    'Correlation-ID',
+    'x-correlation-id',
+  ],
   credentials: true,
   maxAge: 60 * 60 * 24, // 1 day
   origin: domainRegex,
@@ -80,6 +86,12 @@ function createExpressApp(): Express {
   app.use(cookieParser())
   app.use(express.json({ limit: '1mb' }))
   app.use(express.urlencoded({ limit: '1mb', extended: true }))
+  app.use(correlationMiddleware())
+  app.use((req, res, next) => {
+    console.log(`Correlation: ${withCorrelation()}`)
+    next()
+  })
+
   app.use(cors(corsOptions))
 
   const viewsPath = path.join(__dirname, '../../views')
