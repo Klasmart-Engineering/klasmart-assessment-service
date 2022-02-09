@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.15](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.15..v1.11.14) (2022-02-09)
+
+
+### Bug Fixes
+
+* don't pass credentials to dynamodb since they are picked up automatically by the aws sdk ([d1bb825](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/d1bb825ba8380c5a4ce97f4b36019cd90a7c1891))
+
 ### [1.11.14](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.14..v1.11.13) (2022-02-08)
 
 ### [1.11.13](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.13..v1.11.12) (2022-02-08)
