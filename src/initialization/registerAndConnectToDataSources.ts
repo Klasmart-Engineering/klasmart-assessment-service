@@ -24,7 +24,6 @@ import { Attendance as AttendanceSql } from '../db/attendance/entities'
 import { getConfig } from './configuration'
 import { AttendanceApi } from '../web/attendance'
 import DiKeys from './diKeys'
-import { throwExpression } from '../helpers/throwExpression'
 
 useContainer(TypeormTypediContainer)
 const logger = withLogger('registerAndConnectToDataSources')
@@ -82,15 +81,6 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
     }
     const dynamoDbClient = new DynamoDBClient({
       apiVersion: '2012-08-10',
-      credentials: {
-        accessKeyId:
-          process.env.AWS_ACCESS_KEY_ID ??
-          throwExpression('AWS_ACCESS_KEY_ID is undefined'),
-        secretAccessKey:
-          process.env.AWS_SECRET_ACCESS_KEY ??
-          throwExpression('AWS_SECRET_ACCESS_KEY is undefined'),
-        sessionToken: process.env.AWS_SESSION_TOKEN || undefined,
-      },
       endpoint: process.env.LOCALSTACK_ENDPOINT || undefined,
     })
     const xapiDynamodbRepo = new XApiDynamodbRepository(
