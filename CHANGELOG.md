@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.13.0..v1.12.0) (2022-02-15)
+
+
+### Features
+
+* **DAS-107:** add 'Room' query caching logic ([1c8b31c](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/1c8b31c3233a95bbaf828dce68d2bec1519fbdef))
+
 ## [1.12.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.12.0..v1.11.15) (2022-02-15)
 
 
