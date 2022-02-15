@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.12.0..v1.11.15) (2022-02-15)
+
+
+### Features
+
+* **DAS-222:** re-enable created-at-migration by setting flag to true ([31952d9](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/31952d97a49706cba87fc1b169292354d1a3b135))
+
 ### [1.11.15](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.11.15..v1.11.14) (2022-02-09)
 
 
