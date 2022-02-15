@@ -253,10 +253,22 @@ Docs:
 - [typeorm - Migrations](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md)
 - [typeorm - Using CLI](https://github.com/typeorm/typeorm/blob/master/docs/using-cli.md)
 
-To manually create a migration, make sure there's an `ormConfig.json` file present. You can generate it with the `./scripts/generateOrmConfig.ts` script. Then run the following:
+To generate a migration, make sure there's an `ormConfig.json` file present. You can generate it with the `./scripts/generateOrmConfig.ts` script. Then run the following:
 
 ```sh
 npm run typeorm migration:generate -- --config ormConfig.json -c assessments -n MigrationName
+```
+
+Manually run a migration:
+
+```sh
+npm run typeorm migration:run -- --config ormConfig.json -c assessments
+```
+
+Revert a migration:
+
+```sh
+npm run typeorm migration:revert -- --config ormConfig.json -c assessments
 ```
 
 ### Revert migrations with the docker container

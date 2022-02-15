@@ -7,10 +7,10 @@ import { createXApiDbConnection } from '../utils/testConnection'
 import { Connection } from 'typeorm'
 import { XApiRecordSql } from '../../src/db/xapi/sql/entities'
 
-describe('xApi SQL database interface', () => {
+describe.only('xApi SQL database interface', () => {
   context('1 student, 1 xapi "score" event', () => {
     let dbConnection: Connection
-    let xapiRecord: XApiRecord
+    let xapiRecord: XApiRecordSql
     let xapiRecords: ReadonlyArray<XApiRecord>
     const xapiContentName = 'My H5P Name'
     const xapiContentType = 'Flashcards'
@@ -32,7 +32,7 @@ describe('xApi SQL database interface', () => {
 
       const typeOrmRepository = dbConnection.getRepository(XApiRecordSql)
       const sut = new XApiSqlRepository(typeOrmRepository)
-      xapiRecords = await sut.searchXApiEvents(studentId)
+      xapiRecords = await sut.groupSearchXApiEventsForUsers([studentId])
     })
 
     after(async () => await dbConnection?.close())
@@ -48,4 +48,12 @@ describe('xApi SQL database interface', () => {
       expect(actual).to.deep.equal(studentId)
     })
   })
+
+  // query by room -> for 2 users create 3 rooms and check that events belong to the right room
+  // query by group of userIds -> for 2 users create events with and without a roomId but with timestamps that coincide in time
+  //
+  //
+  //
+  //
+  //
 })

@@ -1,7 +1,8 @@
 export interface XApiRecord {
-  userId?: string
-  serverTimestamp?: number
   ipHash?: string
+  roomId?: string
+  serverTimestamp?: number
+  userId?: string
   xapi?: XApiObject
 }
 

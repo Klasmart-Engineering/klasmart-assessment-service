@@ -1,5 +1,5 @@
-import { Inject, Service } from 'typedi'
 import { withLogger } from 'kidsloop-nodejs-logger'
+import { Inject, Service } from 'typedi'
 
 import { XApiRecord } from '../db/xapi'
 import { IXApiRepository } from '../db/xapi/repo'
@@ -21,22 +21,109 @@ export class RoomEventsProvider {
     attendances: ReadonlyArray<Attendance>,
     h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<ParsedXapiEvent>> {
-    const parsedXapiEvents: ParsedXapiEvent[] = []
     logger.debug(
       `getEvents >> roomId ${roomId}, attendances count: ${attendances.length}`,
     )
-    for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
-      const rawXapiEvents = await this.xapiRepository.searchXApiEvents(
-        userId,
-        joinTimestamp.getTime(),
-        leaveTimestamp.getTime(),
+
+    let rawXapiEvents: XApiRecord[] = []
+
+    // method 1 -> with roomId
+    rawXapiEvents = await this.xapiRepository.searchXapiEventsWithRoomId(roomId)
+    if (rawXapiEvents.length > 0) {
+      const parsedXapiEvents: ReadonlyArray<ParsedXapiEvent> = this.parseEvents(
+        roomId,
+        rawXapiEvents,
+        h5pIdToContentIdMap,
       )
-      parsedXapiEvents.push(
-        ...this.parseEvents(roomId, rawXapiEvents, h5pIdToContentIdMap),
-      )
+      return parsedXapiEvents
     }
-    return parsedXapiEvents
+
+    // method 2 -> with list of users
+    if (rawXapiEvents.length === 0) {
+      const userIds = attendances.map((a) => a.userId)
+      const earliestJoinTimestamp = Math.min(
+        ...attendances.map((a) => a.joinTimestamp.getTime()),
+      )
+      const latestLeaveTimestamp = Math.max(
+        ...attendances.map((a) => a.leaveTimestamp.getTime()),
+      )
+      rawXapiEvents = await this.xapiRepository.groupSearchXApiEventsForUsers(
+        userIds,
+        earliestJoinTimestamp,
+        latestLeaveTimestamp,
+      )
+
+      if (rawXapiEvents.length > 0) {
+        const userIdToAttendanceMap = new Map<string, Attendance>(
+          attendances.map((attendance) => [attendance.userId, attendance]),
+        )
+
+        const parsedXapiEvents: ReadonlyArray<ParsedXapiEvent> =
+          this.parseEvents(roomId, rawXapiEvents, h5pIdToContentIdMap).filter(
+            (event) => {
+              const { userId, timestamp } = event
+              const attendance = userIdToAttendanceMap.get(userId)
+
+              if (attendance === undefined) {
+                return false
+              }
+              const { joinTimestamp, leaveTimestamp } = attendance
+              const eventIsWithinAttendanceTimeRange =
+                joinTimestamp.getTime() < timestamp &&
+                timestamp < leaveTimestamp.getTime()
+
+              return eventIsWithinAttendanceTimeRange
+            },
+          )
+        return parsedXapiEvents
+      }
+    }
+
+    // method 3 -> loop over users
+    if (rawXapiEvents.length === 0) {
+      rawXapiEvents = (
+        await Promise.all(
+          attendances.map(({ userId, joinTimestamp, leaveTimestamp }) =>
+            this.xapiRepository.searchXApiEventsForUser(
+              userId,
+              joinTimestamp.getTime(),
+              leaveTimestamp.getTime(),
+            ),
+          ),
+        )
+      ).flatMap((x) => x)
+      const parsedXapiEvents = this.parseEvents(
+        roomId,
+        rawXapiEvents,
+        h5pIdToContentIdMap,
+      )
+      return parsedXapiEvents
+    }
+
+    return []
   }
+
+  // public async getEventsOld(
+  //   roomId: string,
+  //   attendances: ReadonlyArray<Attendance>,
+  //   h5pIdToContentIdMap: ReadonlyMap<string, string>,
+  // ): Promise<ReadonlyArray<ParsedXapiEvent>> {
+  //   const parsedXapiEvents: ParsedXapiEvent[] = []
+  //   logger.debug(
+  //     `getEvents >> roomId ${roomId}, attendances count: ${attendances.length}`,
+  //   )
+  //   for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
+  //     const rawXapiEvents = await this.xapiRepository.searchXApiEventsForUser(
+  //       userId,
+  //       joinTimestamp.getTime(),
+  //       leaveTimestamp.getTime(),
+  //     )
+  //     parsedXapiEvents.push(
+  //       ...this.parseEvents(roomId, rawXapiEvents, h5pIdToContentIdMap),
+  //     )
+  //   }
+  //   return parsedXapiEvents
+  // }
 
   private parseEvents(
     roomId: string,

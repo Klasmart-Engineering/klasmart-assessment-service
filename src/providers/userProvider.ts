@@ -70,7 +70,7 @@ export class UserProvider {
       }
       return data.user
     })
-    logger.debug(`dataloader ==> userResults: ${userResults}`)
+    logger.debug(`dataloader ==> userResults count: ${userResults.length}`)
     return userResults
   }
 }

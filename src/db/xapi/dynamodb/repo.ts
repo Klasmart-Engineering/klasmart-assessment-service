@@ -27,13 +27,25 @@ export class XApiDynamodbRepository implements IXApiRepository {
     private readonly client: DynamoDBClient,
   ) {}
 
-  async searchXApiEvents(
+  async searchXapiEventsWithRoomId(_roomId: string): Promise<XApiRecord[]> {
+    return []
+  }
+
+  async groupSearchXApiEventsForUsers(
+    _userIds: string[],
+    _from?: number,
+    _to?: number,
+  ): Promise<XApiRecord[]> {
+    return []
+  }
+
+  async searchXApiEventsForUser(
     userId: string,
     from?: number,
     to?: number,
-  ): Promise<ReadonlyArray<XApiRecord>> {
+  ): Promise<XApiRecord[]> {
     logger.debug(
-      `searchXApiEvents >> userId: ${userId}, from: ${from}, to: ${to}`,
+      `searchXApiEventsForUser >> userId: ${userId}, from: ${from}, to: ${to}`,
     )
     const input: QueryCommandInput = {
       TableName: this.tableName,
@@ -50,7 +62,7 @@ export class XApiDynamodbRepository implements IXApiRepository {
     const data = result.Items?.map((x) => unmarshall(x) as XApiRecord) || []
 
     logger.debug(
-      `searchXApiEvents >> userId: ${userId}, from: ${from}, ` +
+      `searchXApiEventsForUser >> userId: ${userId}, from: ${from}, ` +
         ` to: ${to} => items found: ${data.length}`,
     )
     return data

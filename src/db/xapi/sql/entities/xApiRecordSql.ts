@@ -16,6 +16,9 @@ export class XApiRecordSql {
   })
   serverTimestamp!: number
 
+  @Column({ name: 'room_id', type: 'varchar', nullable: true })
+  roomId?: string | null
+
   @Column({ type: 'jsonb', nullable: true })
   public xapi?: XApiObject
 

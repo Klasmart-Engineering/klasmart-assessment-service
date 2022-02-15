@@ -33,7 +33,7 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
       dynamoDbClient.send(Arg.any()).resolves(output)
 
       const sut = new XApiDynamodbRepository('table-name', dynamoDbClient)
-      const rawXapiRecords = await sut.searchXApiEvents(
+      const rawXapiRecords = await sut.searchXApiEventsForUser(
         'user1',
         0,
         Date.now() + 1,
@@ -62,7 +62,7 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
         dynamoDbClient.send(Arg.any()).resolves(output)
 
         const sut = new XApiDynamodbRepository('table-name', dynamoDbClient)
-        const rawXapiRecords = await sut.searchXApiEvents('user1') // Dont specify to and from.
+        const rawXapiRecords = await sut.searchXApiEventsForUser('user1') // Dont specify to and from.
         expect(rawXapiRecords).to.have.lengthOf(1)
       })
     },
@@ -78,7 +78,7 @@ describe('XApiDynamodbRepository.searchXapiEvents', () => {
       dynamoDbClient.send(Arg.any()).resolves(output)
 
       const sut = new XApiDynamodbRepository('table-name', dynamoDbClient)
-      const rawXapiRecords = await sut.searchXApiEvents(
+      const rawXapiRecords = await sut.searchXApiEventsForUser(
         'user1',
         0,
         Date.now() + 1,
