@@ -82,11 +82,16 @@ describe('roomScoresCalculator', () => {
         )
         .resolves(material.contentId)
       scoresTemplateProvider
-        .getTemplate(roomId, teacherId, [material], [attendance], [xapiRecord])
+        .getTemplate(
+          roomId,
+          teacherId,
+          [material],
+          new Set([attendance.userId]),
+          [xapiRecord],
+        )
         .resolves(mapKeyToUserContentScoreMap)
 
       const roomsScoresCalculator = new RoomScoresCalculator(
-        attendanceProvider,
         eventsProvider,
         materialsProvider,
         scoresTemplateProvider,
@@ -96,6 +101,8 @@ describe('roomScoresCalculator', () => {
       const resultScores = await roomsScoresCalculator.calculate(
         roomId,
         teacherId,
+        [attendance],
+        authenticationToken,
       )
 
       // Assert
@@ -188,13 +195,12 @@ describe('roomScoresCalculator', () => {
             roomId,
             teacherId,
             [material],
-            [attendance],
+            new Set([attendance.userId]),
             [xapiRecord],
           )
           .resolves(mapKeyToUserContentScoreMap)
 
         const roomsScoresCalculator = new RoomScoresCalculator(
-          attendanceProvider,
           eventsProvider,
           materialsProvider,
           roomScoresTemplateProvider,
@@ -204,6 +210,8 @@ describe('roomScoresCalculator', () => {
         const resultScores = await roomsScoresCalculator.calculate(
           roomId,
           teacherId,
+          [attendance],
+          authenticationToken,
         )
 
         // Assert

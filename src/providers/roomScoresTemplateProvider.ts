@@ -1,5 +1,5 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Inject, Service } from 'typedi'
+import { Service } from 'typedi'
 import { Repository } from 'typeorm'
 import { InjectRepository } from 'typeorm-typedi-extensions'
 
@@ -9,7 +9,6 @@ import { Content } from '../db/cms/entities'
 import ContentKey from '../helpers/contentKey'
 import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
 import { Attendance } from '../web/attendance'
-import { RoomAttendanceProvider } from './roomAttendanceProvider'
 import { UserContentScoreFactory } from './userContentScoreFactory'
 
 const logger = withLogger('RoomScoresTemplateProvider')
@@ -26,8 +25,6 @@ export class RoomScoresTemplateProvider {
   private roomIdToContentKeyUsesH5pIdMap = new Map<string, boolean>()
 
   constructor(
-    @Inject('RoomAttendanceProvider')
-    private readonly roomAttendanceProvider: RoomAttendanceProvider,
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
     private readonly userContentScoreRepository: Repository<UserContentScore>,
     private readonly userContentScoreFactory: UserContentScoreFactory,
@@ -45,16 +42,15 @@ export class RoomScoresTemplateProvider {
     roomId: string,
     teacherId: string,
     materials: ReadonlyArray<Content>,
-    attendances: ReadonlyArray<Attendance>,
+    userIds: ReadonlySet<string>,
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
   ): Promise<ReadonlyMap<string, UserContentScore>> {
     logger.debug(
       `getTemplate >> roomId: ${roomId}, teacherId: ${teacherId}, materials count: ${materials.length}, ` +
-        `attendances count: ${attendances.length}, xapiEvents count: ${xapiEvents.length}`,
+        `userIds count: ${userIds.size}, xapiEvents count: ${xapiEvents.length}`,
     )
 
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
-    const userIds = this.roomAttendanceProvider.getUserIds(attendances)
 
     // Won't be necessary when a subcontent API is implemented.
     const h5pKeyToXapiEventMap = new Map<string, ParsedXapiEvent>()

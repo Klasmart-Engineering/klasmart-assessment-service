@@ -36,7 +36,7 @@ export class UserContentScore extends Base {
   @OneToMany(
     () => Answer, //Useless comment due to linter bug
     (answer) => answer.userContentScore,
-    { lazy: true, cascade: false },
+    { lazy: true, cascade: true },
   )
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
@@ -83,6 +83,7 @@ export class UserContentScore extends Base {
     if (score === undefined && response === undefined) {
       return
     }
+    // TODO: Optimize by removing await.
     await this.addAnswer(xapiEvent)
   }
 
@@ -122,9 +123,5 @@ export class UserContentScore extends Base {
       xapiEvent.score?.max,
     )
     answers.push(answer)
-    const score = xapiEvent.score?.raw
-    if (score === undefined) {
-      return
-    }
   }
 }

@@ -1,11 +1,10 @@
-import { Inject, Service } from 'typedi'
+import { Service } from 'typedi'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
 import { Attendance } from '../web/attendance'
-import { RoomAttendanceProvider } from './roomAttendanceProvider'
 import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
 import { RoomScoresTemplateProvider } from './roomScoresTemplateProvider'
@@ -15,8 +14,6 @@ const logger = withLogger('RoomScoresCalculator')
 @Service()
 export class RoomScoresCalculator {
   constructor(
-    @Inject('RoomAttendanceProvider')
-    private readonly roomAttendanceProvider: RoomAttendanceProvider,
     private readonly roomEventsProvider: RoomEventsProvider,
     private readonly roomMaterialsProvider: RoomMaterialsProvider,
     private readonly roomScoresTemplateProvider: RoomScoresTemplateProvider,
@@ -25,6 +22,7 @@ export class RoomScoresCalculator {
   public async calculate(
     roomId: string,
     teacherId: string,
+    attendances: ReadonlyArray<Attendance>,
     authenticationToken?: string,
   ): Promise<ReadonlyArray<UserContentScore>> {
     logger.debug(`calculate >> roomId: ${roomId}, teacherId: ${teacherId}`)
@@ -37,11 +35,10 @@ export class RoomScoresCalculator {
     )
 
     const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(materials)
-    const attendances = await this.roomAttendanceProvider.getAttendances(roomId)
+    const userIds = new Set(attendances.map((x) => x.userId))
     logger.debug(
-      `calculate >> roomId: ${roomId} >> attendances found: ${attendances.length}`,
+      `calculate >> roomId: ${roomId} >> attendances found: ${userIds.size}`,
     )
-
     const xapiEvents = await this.roomEventsProvider.getEvents(
       roomId,
       attendances,
@@ -55,7 +52,7 @@ export class RoomScoresCalculator {
       roomId,
       teacherId,
       materials,
-      attendances,
+      userIds,
       xapiEvents,
       h5pIdToContentIdMap,
     )
@@ -82,7 +79,7 @@ export class RoomScoresCalculator {
     roomId: string,
     teacherId: string,
     materials: ReadonlyArray<Content>,
-    attendances: ReadonlyArray<Attendance>,
+    userIds: ReadonlySet<string>,
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
     h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<UserContentScore>> {
@@ -92,7 +89,7 @@ export class RoomScoresCalculator {
         roomId,
         teacherId,
         materials,
-        attendances,
+        userIds,
         xapiEvents,
       )
 

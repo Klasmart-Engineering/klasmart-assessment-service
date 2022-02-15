@@ -11,7 +11,6 @@ const logger = withLogger('AttendanceProvider')
 
 export interface RoomAttendanceProvider {
   getAttendances(roomId: string): Promise<ReadonlyArray<Attendance>>
-  getUserIds(attendances: ReadonlyArray<Attendance>): Set<string>
 }
 
 class BaseRoomAttendanceProvider {
@@ -36,10 +35,6 @@ class BaseRoomAttendanceProvider {
       }
     }
     return [...sessionIdToAttendanceMap.values()]
-  }
-
-  public getUserIds(attendances: Attendance[]): Set<string> {
-    return new Set(attendances.map((x) => x.userId))
   }
 }
 

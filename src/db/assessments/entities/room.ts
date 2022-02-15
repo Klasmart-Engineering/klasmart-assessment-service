@@ -36,6 +36,9 @@ export class Room extends Base {
   @Column({ type: 'timestamp', nullable: true })
   public endTime?: Date | null
 
+  @Column({ type: 'smallint', name: 'attendance_count', nullable: true })
+  public attendanceCount?: number
+
   @Column({ default: false })
   public recalculate!: boolean
 

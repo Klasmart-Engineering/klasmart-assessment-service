@@ -9,7 +9,6 @@ import { TestTitle } from '../utils/testTitles'
 import { XApiRecord } from '../../src/db/xapi'
 import '../utils/globalIntegrationTestHooks'
 import EndUser from '../entities/endUser'
-import { featureFlags } from '../../src/initialization/featureFlags'
 
 import {
   dbConnect,
@@ -57,9 +56,9 @@ import ContentKey from '../../src/helpers/contentKey'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
-import { Attendance } from '../../src/web/attendance'
 import { User } from '../../src/web/user'
 import DiKeys from '../../src/initialization/diKeys'
+import { delay } from '../../src/helpers/delay'
 
 /**
  * - scores 0 the first time
@@ -141,7 +140,8 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
         const roomId = 'room1'
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
+        const { userApi, attendanceApi } =
+          createSubstitutesToExpectedInjectableServices()
         const endUser = new EndUserBuilder().authenticate().build()
         userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
@@ -150,6 +150,7 @@ describe('roomResolver.Room', () => {
           .getSchedule(roomId, endUser.token)
           .rejects(ErrorMessage.scheduleNotFound(roomId))
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+        attendanceApi.getRoomAttendances(roomId).resolves([])
 
         // Act
         const fn = () =>
@@ -173,7 +174,8 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
+      const { userApi, attendanceApi } =
+        createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
       userApi.fetchUser(endUser.userId, endUser.token).resolves(endUser)
 
@@ -182,6 +184,7 @@ describe('roomResolver.Room', () => {
         .getSchedule(roomId, endUser.token)
         .rejects(ErrorMessage.scheduleNotFound(roomId))
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+      attendanceApi.getRoomAttendances(roomId).resolves([])
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -366,7 +369,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 2,
       }
       expect(actual).to.deep.include(expected)
     })
@@ -389,12 +392,27 @@ describe('roomResolver.Room', () => {
       expect(actual).to.deep.include(expected)
     })
 
-    it('DB: adds 0 Answer entries', async () => {
+    it('DB: adds 1 Answer entry', async () => {
       const dbAnswers = await answerRepo().count()
-      expect(dbAnswers).to.equal(0)
+      expect(dbAnswers).to.equal(1)
     })
 
-    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+    it('DB: Answer has expected values', async () => {
+      const dbAnswer = await answerRepo().findOneOrFail()
+
+      const expected: FindConditions<Answer> = {
+        roomId: roomId,
+        studentId: student.userId,
+        contentKey: lessonMaterial.contentId,
+        answer: xapiRecord.xapi?.data?.statement?.result?.response ?? null,
+        date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
+        maximumPossibleScore: score.max,
+        minimumPossibleScore: score.min,
+        score: 1,
+      }
+
+      expect(dbAnswer).to.deep.include(expected)
+    })
   })
 
   context('1 student, 1 xapi "answer" event', () => {
@@ -566,7 +584,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 2,
       }
       expect(actual).to.deep.include(expected)
     })
@@ -589,12 +607,27 @@ describe('roomResolver.Room', () => {
       expect(actual).to.deep.include(expected)
     })
 
-    it('DB: adds 0 Answer entries', async () => {
+    it('DB: adds 1 Answer entry', async () => {
       const dbAnswers = await answerRepo().count()
-      expect(dbAnswers).to.equal(0)
+      expect(dbAnswers).to.equal(1)
     })
 
-    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+    it('DB: Answer has expected values', async () => {
+      const dbAnswer = await answerRepo().findOneOrFail()
+
+      const expected: FindConditions<Answer> = {
+        roomId: roomId,
+        studentId: student.userId,
+        contentKey: lessonMaterial.contentId,
+        answer: xapiRecord.xapi?.data?.statement?.result?.response ?? null,
+        date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
+        maximumPossibleScore: null,
+        minimumPossibleScore: null,
+        score: null,
+      }
+
+      expect(dbAnswer).to.deep.include(expected)
+    })
   })
 
   context('1 student, 1 xapi "attempted" event', () => {
@@ -753,7 +786,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 2,
       }
       expect(actual).to.deep.include(expected)
     })
@@ -780,8 +813,6 @@ describe('roomResolver.Room', () => {
       const dbAnswers = await answerRepo().count()
       expect(dbAnswers).to.equal(0)
     })
-
-    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
   })
 
   context(
@@ -1072,7 +1103,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
         expect(actual).to.deep.include(expected)
       })
@@ -1145,12 +1176,54 @@ describe('roomResolver.Room', () => {
         expect(actual).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
+      it('DB: adds 2 Answer entries', async () => {
         const dbAnswers = await answerRepo().find()
-        expect(dbAnswers).to.have.lengthOf(0)
+        expect(dbAnswers).to.have.lengthOf(2)
       })
 
-      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+      it('DB: Answer 1 has expected values', async () => {
+        const contentKey = ContentKey.construct(
+          lessonMaterial.contentId,
+          subcontent1Id,
+        )
+        const dbAnswer = await answerRepo().findOneOrFail({
+          where: { contentKey },
+        })
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          answer: xapiRecord1.xapi?.data?.statement?.result?.response ?? null,
+          date: new Date(xapiRecord1.xapi?.clientTimestamp ?? 0),
+          maximumPossibleScore: 2,
+          minimumPossibleScore: 0,
+          score: 1,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
+
+      it('DB: Answer 2 has expected values', async () => {
+        const contentKey = ContentKey.construct(
+          lessonMaterial.contentId,
+          subcontent2Id,
+        )
+        const dbAnswer = await answerRepo().findOneOrFail({
+          where: { contentKey },
+        })
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          answer: xapiRecord2.xapi?.data?.statement?.result?.response ?? null,
+          date: new Date(xapiRecord2.xapi?.clientTimestamp ?? 0),
+          maximumPossibleScore: 2,
+          minimumPossibleScore: 0,
+          score: 1,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
     },
   )
 
@@ -1328,7 +1401,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
 
         expect(dbRoom).to.deep.include(expected)
@@ -1354,12 +1427,27 @@ describe('roomResolver.Room', () => {
         expect(dbUserContentScore).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
+      it('DB: adds 1 Answer entry', async () => {
         const dbAnswers = await answerRepo().find()
-        expect(dbAnswers).to.have.lengthOf(0)
+        expect(dbAnswers).to.have.lengthOf(1)
       })
 
-      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+      it('DB: Answer has expected values', async () => {
+        const dbAnswer = await answerRepo().findOneOrFail()
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          answer: xapiRecord.xapi?.data?.statement?.result?.response ?? null,
+          date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
+          maximumPossibleScore: 2,
+          minimumPossibleScore: 0,
+          score: 1,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
     },
   )
 
@@ -1615,7 +1703,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
         expect(actual).to.deep.include(expected)
       })
@@ -1657,12 +1745,48 @@ describe('roomResolver.Room', () => {
         expect(actual).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
+      it('DB: adds 2 Answer entries', async () => {
         const count = await answerRepo().count()
-        expect(count).to.equal(0)
+        expect(count).to.equal(2)
       })
 
-      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+      it('DB: Answer 1 has expected values', async () => {
+        const contentKey = lessonMaterial1.contentId
+        const dbAnswer = await answerRepo().findOneOrFail({
+          where: { contentKey },
+        })
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          answer: xapiRecord1.xapi?.data?.statement?.result?.response ?? null,
+          date: new Date(xapiRecord1.xapi?.clientTimestamp ?? 0),
+          maximumPossibleScore: 10,
+          minimumPossibleScore: 0,
+          score: 5,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
+
+      it('DB: Answer 2 has expected values', async () => {
+        const contentKey = lessonMaterial2.contentId
+        const dbAnswer = await answerRepo().findOneOrFail({
+          where: { contentKey },
+        })
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          answer: xapiRecord2.xapi?.data?.statement?.result?.response ?? null,
+          date: new Date(xapiRecord2.xapi?.clientTimestamp ?? 0),
+          maximumPossibleScore: 15,
+          minimumPossibleScore: 0,
+          score: 15,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
     },
   )
 
@@ -1723,8 +1847,8 @@ describe('roomResolver.Room', () => {
         .withH5pId(lessonMaterial.h5pId)
         .withH5pName(xapiContentName)
         .withH5pType(xapiContentType)
-        .withServerTimestamp(xapiTimestamp1 + 10)
-        .withClientTimestamp(xapiTimestamp1 + 10)
+        .withServerTimestamp(xapiTimestamp1 + 1)
+        .withClientTimestamp(xapiTimestamp1 + 1)
         .withScore({ raw: 2, min: 0, max: 3 })
         .build()
       xapiRepository
@@ -1839,7 +1963,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 2,
       }
 
       expect(dbRoom).to.deep.include(expected)
@@ -1865,12 +1989,46 @@ describe('roomResolver.Room', () => {
       expect(dbUserContentScore).to.deep.include(expected)
     })
 
-    it('DB: adds 0 Answer entries', async () => {
+    it('DB: adds 2 Answer entries', async () => {
       const answerCount = await answerRepo().count()
-      expect(answerCount).to.equal(0)
+      expect(answerCount).to.equal(2)
     })
 
-    // TODO: Add back 'DB: Answers has expected values' test once caching is enabled.
+    it('DB: Answer 1 has expected values', async () => {
+      const dbAnswer = await answerRepo().findOneOrFail({
+        where: { timestamp: xapiRecord2.xapi?.clientTimestamp },
+      })
+
+      const expected: FindConditions<Answer> = {
+        roomId: roomId,
+        studentId: student.userId,
+        contentKey: lessonMaterial.contentId,
+        answer: xapiRecord2.xapi?.data?.statement?.result?.response ?? null,
+        maximumPossibleScore: 3,
+        minimumPossibleScore: 0,
+        score: 2,
+      }
+
+      expect(dbAnswer).to.deep.include(expected)
+    })
+
+    it('DB: Answer 2 has expected values', async () => {
+      const dbAnswer = await answerRepo().findOneOrFail({
+        where: { timestamp: xapiRecord.xapi?.clientTimestamp },
+      })
+
+      const expected: FindConditions<Answer> = {
+        roomId: roomId,
+        studentId: student.userId,
+        contentKey: lessonMaterial.contentId,
+        answer: xapiRecord.xapi?.data?.statement?.result?.response ?? null,
+        maximumPossibleScore: 3,
+        minimumPossibleScore: 0,
+        score: 0,
+      }
+
+      expect(dbAnswer).to.deep.include(expected)
+    })
   })
 
   context(
@@ -2031,7 +2189,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
         expect(actual).to.deep.include(expected)
       })
@@ -2285,7 +2443,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 3,
       }
 
       expect(dbRoom).to.deep.include(expected)
@@ -2330,12 +2488,26 @@ describe('roomResolver.Room', () => {
       expect(actual).to.deep.include(expected)
     })
 
-    it('DB: adds 0 Answer entries', async () => {
+    it('DB: adds 1 Answer entry', async () => {
       const dbAnswers = await answerRepo().find()
-      expect(dbAnswers).to.have.lengthOf(0)
+      expect(dbAnswers).to.have.lengthOf(1)
     })
 
-    // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+    it('DB: Answer has expected values', async () => {
+      const dbAnswer = await answerRepo().findOneOrFail()
+
+      const expected: FindConditions<Answer> = {
+        roomId: roomId,
+        studentId: student2.userId,
+        answer: xapiRecord.xapi?.data?.statement?.result?.response ?? null,
+        date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
+        maximumPossibleScore: 2,
+        minimumPossibleScore: 0,
+        score: 1,
+      }
+
+      expect(dbAnswer).to.deep.include(expected)
+    })
   })
 
   context('1 student, 1 h5p material, 0 xapi events', () => {
@@ -2483,7 +2655,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 2,
       }
 
       expect(dbRoom).to.deep.include(expected)
@@ -2662,7 +2834,7 @@ describe('roomResolver.Room', () => {
         roomId: roomId,
         startTime: null,
         endTime: null,
-        recalculate: false,
+        attendanceCount: 2,
       }
 
       expect(dbRoom).to.deep.include(expected)
@@ -2964,7 +3136,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
 
         expect(dbRoom).to.deep.include(expected)
@@ -2990,9 +3162,9 @@ describe('roomResolver.Room', () => {
         expect(dbUserContentScore).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
+      it('DB: adds 1 Answer entry', async () => {
         const dbAnswers = await answerRepo().find()
-        expect(dbAnswers).to.have.lengthOf(0)
+        expect(dbAnswers).to.have.lengthOf(1)
       })
 
       it('DB: 1 TeacherScore', async () => {
@@ -3037,6 +3209,9 @@ describe('roomResolver.Room', () => {
       let xapiRecords: XApiRecord[]
       const xapiContentName = 'My Multiple Hotspots'
       const xapiContentType = 'ImageMultipleHotspotQuestion'
+      const scoreTimestamp1 = Date.now()
+      const scoreTimestamp2 = Date.now() + 1000
+      const scoreTimestamp3 = Date.now() + 2000
 
       before(async () => {
         // Arrange
@@ -3077,23 +3252,24 @@ describe('roomResolver.Room', () => {
           .withResponse(undefined)
         xapiRecords = [
           xapiRecordBuilder.withVerb('attempted').build(),
-          // xapiRecordBuilder
-          //   .withVerb('answered')
-          //   .withScore(undefined)
-          //   .withResponse('[x]')
-          //   .build(),
           xapiRecordBuilder
             .withVerb('answered')
             .withScore({ min: 0, max: 3, raw: 1 })
+            .withServerTimestamp(scoreTimestamp1)
+            .withClientTimestamp(scoreTimestamp1)
             .build(),
           xapiRecordBuilder
             .withVerb('answered')
             .withScore({ min: 0, max: 3, raw: 2 })
+            .withServerTimestamp(scoreTimestamp2)
+            .withClientTimestamp(scoreTimestamp2)
             .build(),
           xapiRecordBuilder.withVerb('attempted').withScore(undefined).build(),
           xapiRecordBuilder
             .withVerb('answered')
             .withScore({ min: 0, max: 3, raw: 0 })
+            .withServerTimestamp(scoreTimestamp3)
+            .withClientTimestamp(scoreTimestamp3)
             .build(),
         ]
         xapiRepository
@@ -3188,7 +3364,7 @@ describe('roomResolver.Room', () => {
         const expectedAnswers: FindConditions<GqlAnswer>[] = [
           {
             answer: null,
-            date: xapiRecords[0].xapi?.clientTimestamp,
+            date: xapiRecords[1].xapi?.clientTimestamp,
             maximumPossibleScore: 3,
             minimumPossibleScore: 0,
             score: 2,
@@ -3226,7 +3402,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
 
         expect(dbRoom).to.deep.include(expected)
@@ -3252,12 +3428,46 @@ describe('roomResolver.Room', () => {
         expect(dbUserContentScore).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
+      it('DB: adds 2 Answer entries', async () => {
         const dbAnswers = await answerRepo().find()
-        expect(dbAnswers).to.have.lengthOf(0)
+        expect(dbAnswers).to.have.lengthOf(2)
       })
 
-      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+      it('DB: Answer 1 has expected values', async () => {
+        const dbAnswer = await answerRepo().findOneOrFail({
+          where: { timestamp: scoreTimestamp1 },
+        })
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          answer: null,
+          maximumPossibleScore: 3,
+          minimumPossibleScore: 0,
+          score: 2,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
+
+      it('DB: Answer 2 has expected values', async () => {
+        const dbAnswer = await answerRepo().findOneOrFail({
+          where: { timestamp: scoreTimestamp3 },
+        })
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          answer: null,
+          maximumPossibleScore: 3,
+          minimumPossibleScore: 0,
+          score: 0,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
     },
   )
 
@@ -3456,7 +3666,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
 
         expect(dbRoom).to.deep.include(expected)
@@ -3482,12 +3692,27 @@ describe('roomResolver.Room', () => {
         expect(dbUserContentScore).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
+      it('DB: adds 1 Answer entry', async () => {
         const dbAnswers = await answerRepo().find()
-        expect(dbAnswers).to.have.lengthOf(0)
+        expect(dbAnswers).to.have.lengthOf(1)
       })
 
-      // TODO: Add back 'DB: Answer has expected values' test once caching is enabled.
+      it('DB: Answer has expected values', async () => {
+        const dbAnswer = await answerRepo().findOneOrFail()
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.h5pId,
+          answer: xapiRecord.xapi?.data?.statement?.result?.response ?? null,
+          date: new Date(xapiRecord.xapi?.clientTimestamp ?? 0),
+          maximumPossibleScore: 2,
+          minimumPossibleScore: 0,
+          score: 1,
+        }
+
+        expect(dbAnswer).to.deep.include(expected)
+      })
     },
   )
 
@@ -3758,7 +3983,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           startTime: null,
           endTime: null,
-          recalculate: false,
+          attendanceCount: 2,
         }
         expect(actual).to.deep.include(expected)
       })
@@ -3831,9 +4056,9 @@ describe('roomResolver.Room', () => {
         expect(actual).to.deep.include(expected)
       })
 
-      it('DB: adds 0 Answer entries', async () => {
-        const dbAnswers = await answerRepo().find()
-        expect(dbAnswers).to.have.lengthOf(0)
+      it('DB: adds 1 Answer entry', async () => {
+        const count = await answerRepo().count()
+        expect(count).to.equal(1)
       })
     },
   )

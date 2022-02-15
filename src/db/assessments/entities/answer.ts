@@ -1,4 +1,4 @@
-import { ObjectType, Field } from 'type-graphql'
+import { ObjectType, Field, Float } from 'type-graphql'
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm'
 import { Base } from './base'
 import { UserContentScore } from './userContentScore'
@@ -38,21 +38,21 @@ export class Answer extends Base {
   )
   public userContentScore!: Promise<UserContentScore>
 
-  @Column({ nullable: true })
-  @Field({ nullable: true })
-  public answer?: string
+  @Column({ type: 'varchar', nullable: true })
+  @Field(() => String, { nullable: true })
+  public answer?: string | null
 
-  @Column({ nullable: true })
-  @Field({ nullable: true })
-  public score?: number
+  @Column({ type: 'int4', nullable: true })
+  @Field(() => Float, { nullable: true })
+  public score?: number | null
 
-  @Column({ name: 'minimum_possible_score', nullable: true })
-  @Field({ nullable: true })
-  public minimumPossibleScore?: number
+  @Column({ name: 'minimum_possible_score', type: 'int4', nullable: true })
+  @Field(() => Float, { nullable: true })
+  public minimumPossibleScore?: number | null
 
-  @Column({ name: 'maximum_possible_score', nullable: true })
-  @Field({ nullable: true })
-  public maximumPossibleScore?: number
+  @Column({ name: 'maximum_possible_score', type: 'int4', nullable: true })
+  @Field(() => Float, { nullable: true })
+  public maximumPossibleScore?: number | null
 
   private constructor(
     roomId: string,

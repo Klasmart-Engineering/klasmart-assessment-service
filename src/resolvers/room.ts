@@ -7,7 +7,7 @@ import {
   Authorized,
   Ctx,
 } from 'type-graphql'
-import { Service } from 'typedi'
+import { Inject, Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
@@ -17,6 +17,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context, UserID } from '../auth/context'
+import { RoomAttendanceProvider } from '../providers/roomAttendanceProvider'
 
 const logger = withLogger('RoomResolver')
 
@@ -27,6 +28,8 @@ export default class RoomResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
+    @Inject('RoomAttendanceProvider')
+    private readonly roomAttendanceProvider: RoomAttendanceProvider,
   ) {}
 
   @Authorized()
@@ -40,18 +43,28 @@ export default class RoomResolver {
     logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
+      const attendances = await this.roomAttendanceProvider.getAttendances(
+        roomId,
+      )
+      const attendanceCount = attendances.length
+      if (room) {
+        const cachedAttendanceCount = room.attendanceCount
+        if (attendanceCount === cachedAttendanceCount) {
+          return room
+        }
+      }
       if (!room) {
         room = new Room(roomId)
         logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
       }
-
       const scores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
+        attendances,
         context.encodedAuthenticationToken,
       )
       room.scores = Promise.resolve(scores)
-      room.recalculate = scores.length == 0
+      room.attendanceCount = attendanceCount
       await this.assessmentDB.save(room)
       logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
       return room

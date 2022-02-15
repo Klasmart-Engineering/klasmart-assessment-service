@@ -1,19 +1,13 @@
 import { expect } from 'chai'
 import { Substitute } from '@fluffy-spoon/substitute'
 import { Repository } from 'typeorm'
-import {
-  AttendanceBuilder,
-  LessonMaterialBuilder,
-  UserContentScoreBuilder,
-} from '../builders'
-import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
+import { LessonMaterialBuilder, UserContentScoreBuilder } from '../builders'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { RoomScoresTemplateProvider } from '../../src/providers/roomScoresTemplateProvider'
 import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
-import { featureFlags } from '../../src/initialization/featureFlags'
 
 describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {
@@ -36,8 +30,6 @@ describe('roomScoresTemplateProvider', () => {
           const h5pSub2 = 'h5pSub2' // child of h5pSub1
 
           const userIds = new Set([userId])
-          const attendance = new AttendanceBuilder().withUserId(userId).build()
-          const attendances = [attendance]
           const userContentScore1 = new UserContentScoreBuilder()
             .withContentKey(ContentKey.construct(h5pRoot))
             .withroomId(roomId)
@@ -69,14 +61,11 @@ describe('roomScoresTemplateProvider', () => {
           }
           const xapiEvents = [xapiEvent]
 
-          const roomAttendanceProvider =
-            Substitute.for<RoomAttendanceProvider>()
           const userContentScoreRepository =
             Substitute.for<Repository<UserContentScore>>()
           const userContentScoreFactory =
             Substitute.for<UserContentScoreFactory>()
 
-          roomAttendanceProvider.getUserIds(attendances).returns(userIds)
           userContentScoreFactory
             .create(roomId, userId, userContentScore1.contentKey)
             .returns(userContentScore1)
@@ -88,7 +77,6 @@ describe('roomScoresTemplateProvider', () => {
             .returns(userContentScore3)
 
           const sut = new RoomScoresTemplateProvider(
-            roomAttendanceProvider,
             userContentScoreRepository,
             userContentScoreFactory,
           )
@@ -98,7 +86,7 @@ describe('roomScoresTemplateProvider', () => {
             roomId,
             teacherId,
             materials,
-            attendances,
+            userIds,
             xapiEvents,
           )
           expect(result).to.have.lengthOf(3)
