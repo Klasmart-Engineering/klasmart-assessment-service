@@ -41,6 +41,8 @@ class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "assessment_xapi_room" ADD "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_room" ADD "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_room" ADD "version" integer NULL DEFAULT 1`)
+        await queryRunner.query(`UPDATE "assessment_xapi_room" SET "created_at" = now()`)
+        await queryRunner.query(`UPDATE "assessment_xapi_room" SET "updated_at" = now()`)
         await queryRunner.query(`UPDATE "assessment_xapi_room" SET "version" = 1`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_room" ALTER COLUMN "version" SET NOT NULL`)
 
@@ -48,6 +50,8 @@ class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" ADD "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" ADD "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" ADD "version" integer NULL DEFAULT 1`)
+        await queryRunner.query(`UPDATE "assessment_xapi_user_content_score" SET "created_at" = now()`)
+        await queryRunner.query(`UPDATE "assessment_xapi_user_content_score" SET "updated_at" = now()`)
         await queryRunner.query(`UPDATE "assessment_xapi_user_content_score" SET "version" = 1`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_user_content_score" ALTER COLUMN "version" SET NOT NULL`)
 
@@ -55,6 +59,8 @@ class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" ADD "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" ADD "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" ADD "version" integer NULL DEFAULT 1`)
+        await queryRunner.query(`UPDATE "assessment_xapi_answer" SET "created_at" = now()`)
+        await queryRunner.query(`UPDATE "assessment_xapi_answer" SET "updated_at" = now()`)
         await queryRunner.query(`UPDATE "assessment_xapi_answer" SET "version" = 1`)
         await queryRunner.query(`ALTER TABLE "assessment_xapi_answer" ALTER COLUMN "version" SET NOT NULL`)
     }
