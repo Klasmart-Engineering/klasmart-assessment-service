@@ -29,8 +29,9 @@ describe('roomEventsProvider', () => {
         ])
 
         const xapiRepository = Substitute.for<IXApiRepository>()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(studentId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers([studentId], Arg.any(), Arg.any())
           .resolves([xapiRecord])
 
         const roomEventsProvider = new RoomEventsProvider(xapiRepository)

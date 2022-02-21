@@ -258,11 +258,15 @@ describe('roomResolver.Room', () => {
         .withScore(score)
         .withResponse(undefined)
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -476,11 +480,15 @@ describe('roomResolver.Room', () => {
         .withScore(undefined)
         .withResponse(response)
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -693,11 +701,15 @@ describe('roomResolver.Room', () => {
         .withScore(undefined)
         .withResponse(undefined)
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -890,11 +902,15 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord1, xapiRecord2])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -1292,11 +1308,15 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -1534,11 +1554,15 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContent2Type)
           .withScore({ min: 0, max: 15, raw: 15 })
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord2, xapiRecord1])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -1869,11 +1893,15 @@ describe('roomResolver.Room', () => {
         .withClientTimestamp(xapiTimestamp1 + 1)
         .withScore({ raw: 2, min: 0, max: 3 })
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord, xapiRecord2])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -2101,11 +2129,15 @@ describe('roomResolver.Room', () => {
           .withH5pName(xapiContentName)
           .withH5pType(xapiContentType)
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -2293,14 +2325,18 @@ describe('roomResolver.Room', () => {
         .withH5pType(xapiContentType)
         .withScore({ min: 0, max: 2, raw: 1 })
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student1.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student2.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(student1.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student2.userId, Arg.any(), Arg.any())
         .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -2568,11 +2604,15 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
         .resolves([])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -2748,11 +2788,15 @@ describe('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .build()
+      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
       xapiRepository
-        .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
         .resolves([])
       xapiRepository
-        .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+        .resolves([])
+      xapiRepository
+        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
         .resolves([])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -2940,11 +2984,15 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
         const room = await new RoomBuilder()
           .withRoomId(roomId)
@@ -3297,11 +3345,15 @@ describe('roomResolver.Room', () => {
             .withClientTimestamp(scoreTimestamp3)
             .build(),
         ]
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves(xapiRecords)
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -3547,11 +3599,15 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord])
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
@@ -3813,11 +3869,15 @@ describe('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
+        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
         xapiRepository
-          .searchXApiEvents(endUser.userId, Arg.any(), Arg.any())
+          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
           .resolves([])
         xapiRepository
-          .searchXApiEvents(student.userId, Arg.any(), Arg.any())
+          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
+          .resolves([])
+        xapiRepository
+          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
           .resolves([xapiRecord1])
 
         gqlRoom = await roomQuery(roomId, endUser)

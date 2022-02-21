@@ -27,10 +27,10 @@ export const createAssessmentDbConnection = (): Promise<Connection> => {
     username: 'postgres',
     password: 'assessments',
     database: 'test_assessment_db',
-    synchronize: true,
+    synchronize: false,
     migrations: [path.join(__dirname, '../../src/migrations/*.ts')],
     migrationsTableName: 'assessment_xapi_migration',
-    migrationsRun: false,
+    migrationsRun: true,
     dropSchema: true,
     entities: ['src/db/assessments/entities/*.ts'],
   })

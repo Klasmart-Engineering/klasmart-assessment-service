@@ -103,28 +103,6 @@ export class RoomEventsProvider {
     return []
   }
 
-  // public async getEventsOld(
-  //   roomId: string,
-  //   attendances: ReadonlyArray<Attendance>,
-  //   h5pIdToContentIdMap: ReadonlyMap<string, string>,
-  // ): Promise<ReadonlyArray<ParsedXapiEvent>> {
-  //   const parsedXapiEvents: ParsedXapiEvent[] = []
-  //   logger.debug(
-  //     `getEvents >> roomId ${roomId}, attendances count: ${attendances.length}`,
-  //   )
-  //   for (const { userId, joinTimestamp, leaveTimestamp } of attendances) {
-  //     const rawXapiEvents = await this.xapiRepository.searchXApiEventsForUser(
-  //       userId,
-  //       joinTimestamp.getTime(),
-  //       leaveTimestamp.getTime(),
-  //     )
-  //     parsedXapiEvents.push(
-  //       ...this.parseEvents(roomId, rawXapiEvents, h5pIdToContentIdMap),
-  //     )
-  //   }
-  //   return parsedXapiEvents
-  // }
-
   private parseEvents(
     roomId: string,
     rawXapiEvents: ReadonlyArray<XApiRecord>,
