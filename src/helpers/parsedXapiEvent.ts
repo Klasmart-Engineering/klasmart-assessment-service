@@ -12,6 +12,7 @@ type XapiScore = {
 
 export class ParsedXapiEvent {
   public readonly userId!: string
+  public readonly roomId?: string
   public readonly h5pId!: string
   public readonly timestamp!: number
   public readonly h5pSubId?: string
@@ -27,6 +28,7 @@ export class ParsedXapiEvent {
     rawXapiEvent?: XApiRecord,
   ): ParsedXapiEvent | null {
     const userId = rawXapiEvent?.userId
+    const eventRoomId = rawXapiEvent?.roomId
     const timestamp = rawXapiEvent?.xapi?.clientTimestamp
     const statement = rawXapiEvent?.xapi?.data?.statement
     const extensions = statement?.object?.definition?.extensions
@@ -39,6 +41,13 @@ export class ParsedXapiEvent {
       logger.info(
         `XAPI event didn't include all required info (roomId:${roomId}, ` +
           `userId:${userId}, h5pId:${h5pId}, timestamp:${timestamp}). Skipping...`,
+      )
+      return null
+    }
+
+    if (eventRoomId !== undefined && eventRoomId !== roomId) {
+      logger.info(
+        `XAPI event belongs to a different room ${eventRoomId}. Expected room: ${roomId}. Skipping...`,
       )
       return null
     }
@@ -70,6 +79,7 @@ export class ParsedXapiEvent {
 
     return {
       userId,
+      roomId: eventRoomId,
       h5pId,
       h5pSubId,
       h5pType,
