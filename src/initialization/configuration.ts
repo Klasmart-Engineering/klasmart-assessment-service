@@ -114,12 +114,8 @@ export class Configuration {
     logger.info(`- CMS_API_URL: ${this.CMS_API_URL}`)
     logger.info(`- USER_SERVICE_ENDPOINT: ${this.USER_SERVICE_ENDPOINT}`)
     logger.info('📘 Storage:')
-    logger.info(`- ASSESSMENT_DATABASE_URL: ${this.ASSESSMENT_DATABASE_URL}`)
-    logger.info(`- ATTENDANCE_DATABASE_URL: ${this.ATTENDANCE_DATABASE_URL}`)
     logger.info(`- DYNAMODB_TABLE_NAME: ${this.DYNAMODB_TABLE_NAME}`)
-    logger.info(`- AWS_REGION: ${this.AWS_REGION}`)
-    logger.info(`- XAPI_DATABASE_URL: ${this.XAPI_DATABASE_URL}`)
-    logger.info(`- REDIS_URL: ${this.REDIS_URL}`)
+    logger.info(`- REDIS_URL is set: ${Boolean(this.REDIS_URL)}`)
     logger.info('-----------------')
   }
 
