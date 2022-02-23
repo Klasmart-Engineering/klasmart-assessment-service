@@ -1,4 +1,5 @@
 import { ObjectType, Field } from 'type-graphql'
+import { TypeormLoader } from 'type-graphql-dataloader'
 import {
   Column,
   Entity,
@@ -43,6 +44,7 @@ export class UserContentScore extends Base {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
+  @TypeormLoader()
   public answers = Promise.resolve<Answer[]>([])
 
   @Field(() => [TeacherScore])
@@ -56,6 +58,7 @@ export class UserContentScore extends Base {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
+  @TypeormLoader()
   public teacherScores!: Promise<ReadonlyArray<TeacherScore>>
 
   @Field(() => Boolean)
