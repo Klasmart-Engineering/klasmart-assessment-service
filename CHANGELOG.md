@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.16.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.16.0..v1.15.0) (2022-02-24)
+
+
+### Features
+
+* **DAS-238:** add @TypeormLoader to UserContentScore entity's OneToMany relations ([ee7ed67](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/ee7ed67fb8a93e823060f4d04fb8a6c34bbfc133))
+
 ## [1.15.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.15.0..v1.14.0) (2022-02-24)
 
 
