@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.15.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.15.0..v1.14.0) (2022-02-24)
+
+
+### Features
+
+* add rommId to xapiEvent interface + skip events that do not belong to the requested room ([061ba65](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/061ba65330835570bc2ce3360ae155390d7d5502))
+* **DAS-237:** query xapi events from sqlDb more efficiently + get dynamodb events simultaneously ([8ea8b06](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/8ea8b06d57673224c666ff2b88981b53a9aff78f))
+
 ## [1.14.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.14.0..v1.13.2) (2022-02-24)
 
 
