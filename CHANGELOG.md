@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.14.0..v1.13.2) (2022-02-24)
+
+
+### Features
+
+* **DAS-236:** implement user dataloader batch-fetch, parsing, custom decorator, update fields+tests ([3c069bb](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/3c069bbc90a8e44131fd66254f4ba8f6a371bd86))
+
 ### [1.13.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.13.2..v1.13.1) (2022-02-23)
 
 
