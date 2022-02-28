@@ -43,7 +43,7 @@ export class UserContentScore extends Base {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
-  public answers = Promise.resolve<Answer[]>([])
+  public answers?: Promise<Answer[]>
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -64,7 +64,7 @@ export class UserContentScore extends Base {
 
   @Field(() => ScoreSummary, { name: 'score' })
   public async scoreSummary(): Promise<ScoreSummary> {
-    return new ScoreSummary(await this.answers)
+    return new ScoreSummary((await this.answers) ?? [])
   }
 
   @Column({ type: 'varchar', nullable: true })
@@ -83,7 +83,6 @@ export class UserContentScore extends Base {
     if (score === undefined && response === undefined) {
       return
     }
-    // TODO: Optimize by removing await.
     await this.addAnswer(xapiEvent)
   }
 
@@ -93,6 +92,11 @@ export class UserContentScore extends Base {
     this.studentId = studentId
     this.contentKey = contentKey
     this.seen = false
+    if (roomId == null) {
+      // typeorm is making the call, so don't overwrite answers.
+      return
+    }
+    this.answers = Promise.resolve([])
   }
 
   public static new(
@@ -112,7 +116,11 @@ export class UserContentScore extends Base {
   }
 
   protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<void> {
-    const answers = await this.answers
+    let answers = await this.answers
+    if (!answers) {
+      answers = []
+      this.answers = Promise.resolve(answers)
+    }
     const answer = Answer.new(
       this,
       new Date(xapiEvent.timestamp),
