@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.16.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.16.1..v1.16.0) (2022-03-04)
+
 ## [1.16.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.16.0..v1.15.0) (2022-02-24)
 
 
