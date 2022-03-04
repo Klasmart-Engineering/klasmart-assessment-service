@@ -45,7 +45,7 @@ export class UserContentScore extends Base {
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
   @TypeormLoader()
-  public answers = Promise.resolve<Answer[]>([])
+  public answers?: Promise<Answer[]>
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -67,7 +67,7 @@ export class UserContentScore extends Base {
 
   @Field(() => ScoreSummary, { name: 'score' })
   public async scoreSummary(): Promise<ScoreSummary> {
-    return new ScoreSummary(await this.answers)
+    return new ScoreSummary((await this.answers) ?? [])
   }
 
   @Column({ type: 'varchar', nullable: true })
@@ -86,7 +86,6 @@ export class UserContentScore extends Base {
     if (score === undefined && response === undefined) {
       return
     }
-    // TODO: Optimize by removing await.
     await this.addAnswer(xapiEvent)
   }
 
@@ -105,6 +104,11 @@ export class UserContentScore extends Base {
     this.studentId = studentId
     this.contentKey = contentKey
     this.seen = false
+    if (roomId == null) {
+      // typeorm is making the call, so don't overwrite answers.
+      return
+    }
+    this.answers = Promise.resolve([])
   }
 
   public static new(
@@ -124,7 +128,11 @@ export class UserContentScore extends Base {
   }
 
   protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<void> {
-    const answers = await this.answers
+    let answers = await this.answers
+    if (!answers) {
+      answers = []
+      this.answers = Promise.resolve(answers)
+    }
     const answer = Answer.new(
       this,
       new Date(xapiEvent.timestamp),
@@ -138,7 +146,11 @@ export class UserContentScore extends Base {
   }
 
   protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<void> {
-    const answers = await this.answers
+    let answers = await this.answers
+    if (!answers) {
+      answers = []
+      this.answers = Promise.resolve(answers)
+    }
     const newAnswers = xapiEvents.map((xapiEvent) =>
       Answer.new(
         this,

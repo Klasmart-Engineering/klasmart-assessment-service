@@ -10,6 +10,7 @@ export default class UserContentScoreBuilder {
   private contentType?: string
   private contentName?: string
   private contentParentId?: string | null
+  private seen = false
 
   public withroomId(value: string): this {
     this.roomId = value
@@ -42,6 +43,11 @@ export default class UserContentScoreBuilder {
     return this
   }
 
+  public withSeen(value: boolean): this {
+    this.seen = value
+    return this
+  }
+
   public build(): UserContentScore {
     const entity = UserContentScore.new(
       this.roomId,
@@ -51,6 +57,7 @@ export default class UserContentScoreBuilder {
       this.contentName,
       this.contentParentId,
     )
+    entity.seen = this.seen
     return entity
   }
 

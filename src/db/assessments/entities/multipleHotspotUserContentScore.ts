@@ -15,7 +15,11 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
       return
     }
 
-    const answers = await this.answers
+    let answers = await this.answers
+    if (!answers) {
+      answers = []
+      this.answers = Promise.resolve(answers)
+    }
 
     if (this.newAttemptSignalReceived || answers.length <= 0) {
       this.newAttemptSignalReceived = false
