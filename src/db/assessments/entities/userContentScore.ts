@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryColumn,
+  getRepository,
 } from 'typeorm'
 import { Answer } from './answer'
 import { Base } from './base'
@@ -14,6 +15,7 @@ import { Room } from './room'
 import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
+import { ASSESSMENTS_CONNECTION_NAME } from '../connectToAssessmentDatabase'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -34,18 +36,27 @@ export class UserContentScore extends Base {
   )
   public room!: Promise<Room>
 
-  @OneToMany(
-    () => Answer, //Useless comment due to linter bug
-    (answer) => answer.userContentScore,
-    { lazy: true, cascade: true },
-  )
+  @OneToMany(() => Answer, (answer) => answer.userContentScore, {
+    lazy: true,
+    cascade: true,
+  })
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
   @TypeormLoader()
-  public answers?: Promise<Answer[]>
+  public answers: Promise<Answer[]>
+
+  public async getAnswers(): Promise<Answer[]> {
+    return getRepository(Answer, ASSESSMENTS_CONNECTION_NAME).find({
+      where: {
+        roomId: this.roomId,
+        studentId: this.studentId,
+        contentKey: this.contentKey,
+      },
+    })
+  }
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -67,7 +78,7 @@ export class UserContentScore extends Base {
 
   @Field(() => ScoreSummary, { name: 'score' })
   public async scoreSummary(): Promise<ScoreSummary> {
-    return new ScoreSummary((await this.answers) ?? [])
+    return new ScoreSummary((await this.getAnswers()) ?? [])
   }
 
   @Column({ type: 'varchar', nullable: true })
@@ -79,23 +90,26 @@ export class UserContentScore extends Base {
   @Column({ type: 'varchar', nullable: true })
   public contentParentId?: string | null
 
-  public async applyEvent(xapiEvent: ParsedXapiEvent): Promise<void> {
+  public async applyEvent(
+    xapiEvent: ParsedXapiEvent,
+  ): Promise<Answer | undefined> {
     this.seen = true
     const score = xapiEvent.score?.raw
     const response = xapiEvent.response
     if (score === undefined && response === undefined) {
+      console.warn('applyEvent > xapiEvent does not have a response or score')
       return
     }
-    await this.addAnswer(xapiEvent)
+    return await this.addAnswer(xapiEvent)
   }
 
-  public async applyEvents(xapiEvents: ParsedXapiEvent[]): Promise<void> {
+  public async applyEvents(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
     this.seen = true
     const filteredXapiEvents = xapiEvents.filter(
       (xapiEvent) =>
         xapiEvent.score !== undefined && xapiEvent.response !== undefined,
     )
-    await this.addAnswers(filteredXapiEvents)
+    return await this.addAnswers(filteredXapiEvents)
   }
 
   constructor(roomId: string, studentId: string, contentKey: string) {
@@ -104,6 +118,7 @@ export class UserContentScore extends Base {
     this.studentId = studentId
     this.contentKey = contentKey
     this.seen = false
+    this.answers = Promise.resolve([])
     if (roomId == null) {
       // typeorm is making the call, so don't overwrite answers.
       return
@@ -127,7 +142,7 @@ export class UserContentScore extends Base {
     return userContentScore
   }
 
-  protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<void> {
+  protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<Answer> {
     let answers = await this.answers
     if (!answers) {
       answers = []
@@ -143,9 +158,33 @@ export class UserContentScore extends Base {
       xapiEvent.score?.max,
     )
     answers.push(answer)
+    // this.answers = answers
+    return answer
+    // console.log(
+    //   'answer =',
+    //   answer.roomId,
+    //   answer.studentId,
+    //   answer.contentKey,
+    //   answer.timestamp,
+    // )
+    // const duplicates = answers.filter((a) => {
+    //   console.log('a ===>', a.roomId, a.studentId, a.contentKey, a.timestamp)
+    //   return (
+    //     a.roomId === answer.roomId &&
+    //     a.studentId === answer.studentId &&
+    //     a.contentKey === answer.contentKey &&
+    //     a.timestamp === answer.timestamp
+    //   )
+    // })
+    // console.log(`====================> answers found ${answers.length}`)
+    // console.log(`====================> duplicates found ${duplicates.length}`)
+
+    // if (duplicates.length == 0) {
+    //   answers.push(answer)
+    // }
   }
 
-  protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<void> {
+  protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
     let answers = await this.answers
     if (!answers) {
       answers = []
@@ -162,6 +201,11 @@ export class UserContentScore extends Base {
         xapiEvent.score?.max,
       ),
     )
+    console.log(
+      `pushing newAnswers ${newAnswers.length} to existing ${answers.length} answers`,
+    )
     answers.push(...newAnswers)
+    console.log(`now there are ${answers.length} answers`)
+    return answers
   }
 }

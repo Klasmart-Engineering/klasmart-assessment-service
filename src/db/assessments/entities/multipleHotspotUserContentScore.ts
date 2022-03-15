@@ -5,7 +5,9 @@ import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 export class MultipleHotspotUserContentScore extends UserContentScore {
   private newAttemptSignalReceived = false
 
-  public async applyEvent(xapiEvent: ParsedXapiEvent): Promise<void> {
+  public async applyEvent(
+    xapiEvent: ParsedXapiEvent,
+  ): Promise<Answer | undefined> {
     if (xapiEvent.verb === 'attempted') {
       this.startNewAttempt()
       return
