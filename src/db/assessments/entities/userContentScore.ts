@@ -84,6 +84,7 @@ export class UserContentScore extends Base {
     const score = xapiEvent.score?.raw
     const response = xapiEvent.response
     if (score === undefined && response === undefined) {
+      console.warn('applyEvent > xapiEvent does not have a response or score')
       return
     }
     await this.addAnswer(xapiEvent)
@@ -142,7 +143,28 @@ export class UserContentScore extends Base {
       xapiEvent.score?.min,
       xapiEvent.score?.max,
     )
-    answers.push(answer)
+    console.log(
+      'answer =',
+      answer.roomId,
+      answer.studentId,
+      answer.contentKey,
+      answer.timestamp,
+    )
+    const duplicates = answers.filter((a) => {
+      console.log('a ===>', a.roomId, a.studentId, a.contentKey, a.timestamp)
+      return (
+        a.roomId === answer.roomId &&
+        a.studentId === answer.studentId &&
+        a.contentKey === answer.contentKey &&
+        a.timestamp === answer.timestamp
+      )
+    })
+    console.log(`====================> answers found ${answers.length}`)
+    console.log(`====================> duplicates found ${duplicates.length}`)
+
+    if (duplicates.length == 0) {
+      answers.push(answer)
+    }
   }
 
   protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<void> {
