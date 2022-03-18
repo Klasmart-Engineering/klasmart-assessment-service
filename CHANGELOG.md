@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.18.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.18.0..v1.17.0) (2022-03-18)
+
+
+### Features
+
+* **SMK-167:** Add a new deployment pipeline task to deploy to the landing zone [hub.landing-zone.kidsloop.live] ([36d996b](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/36d996b1e14e19b095c1aa42ff831930478e27ef))
+
 ## [1.17.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.17.0..v1.16.1) (2022-03-15)
 
 
