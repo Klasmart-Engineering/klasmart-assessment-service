@@ -57,6 +57,9 @@ export default class RoomResolver {
         room = new Room(roomId)
         logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
       }
+      if (attendanceCount === 0) {
+        return room
+      }
       const scores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
