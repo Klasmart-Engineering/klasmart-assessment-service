@@ -34,11 +34,10 @@ export class UserContentScore extends Base {
   )
   public room!: Promise<Room>
 
-  @OneToMany(
-    () => Answer, //Useless comment due to linter bug
-    (answer) => answer.userContentScore,
-    { lazy: true, cascade: true },
-  )
+  @OneToMany(() => Answer, (answer) => answer.userContentScore, {
+    lazy: false,
+    cascade: true,
+  })
   @JoinColumn([
     { name: 'room_id', referencedColumnName: 'room_id' },
     { name: 'student_id', referencedColumnName: 'student_id' },
@@ -79,7 +78,9 @@ export class UserContentScore extends Base {
   @Column({ type: 'varchar', nullable: true })
   public contentParentId?: string | null
 
-  public async applyEvent(xapiEvent: ParsedXapiEvent): Promise<void> {
+  public async applyEvent(
+    xapiEvent: ParsedXapiEvent,
+  ): Promise<Answer | undefined> {
     this.seen = true
     const score = xapiEvent.score?.raw
     const response = xapiEvent.response
@@ -128,7 +129,7 @@ export class UserContentScore extends Base {
     return userContentScore
   }
 
-  protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<void> {
+  protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<Answer> {
     let answers = await this.answers
     if (!answers) {
       answers = []
@@ -143,28 +144,31 @@ export class UserContentScore extends Base {
       xapiEvent.score?.min,
       xapiEvent.score?.max,
     )
-    console.log(
-      'answer =',
-      answer.roomId,
-      answer.studentId,
-      answer.contentKey,
-      answer.timestamp,
-    )
-    const duplicates = answers.filter((a) => {
-      console.log('a ===>', a.roomId, a.studentId, a.contentKey, a.timestamp)
-      return (
-        a.roomId === answer.roomId &&
-        a.studentId === answer.studentId &&
-        a.contentKey === answer.contentKey &&
-        a.timestamp === answer.timestamp
-      )
-    })
-    console.log(`====================> answers found ${answers.length}`)
-    console.log(`====================> duplicates found ${duplicates.length}`)
+    answers.push(answer)
+    // this.answers = answers
+    return answer
+    // console.log(
+    //   'answer =',
+    //   answer.roomId,
+    //   answer.studentId,
+    //   answer.contentKey,
+    //   answer.timestamp,
+    // )
+    // const duplicates = answers.filter((a) => {
+    //   console.log('a ===>', a.roomId, a.studentId, a.contentKey, a.timestamp)
+    //   return (
+    //     a.roomId === answer.roomId &&
+    //     a.studentId === answer.studentId &&
+    //     a.contentKey === answer.contentKey &&
+    //     a.timestamp === answer.timestamp
+    //   )
+    // })
+    // console.log(`====================> answers found ${answers.length}`)
+    // console.log(`====================> duplicates found ${duplicates.length}`)
 
-    if (duplicates.length == 0) {
-      answers.push(answer)
-    }
+    // if (duplicates.length == 0) {
+    //   answers.push(answer)
+    // }
   }
 
   protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<void> {

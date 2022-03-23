@@ -84,16 +84,16 @@ const main = async () => {
   await roomScoreProviderWorker.process(rawXapiEvents)
   logger.info('🧘‍♀️ Done!')
 
-  // const someEvent = rawXapiEvents[0]
-  // console.log(someEvent)
-  // await roomScoreProviderWorker.getRoom({
-  //   roomId: someEvent.roomId,
-  // })
-  // await roomScoreProviderWorker.checkExistence({
-  //   roomId: someEvent.roomId,
-  //   userId: someEvent.userId,
-  //   h5pId: 'h5pId0',
-  // })
+  const someEvent = rawXapiEvents[0]
+  console.log(someEvent)
+  await roomScoreProviderWorker.getRoom({
+    roomId: someEvent.roomId,
+  })
+  await roomScoreProviderWorker.checkExistence({
+    roomId: someEvent.roomId,
+    userId: someEvent.userId,
+    h5pId: 'h5pId0',
+  })
 }
 
 main()

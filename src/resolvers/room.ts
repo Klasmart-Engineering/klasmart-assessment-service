@@ -33,16 +33,17 @@ export default class RoomResolver {
   ) {}
 
   @Authorized()
-  @Query(() => Room)
+  @Query(() => Room || null)
   public async Room(
     // TODO: This shouldn't be nullable.
     @Arg('room_id', { nullable: true }) roomId: string,
     @UserID() teacherId: string,
     @Ctx() context: Context,
-  ): Promise<Room> {
+  ): Promise<Room | null> {
     logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
+      return room || null
       const attendances = await this.roomAttendanceProvider.getAttendances(
         roomId,
       )
@@ -86,6 +87,7 @@ export default class RoomResolver {
     const scoresByUser: Map<string, UserScores> = new Map()
 
     const allScores = await room.scores
+    logger.debug(`Room room_id: ${room.roomId} >> allScores: ${allScores}`)
     for (const userContentScore of allScores) {
       const userScores = scoresByUser.get(userContentScore.studentId)
       if (userScores) {

@@ -186,6 +186,7 @@ export class RoomScoresTemplateProvider2 {
 
           logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
         }
+        const roomScores: UserContentScore[] = []
 
         // 2.1 Group by user
         const xapiEvents = xapiEventsGroupedByRoom.get(roomId)!
@@ -265,12 +266,40 @@ export class RoomScoresTemplateProvider2 {
                 `setup >> userContentScore already exists and holds ${answers.length} answers`,
               )
             }
+            roomScores.push(userContentScore)
+            await transactionalEntityManager.save(userContentScore)
 
+            const scoreAnswers: Answer[] = []
             for (const xapiEvent of xapiEvents) {
               logger.debug(`setup >> applying xapiEvent to userContentScore`)
-              await userContentScore.applyEvent(xapiEvent)
+              const answer = await userContentScore.applyEvent(xapiEvent)
+              if (answer) {
+                scoreAnswers.push(answer)
+                await transactionalEntityManager.save(answer)
+              }
             }
+            logger.warn(`setup > scoreAnswers length: ${scoreAnswers.length}`)
+            // userContentScore.answers = Promise.resolve(scoreAnswers)
             await transactionalEntityManager.save(userContentScore)
+            logger.warn(`===============================================`)
+            logger.warn(`===============================================`)
+            logger.warn(`===============================================`)
+            console.log(userContentScore)
+            const fromDbUcs = await transactionalEntityManager
+              .getRepository(UserContentScore)
+              .findOne({
+                where: {
+                  roomId: roomId,
+                  studentId: userId,
+                  contentKey: contentKey,
+                },
+              })
+            logger.warn(`mmmmmmmmmmmmm`)
+            logger.warn(`mmmmmmmmmmmmm`)
+            logger.warn(`mmmmmmmmmmmmm`)
+            console.log(fromDbUcs)
+            room.scores = Promise.resolve(roomScores)
+            await transactionalEntityManager.save(room)
           }
         }
       }
