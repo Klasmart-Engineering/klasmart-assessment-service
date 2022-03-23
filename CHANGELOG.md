@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.16.2](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.16.2..v1.16.1) (2022-03-23)
+
+
+### Bug Fixes
+
+* check if attendance list is empty before proceeding in room query ([add2121](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/add21216734e074948d0203e71a006f7df938302))
+
 ### [1.16.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.16.1..v1.16.0) (2022-03-04)
 
 ## [1.16.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.16.0..v1.15.0) (2022-02-24)
