@@ -157,7 +157,12 @@ describe('roomResolver.Room', () => {
           .getSchedule(roomId, endUser.token)
           .rejects(ErrorMessage.scheduleNotFound(roomId))
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
-        attendanceApi.getRoomAttendances(roomId).resolves([])
+
+        const attendance = new AttendanceBuilder()
+          .withUserId(endUser.userId)
+          .withroomId(roomId)
+          .build()
+        attendanceApi.getRoomAttendances(roomId).resolves([attendance])
 
         // Act
         const fn = () =>
@@ -193,7 +198,12 @@ describe('roomResolver.Room', () => {
         .getSchedule(roomId, endUser.token)
         .rejects(ErrorMessage.scheduleNotFound(roomId))
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
-      attendanceApi.getRoomAttendances(roomId).resolves([])
+
+      const attendance = new AttendanceBuilder()
+        .withUserId(endUser.userId)
+        .withroomId(roomId)
+        .build()
+      attendanceApi.getRoomAttendances(roomId).resolves([attendance])
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -205,6 +215,37 @@ describe('roomResolver.Room', () => {
     })
 
     after(async () => await dbDisconnect())
+  })
+
+  context('Attendance Service returns an empty list of Attendances', () => {
+    let gqlRoom: GqlRoom | undefined | null
+    const roomId = 'room1'
+
+    before(async () => {
+      // Arrange
+      await dbConnect()
+      createSubstitutesToExpectedInjectableServices()
+      MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
+
+      const { attendanceApi } = createSubstitutesToExpectedInjectableServices()
+      const endUser = new EndUserBuilder().authenticate().build()
+      attendanceApi.getRoomAttendances(roomId).resolves([])
+
+      gqlRoom = await roomQuery(roomId, endUser)
+    })
+    after(async () => await dbDisconnect())
+
+    it('returns room with expected id', async () => {
+      expect(gqlRoom).to.not.be.null
+      expect(gqlRoom).to.not.be.undefined
+      expect(gqlRoom?.room_id).to.equal(roomId)
+    })
+
+    it('returns room.scores empty list', async () => {
+      expect(gqlRoom?.scores).to.deep.equal([])
+      expect(gqlRoom?.scoresByUser).to.deep.equal([])
+      expect(gqlRoom?.scoresByContent).to.deep.equal([])
+    })
   })
 
   context('1 student, 1 xapi "score" event', () => {
