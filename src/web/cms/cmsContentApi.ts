@@ -16,13 +16,13 @@ export class CmsContentApi {
   ) {}
 
   public async getLessonMaterials(
-    lessonPlanId: string,
+    roomId: string,
     authenticationToken?: string,
-  ): Promise<ReadonlyArray<ContentDto>> {
+  ): Promise<ContentResponse> {
     if (!authenticationToken) {
       throw new Error(ErrorMessage.authenticationTokenUndefined)
     }
-    const requestUrl = `${this.baseUrl}/contents?plan_id=${lessonPlanId}`
+    const requestUrl = `${this.baseUrl}/contents?schedule_id=${roomId}`
 
     const response = await this.fetchWrapper.fetch<ContentResponse>(
       requestUrl,
@@ -34,13 +34,7 @@ export class CmsContentApi {
       },
     )
 
-    const dtos = response?.list ?? []
-    logger.debug(
-      `getLessonMaterials >> lessonPlanId: ${lessonPlanId}, ` +
-        `ContentDto count: ${dtos.length}`,
-    )
-
-    return dtos
+    return response
   }
 
   public async getLessonMaterial(

@@ -1,6 +1,9 @@
 import { Inject, Service } from 'typedi'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import ScheduleResponse, { ScheduleDto } from './scheduleResponse'
+import ScheduleResponse, {
+  ScheduleDto,
+  StudentListResponse,
+} from './scheduleResponse'
 import { FetchWrapper } from '../fetchWrapper'
 import DiKeys from '../../initialization/diKeys'
 import { ErrorMessage } from '../../helpers/errorMessages'
@@ -45,5 +48,27 @@ export class CmsScheduleApi {
     }
 
     return dtos[0]
+  }
+
+  public async getStudentIds(
+    scheduleId: string,
+    authenticationToken?: string,
+  ): Promise<StudentListResponse> {
+    if (!authenticationToken) {
+      throw new Error(ErrorMessage.authenticationTokenUndefined)
+    }
+    const requestUrl = `${this.baseUrl}/schedules/${scheduleId}/relation_ids`
+
+    const response = await this.fetchWrapper.fetch<StudentListResponse>(
+      requestUrl,
+      {
+        method: 'GET',
+        headers: {
+          cookie: `access=${authenticationToken}`,
+        },
+      },
+    )
+
+    return response
   }
 }

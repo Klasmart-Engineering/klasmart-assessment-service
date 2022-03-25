@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
-import { Arg, Substitute } from '@fluffy-spoon/substitute'
+import { Substitute } from '@fluffy-spoon/substitute'
 import { CmsContentApi, ContentDto } from '../../src/web'
 import { FetchWrapper } from '../../src/web/fetchWrapper'
 import { throwExpression } from '../../src/helpers/throwExpression'
@@ -10,18 +10,18 @@ import { ErrorMessage } from '../../src/helpers/errorMessages'
 
 describe('cmsContentApi', () => {
   describe('getLessonMaterials', () => {
-    context('1 lesson material exists matching provided lessonPlanId', () => {
+    context('1 lesson material exists matching provided roomId', () => {
       it('returns 1 matching lesson material', async () => {
         // Arrange
         const baseUrl = 'https://cms.alpha.kidsloop.net/v1/internal'
         const networkRequestProvider = Substitute.for<FetchWrapper>()
         const sut = new CmsContentApi(networkRequestProvider, baseUrl)
 
-        const lessonPlanId = 'plan1'
+        const roomId = 'room1'
         const endUser = new EndUserBuilder().authenticate().build()
         const authenticationToken =
           endUser.token ?? throwExpression('authentication token is undefined')
-        const requestUrl = `${baseUrl}/contents?plan_id=${lessonPlanId}`
+        const requestUrl = `${baseUrl}/contents?schedule_id=${roomId}`
         networkRequestProvider
           .fetch(requestUrl, {
             method: 'GET',
@@ -32,14 +32,14 @@ describe('cmsContentApi', () => {
           .resolves(contentResponse)
 
         // Act
-        const results = await sut.getLessonMaterials(
-          lessonPlanId,
+        const response = await sut.getLessonMaterials(
+          roomId,
           authenticationToken,
         )
 
         // Assert
-        expect(results).to.have.lengthOf(1)
-        expect(results[0]).to.deep.equal(contentDto)
+        expect(response.list).to.have.lengthOf(1)
+        expect(response.list[0]).to.deep.equal(contentDto)
       })
     })
 
@@ -204,6 +204,8 @@ describe('cmsContentApi', () => {
   })
 })
 
+const studentId = 'student1'
+
 const contentDto: ContentDto = {
   id: '6099c28a1f42c08c3e3d447e',
   author_id: '80affb9c-94f3-4d32-9ec8-ddcf8d70b9ec',
@@ -217,4 +219,12 @@ const contentDto: ContentDto = {
 const contentResponse: ContentResponse = {
   total: 1,
   list: [contentDto],
+  student_content_map: [
+    {
+      student_id: studentId,
+      content_ids: [
+        contentDto.id ?? throwExpression('contentDto.id is undefined'),
+      ],
+    },
+  ],
 }

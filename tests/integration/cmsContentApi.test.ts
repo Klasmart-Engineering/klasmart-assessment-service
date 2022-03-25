@@ -25,8 +25,8 @@ describe.skip('cmsContentApi', function () {
           data: '{"source": "6099c2832069df0014dc34cb", "file_type": 5, "input_source": 1}',
           publish_status: 'published',
         }
-        expect(result).to.have.lengthOf(1)
-        expect(result[0]).to.deep.includes(expected)
+        expect(result.list).to.have.lengthOf(1)
+        expect(result.list[0]).to.deep.includes(expected)
       })
     })
   })

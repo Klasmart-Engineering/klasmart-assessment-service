@@ -24,6 +24,25 @@ export class CmsScheduleProvider {
 
     return lessonMaterial
   }
+
+  public async getStudentIds(
+    scheduleId: string,
+    authenticationToken?: string,
+  ): Promise<readonly string[]> {
+    const response = await this.cmsScheduleApi.getStudentIds(
+      scheduleId,
+      authenticationToken,
+    )
+    const studentIds: string[] = []
+    if (response.class_roster_student_ids) {
+      studentIds.push(...response.class_roster_student_ids)
+    }
+    if (response.participant_student_ids) {
+      studentIds.push(...response.participant_student_ids)
+    }
+
+    return studentIds
+  }
 }
 
 function scheduleDtoToEntity(dto: ScheduleDto) {

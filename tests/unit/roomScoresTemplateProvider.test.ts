@@ -51,7 +51,12 @@ describe('roomScoresTemplateProvider', () => {
           const material = new LessonMaterialBuilder()
             .withSource(FileType.H5P, h5pRoot)
             .build()
-          const materials = [material]
+          const materials = {
+            contents: new Map([[material.contentId, material]]),
+            studentContentMap: [
+              { studentId: userId, contentIds: [material.contentId] },
+            ],
+          }
           const xapiEvent: ParsedXapiEvent = {
             h5pId: h5pRoot,
             h5pSubId: h5pSub2,
@@ -86,7 +91,6 @@ describe('roomScoresTemplateProvider', () => {
             roomId,
             teacherId,
             materials,
-            userIds,
             xapiEvents,
           )
           expect(result).to.have.lengthOf(3)

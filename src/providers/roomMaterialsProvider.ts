@@ -1,13 +1,13 @@
 import { UserInputError } from 'apollo-server-express'
 import { Service } from 'typedi'
-import { withLogger } from 'kidsloop-nodejs-logger'
-
-import { Content } from '../db/cms/entities'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
-import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 
-const logger = withLogger('RoomEventsProvider')
+import {
+  CmsContentProvider,
+  StudentContentMapEntry,
+  StudentContentsResult,
+} from '../providers/cmsContentProvider'
+import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
 
 @Service()
 export class RoomMaterialsProvider {
@@ -19,7 +19,7 @@ export class RoomMaterialsProvider {
   public async getMaterials(
     roomId: string,
     authenticationToken?: string,
-  ): Promise<ReadonlyArray<Content>> {
+  ): Promise<StudentContentsResult> {
     const schedule = await this.cmsScheduleProvider.getSchedule(
       roomId,
       authenticationToken,
@@ -27,16 +27,23 @@ export class RoomMaterialsProvider {
     if (!schedule) {
       throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
     }
-    const lessonPlanId = schedule.lessonPlanId
-    const lessonMaterials = await this.cmsContentProvider.getLessonMaterials(
-      roomId,
-      lessonPlanId,
-      authenticationToken,
-    )
-    logger.debug(
-      `getMaterials >> roomId: ${roomId} => lessonPlanId: ${lessonPlanId} ` +
-        `=> lessonMaterials found: ${lessonMaterials.length}`,
-    )
-    return lessonMaterials
+    const studentContentsResult =
+      await this.cmsContentProvider.getLessonMaterials(
+        roomId,
+        authenticationToken,
+      )
+    if (studentContentsResult.studentContentMap.length === 0) {
+      const studentIds = await this.cmsScheduleProvider.getStudentIds(
+        roomId,
+        authenticationToken,
+      )
+      const newStudentContentMap: StudentContentMapEntry[] = []
+      const contentIds = [...studentContentsResult.contents.keys()]
+      for (const studentId of studentIds) {
+        newStudentContentMap.push({ studentId, contentIds })
+      }
+      studentContentsResult.studentContentMap = newStudentContentMap
+    }
+    return studentContentsResult
   }
 }

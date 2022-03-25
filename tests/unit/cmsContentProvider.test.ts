@@ -5,7 +5,7 @@ import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { CmsContentApi, ContentDto } from '../../src/web'
 import { Content } from '../../src/db/cms/entities'
 import { delay } from '../../src/helpers/delay'
-import { InMemoryCache } from '../../src/cache'
+import { ICache, InMemoryCache } from '../../src/cache'
 
 describe('cmsContentProvider', () => {
   let intervalId: NodeJS.Timeout | undefined
@@ -18,89 +18,42 @@ describe('cmsContentProvider', () => {
 
   describe('getLessonMaterials', () => {
     context(
-      '1 lesson material exists matching provided lessonPlanId; first time access',
+      '1 lesson material exists matching provided roomId; first time access',
       () => {
         it('returns 1 matching lesson material; cache miss', async () => {
           // Arrange
           const roomId = 'room1'
-          const lessonPlanId = 'plan1'
+          const studentId = 'student1'
           const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi
-            .getLessonMaterials(lessonPlanId, Arg.any())
-            .resolves([contentDto1])
-          const cache = new InMemoryCache()
+          cmsContentApi.getLessonMaterials(roomId, Arg.any()).resolves({
+            list: [contentDto1],
+            student_content_map: [
+              { student_id: studentId, content_ids: [contentDto1.id ?? ''] },
+            ],
+            total: 1,
+          })
+          const cache = Substitute.for<ICache>()
           const sut = new CmsContentProvider(cmsContentApi, cache)
           intervalId = sut.cache.setRecurringFlush(100)
 
           // Act
-          const results = await sut.getLessonMaterials(roomId, lessonPlanId)
+          const { contents, studentContentMap } = await sut.getLessonMaterials(
+            roomId,
+          )
 
           // Assert
-          expect(results).to.have.lengthOf(1)
-          expect(results[0]).to.deep.equal(content1)
+          expect(studentContentMap).to.have.lengthOf(1)
+          expect(studentContentMap[0].studentId).to.equal(studentId)
+          expect(contents).to.have.lengthOf(1)
+          expect(contents.get(content1.contentId)).to.deep.equal(content1)
           cmsContentApi.received(1).getLessonMaterials(Arg.all())
-        })
-      },
-    )
-
-    context(
-      '1 lesson material exists matching provided lessonPlanId; second access; within cache duration',
-      () => {
-        it('returns 1 matching lesson material; cache hit', async () => {
-          // Arrange
-          const roomId = 'room1'
-          const lessonPlanId = 'plan1'
-          const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi
-            .getLessonMaterials(lessonPlanId, Arg.any())
-            .resolves([contentDto1])
-          const cache = new InMemoryCache()
-          const sut = new CmsContentProvider(cmsContentApi, cache)
-          intervalId = sut.cache.setRecurringFlush(100)
-
-          // Act
-          const results1 = await sut.getLessonMaterials(roomId, lessonPlanId)
-          cmsContentApi.clearSubstitute()
-          cmsContentApi.getLessonMaterials(lessonPlanId).resolves([contentDto1])
-          const results2 = await sut.getLessonMaterials(roomId, lessonPlanId)
-
-          // Assert
-          expect(results2).to.have.lengthOf(1)
-          expect(results2[0]).to.deep.equal(content1)
-          cmsContentApi.didNotReceive().getLessonMaterials(Arg.any())
-        })
-      },
-    )
-
-    context(
-      '1 lesson material exists matching provided lessonPlanId; second access; outside of cache duration',
-      () => {
-        it('returns 1 matching lesson material; cache miss', async () => {
-          // Arrange
-          const roomId = 'room1'
-          const lessonPlanId = 'plan1'
-          const authenticationToken = undefined
-          const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi
-            .getLessonMaterials(lessonPlanId, authenticationToken)
-            .resolves([contentDto1])
-          const cache = new InMemoryCache()
-          const sut = new CmsContentProvider(cmsContentApi, cache)
-          intervalId = sut.cache.setRecurringFlush(100)
-
-          // Act
-          const results1 = await sut.getLessonMaterials(roomId, lessonPlanId)
-          cmsContentApi.clearSubstitute()
-          cmsContentApi
-            .getLessonMaterials(lessonPlanId, authenticationToken)
-            .resolves([contentDto1])
-          await delay(100)
-          const results2 = await sut.getLessonMaterials(roomId, lessonPlanId)
-
-          // Assert
-          expect(results2).to.have.lengthOf(1)
-          expect(results2[0]).to.deep.equal(content1)
-          cmsContentApi.received(1).getLessonMaterials(Arg.all())
+          cache
+            .received(1)
+            .setLessonPlanMaterials(
+              Arg.is(
+                (x) => x.length === 1 && x[0].contentId === contentDto1.id,
+              ),
+            )
         })
       },
     )
@@ -189,17 +142,21 @@ describe('cmsContentProvider', () => {
     )
 
     context(
-      '1 matching lesson material exists; called right after fetching by lessonPlanId; within cache duration',
+      '1 matching lesson material exists; called right after fetching by roomId; within cache duration',
       () => {
         it('returns matching lesson material; cache hit', async () => {
           // Arrange
           const roomId = 'room1'
-          const lessonPlanId = 'plan1'
+          const studentId = 'student'
           const lessonMaterialId = content1.contentId
           const cmsContentApi = Substitute.for<CmsContentApi>()
-          cmsContentApi
-            .getLessonMaterials(lessonPlanId, Arg.any())
-            .resolves([contentDto1])
+          cmsContentApi.getLessonMaterials(roomId, Arg.any()).resolves({
+            list: [contentDto1],
+            student_content_map: [
+              { student_id: studentId, content_ids: [contentDto1.id ?? ''] },
+            ],
+            total: 1,
+          })
           cmsContentApi
             .getLessonMaterial(lessonMaterialId)
             .resolves(contentDto1)
@@ -210,7 +167,6 @@ describe('cmsContentProvider', () => {
           // Act
           const lessonMaterialsForLessonPlan = await sut.getLessonMaterials(
             roomId,
-            lessonPlanId,
           )
           const lessonMaterial = await sut.getLessonMaterial(lessonMaterialId)
 

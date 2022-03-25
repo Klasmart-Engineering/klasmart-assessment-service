@@ -141,7 +141,6 @@ describe('roomResolver.Room', () => {
       it(TestTitle.ScheduleNotFound.throwsError, async () => {
         // Arrange
         await dbConnect()
-        createSubstitutesToExpectedInjectableServices()
         MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
         const roomId = 'room1'
@@ -182,7 +181,6 @@ describe('roomResolver.Room', () => {
     it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
       await dbConnect()
-      createSubstitutesToExpectedInjectableServices()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
@@ -315,9 +313,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -537,9 +538,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -781,9 +785,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -1002,9 +1009,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -1205,9 +1215,15 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
@@ -1611,9 +1627,15 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
@@ -1857,9 +1879,21 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial1, lessonMaterial2])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([
+            [lessonMaterial1.contentId, lessonMaterial1],
+            [lessonMaterial2.contentId, lessonMaterial2],
+          ]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [
+                lessonMaterial1.contentId,
+                lessonMaterial2.contentId,
+              ],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial1.contentId, endUser.token)
           .resolves(lessonMaterial1)
@@ -2194,9 +2228,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -2432,9 +2469,15 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial2])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial2.contentId, lessonMaterial2]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial2.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial2.contentId, endUser.token)
           .resolves(lessonMaterial2)
@@ -2629,9 +2672,19 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          {
+            studentId: student1.userId,
+            contentIds: [lessonMaterial.contentId],
+          },
+          {
+            studentId: student2.userId,
+            contentIds: [lessonMaterial.contentId],
+          },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -2905,9 +2958,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -3089,9 +3145,12 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-        .resolves([lessonMaterial])
+      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        studentContentMap: [
+          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
+        ],
+      })
       cmsContentProvider
         .getLessonMaterial(lessonMaterial.contentId, endUser.token)
         .resolves(lessonMaterial)
@@ -3303,9 +3362,15 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
@@ -3648,9 +3713,15 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
@@ -3909,9 +3980,15 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)
@@ -4128,9 +4205,15 @@ describe('roomResolver.Room', () => {
           .addMaterialId(lessonMaterial.contentId)
           .build()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
-        cmsContentProvider
-          .getLessonMaterials(roomId, lessonPlan.contentId, endUser.token)
-          .resolves([lessonMaterial])
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
           .resolves(lessonMaterial)

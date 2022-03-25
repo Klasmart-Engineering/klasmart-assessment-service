@@ -1,42 +1,28 @@
 import { expect } from 'chai'
-import { Arg, Substitute } from '@fluffy-spoon/substitute'
+import { Substitute } from '@fluffy-spoon/substitute'
 import { RoomMaterialsProvider } from '../../src/providers/roomMaterialsProvider'
-import {
-  LessonMaterialBuilder,
-  LessonPlanBuilder,
-  ScheduleBuilder,
-} from '../builders'
-import { Repository } from 'typeorm'
-import { Content, Schedule } from '../../src/db/cms/entities'
-import { LessonPlan } from '../../src/db/cms/entities/lessonPlan'
-import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
+import { LessonMaterialBuilder } from '../builders'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
+import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 
 describe('roomMaterialsProvider', () => {
   context('1 LessonPlan with 1 Material, 1 matching Schedule', () => {
     it('returns 1 Material', async () => {
       // Arrange
       const roomId = 'room1'
+      const studentId = 'student'
       const authenticationToken = undefined
 
       const material = new LessonMaterialBuilder().build()
-      const lessonPlan = new LessonPlanBuilder()
-        .addMaterialId(material.contentId)
-        .build()
-      const schedule = new ScheduleBuilder()
-        .withRoomId(roomId)
-        .withLessonPlanId(lessonPlan.contentId)
-        .build()
-
-      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
 
-      cmsScheduleProvider
-        .getSchedule(Arg.any(), authenticationToken)
-        .resolves(schedule)
       cmsContentProvider
-        .getLessonMaterials(roomId, lessonPlan.contentId, authenticationToken)
-        .resolves([material])
+        .getLessonMaterials(roomId, authenticationToken)
+        .resolves({
+          contents: new Map([[material.contentId, material]]),
+          studentContentMap: [{ studentId, contentIds: [material.contentId] }],
+        })
 
       const sut = new RoomMaterialsProvider(
         cmsScheduleProvider,
@@ -44,11 +30,13 @@ describe('roomMaterialsProvider', () => {
       )
 
       // Act
-      const resultMaterials = await sut.getMaterials(roomId)
+      const { contents, studentContentMap } = await sut.getMaterials(roomId)
 
       // Assert
-      expect(resultMaterials).to.have.lengthOf(1)
-      expect(resultMaterials[0]).to.deep.equal(material)
+      expect(studentContentMap).to.have.lengthOf(1)
+      expect(studentContentMap[0].studentId).to.equal(studentId)
+      expect(contents).to.have.lengthOf(1)
+      expect(contents.get(material.contentId)).to.deep.equal(material)
     })
   })
 })

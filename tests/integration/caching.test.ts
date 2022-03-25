@@ -71,32 +71,9 @@ describe('Redis caching and InMermory caching', () => {
     const cacheKey = `key:${lessonPlan.contentId}`
 
     it('setLessonMaterials successfully', async () => {
-      await redisCache.setLessonPlanMaterials(cacheKey, [])
-      await inMemorycache.setLessonPlanMaterials(cacheKey, [])
+      await redisCache.setLessonPlanMaterials([])
+      await inMemorycache.setLessonPlanMaterials([])
       expect(true).to.be.equal(true)
-    })
-
-    it('getLessonMaterials returns the same value', async () => {
-      const lessonPlanMaterialsFromRedis =
-        await redisCache.getLessonPlanMaterials(cacheKey)
-      const lessonPlanMaterialsFromInMemory =
-        await inMemorycache.getLessonPlanMaterials(cacheKey)
-
-      expect([]).to.deep.equal(lessonPlanMaterialsFromRedis)
-      expect([]).to.deep.equal(lessonPlanMaterialsFromInMemory)
-    })
-
-    it('flushes successfully', async () => {
-      await redisCache.flush()
-      await inMemorycache.flush()
-
-      const lessonPlanMaterialsFromRedis =
-        await redisCache.getLessonPlanMaterials(cacheKey)
-      const lessonPlanMaterialsFromInMemory =
-        await inMemorycache.getLessonPlanMaterials(cacheKey)
-
-      expect(lessonPlanMaterialsFromRedis).to.be.undefined
-      expect(lessonPlanMaterialsFromInMemory).to.be.undefined
     })
   })
 
@@ -117,35 +94,9 @@ describe('Redis caching and InMermory caching', () => {
     const lessonPlanMaterials = [lessonMaterial1, lessonMaterial2]
 
     it('setLessonMaterials successfully', async () => {
-      await redisCache.setLessonPlanMaterials(cacheKey, lessonPlanMaterials)
-      await inMemorycache.setLessonPlanMaterials(cacheKey, lessonPlanMaterials)
+      await redisCache.setLessonPlanMaterials(lessonPlanMaterials)
+      await inMemorycache.setLessonPlanMaterials(lessonPlanMaterials)
       expect(true).to.be.equal(true)
-    })
-
-    it('getLessonMaterials returns the same value', async () => {
-      const lessonPlanMaterialsFromRedis =
-        await redisCache.getLessonPlanMaterials(cacheKey)
-      const lessonPlanMaterialsFromInMemory =
-        await inMemorycache.getLessonPlanMaterials(cacheKey)
-
-      expect(lessonPlanMaterials).to.deep.equal(lessonPlanMaterialsFromRedis)
-      expect(lessonPlanMaterials).to.deep.equal(lessonPlanMaterialsFromInMemory)
-      expect(lessonPlanMaterialsFromRedis).to.deep.equal(
-        lessonPlanMaterialsFromInMemory,
-      )
-    })
-
-    it('flushes successfully', async () => {
-      await redisCache.flush()
-      await inMemorycache.flush()
-
-      const lessonPlanMaterialsFromRedis =
-        await redisCache.getLessonPlanMaterials(cacheKey)
-      const lessonPlanMaterialsFromInMemory =
-        await inMemorycache.getLessonPlanMaterials(cacheKey)
-
-      expect(lessonPlanMaterialsFromRedis).to.be.undefined
-      expect(lessonPlanMaterialsFromInMemory).to.be.undefined
     })
   })
 

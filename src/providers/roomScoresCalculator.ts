@@ -8,6 +8,7 @@ import { Attendance } from '../web/attendance'
 import { RoomEventsProvider } from './roomEventsProvider'
 import { RoomMaterialsProvider } from './roomMaterialsProvider'
 import { RoomScoresTemplateProvider } from './roomScoresTemplateProvider'
+import { StudentContentsResult } from './cmsContentProvider'
 
 const logger = withLogger('RoomScoresCalculator')
 
@@ -26,15 +27,17 @@ export class RoomScoresCalculator {
     authenticationToken?: string,
   ): Promise<ReadonlyArray<UserContentScore>> {
     logger.debug(`calculate >> roomId: ${roomId}, teacherId: ${teacherId}`)
-    const materials = await this.roomMaterialsProvider.getMaterials(
+    const studentContentsResult = await this.roomMaterialsProvider.getMaterials(
       roomId,
       authenticationToken,
     )
     logger.debug(
-      `calculate >> roomId: ${roomId} >> materials found: ${materials.length}`,
+      `calculate >> roomId: ${roomId} >> materials found: ${studentContentsResult.contents.size}`,
     )
 
-    const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(materials)
+    const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(
+      studentContentsResult.contents.values(),
+    )
     const userIds = new Set(attendances.map((x) => x.userId))
     logger.debug(
       `calculate >> roomId: ${roomId} >> attendances found: ${userIds.size}`,
@@ -51,8 +54,7 @@ export class RoomScoresCalculator {
     const userContentScores = await this.calculateScores(
       roomId,
       teacherId,
-      materials,
-      userIds,
+      studentContentsResult,
       xapiEvents,
       h5pIdToContentIdMap,
     )
@@ -64,7 +66,7 @@ export class RoomScoresCalculator {
   }
 
   private createH5pIdToContentIdMap(
-    materials: ReadonlyArray<Content>,
+    materials: IterableIterator<Content>,
   ): ReadonlyMap<string, string> {
     const h5pIdToContentIdMap = new Map<string, string>()
     for (const x of materials) {
@@ -78,8 +80,7 @@ export class RoomScoresCalculator {
   private async calculateScores(
     roomId: string,
     teacherId: string,
-    materials: ReadonlyArray<Content>,
-    userIds: ReadonlySet<string>,
+    studentContentsResult: StudentContentsResult,
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
     h5pIdToContentIdMap: ReadonlyMap<string, string>,
   ): Promise<ReadonlyArray<UserContentScore>> {
@@ -90,8 +91,7 @@ export class RoomScoresCalculator {
       await this.roomScoresTemplateProvider.getTemplate(
         roomId,
         teacherId,
-        materials,
-        userIds,
+        studentContentsResult,
         xapiEvents,
       )
 

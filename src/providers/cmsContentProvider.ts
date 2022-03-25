@@ -5,6 +5,9 @@ import { Content } from '../db/cms/entities/content'
 import { throwExpression } from '../helpers/throwExpression'
 import DiKeys from '../initialization/diKeys'
 import { CmsContentApi, ContentDto } from '../web/cms'
+import ContentResponse, {
+  StudentContentMapEntryDto,
+} from '../web/cms/contentResponse'
 
 const logger = withLogger('CmsContentProvider')
 
@@ -18,27 +21,18 @@ export class CmsContentProvider {
 
   public async getLessonMaterials(
     roomId: string,
-    lessonPlanId: string,
     authenticationToken?: string,
-  ): Promise<ReadonlyArray<Content>> {
-    logger.debug(
-      `getLessonMaterials >> roomId: ${roomId}, lessonPlanId: ${lessonPlanId}`,
-    )
-
-    const cacheKey = `${roomId}|${lessonPlanId}`
-    const cacheHit = await this.cache.getLessonPlanMaterials(cacheKey)
-    if (cacheHit) {
-      return cacheHit
-    }
-
-    const dtos = await this.cmsContentApi.getLessonMaterials(
-      lessonPlanId,
+  ): Promise<StudentContentsResult> {
+    const response = await this.cmsContentApi.getLessonMaterials(
+      roomId,
       authenticationToken,
     )
-    const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
-    await this.cache.setLessonPlanMaterials(cacheKey, lessonMaterials)
+    const studentContentMap = responseToStudentContentsResult(response)
+    await this.cache.setLessonPlanMaterials([
+      ...studentContentMap.contents.values(),
+    ])
 
-    return lessonMaterials
+    return studentContentMap
   }
 
   public async getLessonMaterial(
@@ -79,6 +73,30 @@ export class CmsContentProvider {
   }
 }
 
+function responseToStudentContentsResult(
+  response: ContentResponse,
+): StudentContentsResult {
+  const contents = new Map(
+    response.list.map((x) => [x.id as string, contentDtoToEntity(x)]),
+  )
+  const studentContentMap =
+    response.student_content_map?.map(studentContentMapEntryDtoToEntity) ?? []
+  return {
+    contents,
+    studentContentMap,
+  }
+}
+
+function studentContentMapEntryDtoToEntity(
+  dto: StudentContentMapEntryDto,
+): StudentContentMapEntry {
+  return {
+    studentId:
+      dto.student_id ?? throwExpression('student.student_id is undefined'),
+    contentIds: dto.content_ids,
+  }
+}
+
 function contentDtoToEntity(dto: ContentDto) {
   return new Content(
     dto.id ?? throwExpression('content.id is undefined'),
@@ -90,4 +108,14 @@ function contentDtoToEntity(dto: ContentDto) {
     dto.publish_status ??
       throwExpression('content.publish_status is undefined'),
   )
+}
+
+export type StudentContentMapEntry = {
+  studentId: string
+  contentIds: ReadonlyArray<string>
+}
+
+export type StudentContentsResult = {
+  contents: ReadonlyMap<string, Content>
+  studentContentMap: ReadonlyArray<StudentContentMapEntry>
 }

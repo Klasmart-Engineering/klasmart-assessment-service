@@ -63,9 +63,10 @@ describe('roomScoresCalculator', () => {
         Substitute.for<RoomScoresTemplateProvider>()
 
       attendanceProvider.getAttendances(roomId).resolves([attendance])
-      materialsProvider
-        .getMaterials(roomId, authenticationToken)
-        .resolves([material])
+      materialsProvider.getMaterials(roomId, authenticationToken).resolves({
+        contents: new Map([[material.contentId, material]]),
+        studentContentMap: [{ studentId, contentIds: [material.contentId] }],
+      })
       const h5pIdToContentIdMap = new Map<string, string>([
         [h5pId, material.contentId],
       ])
@@ -85,8 +86,12 @@ describe('roomScoresCalculator', () => {
         .getTemplate(
           roomId,
           teacherId,
-          [material],
-          new Set([attendance.userId]),
+          {
+            contents: new Map([[material.contentId, material]]),
+            studentContentMap: [
+              { studentId, contentIds: [material.contentId] },
+            ],
+          },
           [xapiRecord],
         )
         .resolves(mapKeyToUserContentScoreMap)
@@ -172,9 +177,10 @@ describe('roomScoresCalculator', () => {
           Substitute.for<RoomScoresTemplateProvider>()
 
         attendanceProvider.getAttendances(roomId).resolves([attendance])
-        materialsProvider
-          .getMaterials(roomId, authenticationToken)
-          .resolves([material])
+        materialsProvider.getMaterials(roomId, authenticationToken).resolves({
+          contents: new Map([[material.contentId, material]]),
+          studentContentMap: [{ studentId, contentIds: [material.contentId] }],
+        })
         const h5pIdToContentIdMap = new Map<string, string>([
           [h5pId, material.contentId],
         ])
@@ -194,8 +200,12 @@ describe('roomScoresCalculator', () => {
           .getTemplate(
             roomId,
             teacherId,
-            [material],
-            new Set([attendance.userId]),
+            {
+              contents: new Map([[material.contentId, material]]),
+              studentContentMap: [
+                { studentId, contentIds: [material.contentId] },
+              ],
+            },
             [xapiRecord],
           )
           .resolves(mapKeyToUserContentScoreMap)

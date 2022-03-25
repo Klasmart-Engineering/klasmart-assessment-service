@@ -36,12 +36,11 @@ export const connectToRedisCache = async (
 const prefix = `assessment`
 const assessmentKey = (key: string) => `${prefix}:${key}`
 const materialKey = (key: string) => `${prefix}:material:${key}`
-const planKey = (key: string) => `${prefix}:plan:${key}`
 
 export const RedisErrorRecovery =
   (): MethodDecorator =>
   (
-    target: Object,
+    target: unknown,
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>,
   ): TypedPropertyDescriptor<any> => {
@@ -92,56 +91,16 @@ export class RedisCache implements ICache {
   }
 
   @RedisErrorRecovery()
-  public async getLessonPlanMaterials(
-    cacheKey: string,
-  ): Promise<Content[] | undefined> {
-    const planCacheKey = planKey(cacheKey)
-    const hit = await this.client.get(planCacheKey)
-    logger.debug(
-      `getLessonPlanMaterials >> cacheKey: ${planCacheKey}, ${
-        hit ? 'HIT' : 'MISS'
-      }`,
-    )
-    if (hit) {
-      const contentIds: string[] = JSON.parse(hit)
-      let materials: Content[] = []
-
-      if (contentIds.length > 0) {
-        materials = (await this.client.mGet(contentIds))
-          .filter((x): x is string => x != null)
-          .map((m): Content => JSON.parse(m))
-      }
-      logger.debug(
-        `getLessonPlanMaterials >> materials found: ${materials.length}`,
-      )
-      return materials
-    }
-    return undefined
-  }
-
-  @RedisErrorRecovery()
-  public async setLessonPlanMaterials(
-    cacheKey: string,
-    materials: Content[],
-  ): Promise<void> {
+  public async setLessonPlanMaterials(materials: Content[]): Promise<void> {
     const materialMap: [string, string][] = materials.map((material) => [
       materialKey(material.contentId),
       JSON.stringify(material),
     ])
-    const materialMapKeys = materialMap.map((x) => x[0])
-    const planCacheKey = planKey(cacheKey)
     logger.debug(
-      `setLessonPlanMaterials >> cacheKey: ${planCacheKey}, ` +
-        `materials count: ${materialMap.length}`,
+      `setLessonPlanMaterials >> materials count: ${materialMap.length}`,
     )
     if (materialMap.length > 0) {
-      await this.client
-        .multi()
-        .mSet(materialMap)
-        .set(planCacheKey, JSON.stringify(materialMapKeys))
-        .exec()
-    } else {
-      await this.client.set(planCacheKey, JSON.stringify([]))
+      await this.client.multi().mSet(materialMap).exec()
     }
   }
 

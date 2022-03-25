@@ -8,7 +8,7 @@ import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import ContentKey from '../helpers/contentKey'
 import { ParsedXapiEvent } from '../helpers/parsedXapiEvent'
-import { Attendance } from '../web/attendance'
+import { StudentContentsResult } from './cmsContentProvider'
 import { UserContentScoreFactory } from './userContentScoreFactory'
 
 const logger = withLogger('RoomScoresTemplateProvider')
@@ -41,13 +41,12 @@ export class RoomScoresTemplateProvider {
   public async getTemplate(
     roomId: string,
     teacherId: string,
-    materials: ReadonlyArray<Content>,
-    userIds: ReadonlySet<string>,
+    studentContentsResult: StudentContentsResult,
     xapiEvents: ReadonlyArray<ParsedXapiEvent>,
   ): Promise<ReadonlyMap<string, UserContentScore>> {
     logger.debug(
-      `getTemplate >> roomId: ${roomId}, teacherId: ${teacherId}, materials count: ${materials.length}, ` +
-        `userIds count: ${userIds.size}, xapiEvents count: ${xapiEvents.length}`,
+      `getTemplate >> roomId: ${roomId}, teacherId: ${teacherId}, ` +
+        `xapiEvents count: ${xapiEvents.length}`,
     )
 
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
@@ -75,15 +74,19 @@ export class RoomScoresTemplateProvider {
 
     // Populate mapKeyToUserContentScoreMap with an empty UserContentScore for every user-material combination.
     const emptySet = new Set<string>()
-    for (const userId of userIds) {
-      if (userId === teacherId) {
-        continue
-      }
+    for (const student of studentContentsResult.studentContentMap) {
       // First the root activity.
-      for (const material of materials) {
+      for (const contentId of student.contentIds) {
+        const material = studentContentsResult.contents.get(contentId)
+        if (!material) {
+          throw new Error(
+            'getTemplate >> student contentId not included in content list. ' +
+              `student contentId: ${contentId}`,
+          )
+        }
         await this.addUserContentScoreToMap(
           roomId,
-          userId,
+          student.studentId,
           material,
           undefined,
           h5pKeyToXapiEventMap,
@@ -98,7 +101,7 @@ export class RoomScoresTemplateProvider {
         for (const subcontentId of subcontentIds) {
           await this.addUserContentScoreToMap(
             roomId,
-            userId,
+            student.studentId,
             material,
             subcontentId,
             h5pKeyToXapiEventMap,
