@@ -263,7 +263,7 @@ export class RoomScoresTemplateProvider2 {
             } else {
               const answers = await userContentScore.answers
               logger.debug(
-                `setup >> userContentScore already exists and holds ${answers.length} answers`,
+                `setup >> userContentScore already exists and holds ${answers?.length} answers`,
               )
             }
             roomScores.push(userContentScore)
@@ -281,10 +281,10 @@ export class RoomScoresTemplateProvider2 {
             logger.warn(`setup > scoreAnswers length: ${scoreAnswers.length}`)
             // userContentScore.answers = Promise.resolve(scoreAnswers)
             await transactionalEntityManager.save(userContentScore)
-            logger.warn(`===============================================`)
-            logger.warn(`===============================================`)
-            logger.warn(`===============================================`)
-            console.log(userContentScore)
+            // logger.warn(`===============================================`)
+            // logger.warn(`===============================================`)
+            // logger.warn(`===============================================`)
+            // console.log(userContentScore)
             const fromDbUcs = await transactionalEntityManager
               .getRepository(UserContentScore)
               .findOne({
@@ -294,10 +294,10 @@ export class RoomScoresTemplateProvider2 {
                   contentKey: contentKey,
                 },
               })
-            logger.warn(`mmmmmmmmmmmmm`)
-            logger.warn(`mmmmmmmmmmmmm`)
-            logger.warn(`mmmmmmmmmmmmm`)
-            console.log(fromDbUcs)
+            // logger.warn(`mmmmmmmmmmmmm`)
+            // logger.warn(`mmmmmmmmmmmmm`)
+            // logger.warn(`mmmmmmmmmmmmm`)
+            // console.log(fromDbUcs)
             room.scores = Promise.resolve(roomScores)
             await transactionalEntityManager.save(room)
           }
@@ -306,6 +306,7 @@ export class RoomScoresTemplateProvider2 {
     })
   }
 
+  // TODO: delete
   public async getRoom({ roomId }: any) {
     console.log('getRoom > input:', { roomId })
     const room: Room = await this.assessmentDB.findOne(Room, roomId, {})
@@ -316,6 +317,7 @@ export class RoomScoresTemplateProvider2 {
     console.log('getRoom > answers:', answers)
   }
 
+  // TODO: delete
   public async checkExistence({ roomId, userId, h5pId }: any) {
     console.log('checkExistence > input:', { roomId, userId, h5pId })
     // const userContentScores = await this.userContentScoreRepository.find({
@@ -337,7 +339,7 @@ export class RoomScoresTemplateProvider2 {
     console.log('checkExistence > userContentScores:', userContentScores)
     const answers = await userContentScores[0].answers
     console.log('checkExistence > --------------------------------->')
-    console.log('checkExistence > Found number Answers =>', answers.length)
+    console.log('checkExistence > Found number Answers =>', answers?.length)
     console.log('checkExistence > Answers =>', answers)
   }
 }

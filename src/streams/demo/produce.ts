@@ -1,9 +1,9 @@
 import 'reflect-metadata'
 import fs from 'fs'
 import path from 'path'
-import { connectToRedisCache } from '../cache/redis'
+import { connectToRedisCache } from '../../cache/redis'
 import { RedisStreams, STREAM_NAME, GROUP_NAME } from './index'
-import { delay } from '../helpers/delay'
+import { delay } from '../../helpers/delay'
 
 interface Event {
   data: string

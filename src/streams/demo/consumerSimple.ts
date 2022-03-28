@@ -1,15 +1,15 @@
 import 'reflect-metadata'
 import fs from 'fs'
 import path from 'path'
-import { connectToRedisCache } from '../cache/redis'
+import { connectToRedisCache } from '../../cache/redis'
 import { RedisStreams, STREAM_NAME, GROUP_NAME } from './index'
-import { delay } from '../helpers/delay'
+import { delay } from '../../helpers/delay'
 
 const MIN_EVENTS = 50
 const MAX_DELAYS = 5
 
 export const consume = async (xClient: RedisStreams) => {
-  const filename = path.join(__dirname, `data/consumerSimple.txt`)
+  const filename = path.join(__dirname, `./data/consumerSimple.txt`)
   fs.writeFileSync(filename, '')
   let i = 0
   let delays = 0
