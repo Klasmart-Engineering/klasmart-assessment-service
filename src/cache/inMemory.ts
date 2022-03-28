@@ -25,12 +25,10 @@ export class InMemoryCache implements ICache {
   }
 
   public async setLessonPlanMaterials(materials: Content[]): Promise<void> {
-    const materialIds: string[] = []
     logger.debug(
       `setLessonPlanMaterials >> materials count: ${materials.length}`,
     )
     for (const material of materials) {
-      materialIds.push(material.contentId)
       this.lessonMaterialCache.set(material.contentId, material)
     }
   }

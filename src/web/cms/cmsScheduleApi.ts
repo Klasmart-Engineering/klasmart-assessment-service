@@ -7,6 +7,7 @@ import ScheduleResponse, {
 import { FetchWrapper } from '../fetchWrapper'
 import DiKeys from '../../initialization/diKeys'
 import { ErrorMessage } from '../../helpers/errorMessages'
+import { UserInputError } from 'apollo-server-core'
 
 const logger = withLogger('CmsScheduleApi')
 
@@ -68,6 +69,9 @@ export class CmsScheduleApi {
         },
       },
     )
+    if (!response) {
+      throw new UserInputError(ErrorMessage.scheduleNotFound(scheduleId))
+    }
 
     return response
   }

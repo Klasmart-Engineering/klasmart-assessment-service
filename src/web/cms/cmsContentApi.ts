@@ -4,6 +4,7 @@ import ContentResponse, { ContentDto } from './contentResponse'
 import { FetchWrapper } from '../fetchWrapper'
 import DiKeys from '../../initialization/diKeys'
 import { ErrorMessage } from '../../helpers/errorMessages'
+import { UserInputError } from 'apollo-server-core'
 
 const logger = withLogger('CmsContentApi')
 
@@ -33,6 +34,9 @@ export class CmsContentApi {
         },
       },
     )
+    if (!response) {
+      throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
+    }
 
     return response
   }

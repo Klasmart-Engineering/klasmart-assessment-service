@@ -157,6 +157,12 @@ describe('roomResolver.Room', () => {
           .rejects(ErrorMessage.scheduleNotFound(roomId))
         MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterials(roomId, endUser.token)
+          .rejects(ErrorMessage.scheduleNotFound(roomId))
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
+
         const attendance = new AttendanceBuilder()
           .withUserId(endUser.userId)
           .withroomId(roomId)
@@ -196,6 +202,12 @@ describe('roomResolver.Room', () => {
         .getSchedule(roomId, endUser.token)
         .rejects(ErrorMessage.scheduleNotFound(roomId))
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+
+      const cmsContentProvider = Substitute.for<CmsContentProvider>()
+      cmsContentProvider
+        .getLessonMaterials(roomId, endUser.token)
+        .rejects(ErrorMessage.scheduleNotFound(roomId))
+      MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
       const attendance = new AttendanceBuilder()
         .withUserId(endUser.userId)

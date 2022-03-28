@@ -18,7 +18,45 @@ describe('cmsContentProvider', () => {
 
   describe('getLessonMaterials', () => {
     context(
-      '1 lesson material exists matching provided roomId; first time access',
+      '1 lesson material exists matching provided roomId; student_content_map is undefined',
+      () => {
+        it('returns 1 matching lesson material; cache miss', async () => {
+          // Arrange
+          const roomId = 'room1'
+          const studentId = 'student1'
+          const cmsContentApi = Substitute.for<CmsContentApi>()
+          cmsContentApi.getLessonMaterials(roomId, Arg.any()).resolves({
+            list: [contentDto1],
+            student_content_map: undefined,
+            total: 1,
+          })
+          const cache = Substitute.for<ICache>()
+          const sut = new CmsContentProvider(cmsContentApi, cache)
+          intervalId = sut.cache.setRecurringFlush(100)
+
+          // Act
+          const { contents, studentContentMap } = await sut.getLessonMaterials(
+            roomId,
+          )
+
+          // Assert
+          expect(studentContentMap).to.have.lengthOf(0)
+          expect(contents).to.have.lengthOf(1)
+          expect(contents.get(content1.contentId)).to.deep.equal(content1)
+          cmsContentApi.received(1).getLessonMaterials(Arg.all())
+          cache
+            .received(1)
+            .setLessonPlanMaterials(
+              Arg.is(
+                (x) => x.length === 1 && x[0].contentId === contentDto1.id,
+              ),
+            )
+        })
+      },
+    )
+
+    context(
+      '1 lesson material exists matching provided roomId; student_content_map contains 1 student',
       () => {
         it('returns 1 matching lesson material; cache miss', async () => {
           // Arrange
@@ -152,9 +190,7 @@ describe('cmsContentProvider', () => {
           const cmsContentApi = Substitute.for<CmsContentApi>()
           cmsContentApi.getLessonMaterials(roomId, Arg.any()).resolves({
             list: [contentDto1],
-            student_content_map: [
-              { student_id: studentId, content_ids: [contentDto1.id ?? ''] },
-            ],
+            student_content_map: undefined,
             total: 1,
           })
           cmsContentApi

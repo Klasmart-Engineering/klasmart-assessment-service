@@ -20,19 +20,16 @@ export class RoomMaterialsProvider {
     roomId: string,
     authenticationToken?: string,
   ): Promise<StudentContentsResult> {
-    const schedule = await this.cmsScheduleProvider.getSchedule(
-      roomId,
-      authenticationToken,
-    )
-    if (!schedule) {
-      throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
-    }
     const studentContentsResult =
       await this.cmsContentProvider.getLessonMaterials(
         roomId,
         authenticationToken,
       )
     if (studentContentsResult.studentContentMap.length === 0) {
+      // studentContentMap is empty, which means this is not an
+      // "adaptive review class". So all students in this class
+      // studied the same list of lesson materials. Now we fetch
+      // the student roster and assign the lesson materials.
       const studentIds = await this.cmsScheduleProvider.getStudentIds(
         roomId,
         authenticationToken,

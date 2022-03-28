@@ -8,6 +8,7 @@ import { UserContentScoreFactory } from '../../src/providers/userContentScoreFac
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
+import { StudentContentsResult } from '../../src/providers/cmsContentProvider'
 
 describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {
@@ -29,7 +30,6 @@ describe('roomScoresTemplateProvider', () => {
           const h5pSub1 = 'h5pSub1' // child of h5pRoot
           const h5pSub2 = 'h5pSub2' // child of h5pSub1
 
-          const userIds = new Set([userId])
           const userContentScore1 = new UserContentScoreBuilder()
             .withContentKey(ContentKey.construct(h5pRoot))
             .withroomId(roomId)
@@ -51,7 +51,7 @@ describe('roomScoresTemplateProvider', () => {
           const material = new LessonMaterialBuilder()
             .withSource(FileType.H5P, h5pRoot)
             .build()
-          const materials = {
+          const materials: StudentContentsResult = {
             contents: new Map([[material.contentId, material]]),
             studentContentMap: [
               { studentId: userId, contentIds: [material.contentId] },

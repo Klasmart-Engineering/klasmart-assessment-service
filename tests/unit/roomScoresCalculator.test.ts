@@ -16,6 +16,7 @@ import { UserContentScore } from '../../src/db/assessments/entities'
 import { v4 } from 'uuid'
 import { FileType } from '../../src/db/cms/enums'
 import { FindConditions } from 'typeorm'
+import { StudentContentsResult } from '../../src/providers/cmsContentProvider'
 
 describe('roomScoresCalculator', () => {
   context('1 attendance with 1 xapi event', () => {
@@ -63,10 +64,13 @@ describe('roomScoresCalculator', () => {
         Substitute.for<RoomScoresTemplateProvider>()
 
       attendanceProvider.getAttendances(roomId).resolves([attendance])
-      materialsProvider.getMaterials(roomId, authenticationToken).resolves({
+      const studentContentsResult: StudentContentsResult = {
         contents: new Map([[material.contentId, material]]),
         studentContentMap: [{ studentId, contentIds: [material.contentId] }],
-      })
+      }
+      materialsProvider
+        .getMaterials(roomId, authenticationToken)
+        .resolves(studentContentsResult)
       const h5pIdToContentIdMap = new Map<string, string>([
         [h5pId, material.contentId],
       ])
@@ -83,17 +87,7 @@ describe('roomScoresCalculator', () => {
         )
         .resolves(material.contentId)
       scoresTemplateProvider
-        .getTemplate(
-          roomId,
-          teacherId,
-          {
-            contents: new Map([[material.contentId, material]]),
-            studentContentMap: [
-              { studentId, contentIds: [material.contentId] },
-            ],
-          },
-          [xapiRecord],
-        )
+        .getTemplate(roomId, teacherId, studentContentsResult, [xapiRecord])
         .resolves(mapKeyToUserContentScoreMap)
 
       const roomsScoresCalculator = new RoomScoresCalculator(
@@ -177,10 +171,13 @@ describe('roomScoresCalculator', () => {
           Substitute.for<RoomScoresTemplateProvider>()
 
         attendanceProvider.getAttendances(roomId).resolves([attendance])
-        materialsProvider.getMaterials(roomId, authenticationToken).resolves({
+        const studentContentsResult: StudentContentsResult = {
           contents: new Map([[material.contentId, material]]),
           studentContentMap: [{ studentId, contentIds: [material.contentId] }],
-        })
+        }
+        materialsProvider
+          .getMaterials(roomId, authenticationToken)
+          .resolves(studentContentsResult)
         const h5pIdToContentIdMap = new Map<string, string>([
           [h5pId, material.contentId],
         ])
@@ -197,17 +194,7 @@ describe('roomScoresCalculator', () => {
           )
           .resolves(material.contentId)
         roomScoresTemplateProvider
-          .getTemplate(
-            roomId,
-            teacherId,
-            {
-              contents: new Map([[material.contentId, material]]),
-              studentContentMap: [
-                { studentId, contentIds: [material.contentId] },
-              ],
-            },
-            [xapiRecord],
-          )
+          .getTemplate(roomId, teacherId, studentContentsResult, [xapiRecord])
           .resolves(mapKeyToUserContentScoreMap)
 
         const roomsScoresCalculator = new RoomScoresCalculator(
