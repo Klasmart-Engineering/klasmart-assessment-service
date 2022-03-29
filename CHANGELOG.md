@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.19.0..v1.18.1) (2022-03-29)
+
+
+### Features
+
+* support adaptive review ([dd0d1e3](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/dd0d1e3ea3829245f4baf86c7f47debf44d51adc))
+
 ### [1.18.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.18.1..v1.18.0) (2022-03-24)
 
 
