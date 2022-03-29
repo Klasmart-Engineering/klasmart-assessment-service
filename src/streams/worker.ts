@@ -5,33 +5,13 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 
 import { connectToRedisCache } from '../cache/redis'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
-import { delay } from '../helpers/delay'
-import { STREAM_NAME, GROUP_NAME } from './index'
-import { createXapiEvents } from './helpers'
 import { RedisStreams } from './redisApi'
+import { STREAM_NAME, GROUP_NAME } from './index'
 import { simpleConsumerGroupWorker } from './simpleConsumerGroupWorker'
-
-const logger = withLogger('simpleConsumerGroupWorker.test')
 
 useContainer(TypeormTypediContainer)
 
-const produce = async (
-  xClient: RedisStreams,
-  stream: string,
-  xapiEvents: any[],
-  delayMs: number = 100,
-) => {
-  for (const xapiEvent of xapiEvents) {
-    await delay(delayMs)
-    const event = {
-      data: JSON.stringify(xapiEvent),
-    }
-    const entryId = await xClient.add(stream, event)
-    console.log(
-      `simpleConsumerGroupWorker > PRODUCER >> add entryId: ${entryId}`,
-    )
-  }
-}
+const logger = withLogger('worker')
 
 const main = async () => {
   logger.info('⏳ Starting Assessment Worker')
@@ -51,14 +31,6 @@ const main = async () => {
   }
   await connectToAssessmentDatabase(assessmentDatabaseUrl)
 
-  logger.info('🦑 Creating events...')
-  const rawXapiEvents = createXapiEvents({
-    rooms: 6,
-    users: 6,
-    activities: 6,
-    events: 10,
-  })
-
   try {
     await xClient.createGroup(stream, group)
   } catch (e) {
@@ -68,10 +40,6 @@ const main = async () => {
     )
   }
 
-  // produce events
-  logger.info('🚜 Start producing xapi events to be added to a Redis Stream')
-  produce(xClient, stream, rawXapiEvents, 100)
-
   // infinite process
   logger.info('🌭 Assessment Worker ready to consume xapi events')
   simpleConsumerGroupWorker(xClient, stream, group, consumer)
@@ -79,7 +47,7 @@ const main = async () => {
 
 main()
   .then(() => {
-    console.log('success')
+    logger.debug('success')
   })
   .catch((err) => {
     console.error(err)

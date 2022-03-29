@@ -20,15 +20,15 @@ const main = async () => {
   const xClient = new RedisStreams(client)
 
   const xapiEvents = createXapiEvents({
-    rooms: 2,
-    users: 2,
+    rooms: 100,
+    users: 6,
     activities: 2,
     events: 5,
   })
 
   console.log('🚜 Starting to produce events!')
   for (const xapiEvent of xapiEvents) {
-    await delay(100)
+    await delay(10)
     const event = {
       data: JSON.stringify(xapiEvent),
     }

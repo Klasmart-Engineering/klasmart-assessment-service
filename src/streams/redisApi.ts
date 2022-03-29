@@ -118,7 +118,7 @@ export class RedisStreams {
       groupName,
       consumerName,
       { key: stream, id: streamKey || '>' },
-      { BLOCK: block || 0, COUNT: count || 0 },
+      { BLOCK: block || undefined, COUNT: count || undefined },
     )
     if (entries && entries.length > 0) {
       const streamEntries = entries[0].messages

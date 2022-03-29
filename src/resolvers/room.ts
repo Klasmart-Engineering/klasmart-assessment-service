@@ -33,7 +33,7 @@ export default class RoomResolver {
   ) {}
 
   @Authorized()
-  @Query(() => Room || null)
+  @Query(() => Room, { nullable: true })
   public async Room(
     // TODO: This shouldn't be nullable.
     @Arg('room_id', { nullable: true }) roomId: string,
