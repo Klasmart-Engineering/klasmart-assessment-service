@@ -20,20 +20,22 @@ const main = async () => {
   const xClient = new RedisStreams(client)
 
   const xapiEvents = createXapiEvents({
-    rooms: 100,
+    rooms: 10,
     users: 6,
-    activities: 2,
-    events: 5,
+    activities: 6,
+    events: 10,
   })
 
   console.log('🚜 Starting to produce events!')
   for (const xapiEvent of xapiEvents) {
-    await delay(10)
+    await delay(100)
     const event = {
       data: JSON.stringify(xapiEvent),
     }
     const entryId = await xClient.add(STREAM_NAME, event)
-    console.log(`producer > PRODUCER >> add entryId: ${entryId}`)
+    console.log(
+      `producer > PRODUCER >> add [room: ${xapiEvent.roomId}, user: ${xapiEvent.userId}] entryId: ${entryId}`,
+    )
   }
 }
 

@@ -7,6 +7,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { EntityManager, InsertQueryBuilder, Repository } from 'typeorm'
 import { UserContentScoreFactory } from '../providers/userContentScoreFactory'
 import ContentKey from '../helpers/contentKey'
+import { RoomBuilder } from '../../tests/builders'
 
 const logger = withLogger('streamCalculateScore')
 
@@ -161,9 +162,26 @@ export class RoomScoresTemplateProvider2 {
       (xapiEvent) => xapiEvent.roomId,
     )
 
-    // console.log([...xapiEventsGroupedByRoom.entries()])
-    // console.log([...xapiEventsGroupedByRoom.keys()])
-    // console.log([...xapiEventsGroupedByRoom.values()])
+    // 1 rooms -> 10 students -> 1 events every 10s => 1 event/second
+    // 10 rooms -> fine
+    // 100 rooms ->fine
+    // 1000 rooms -> ok maybe it's fine
+    // 10000 rooms => probably slows down
+
+    // ! DOES NOT QUERY THE CMS SERVICE
+
+    // xapi events -> room_id, user_id, content_key = (h5p_id + h5p_sub_id)
+    //   -> process
+    //   -> room(room_id) + userContentScore(user_id, content_key)
+    //   -> xapiEvent -> userContentScore -> @oneToMany(Answers)
+
+    // ACTION plan:
+    // -> save/upsert at the very end so that all the edits happen in one go
+    // -> don't read
+    // -> add try/catch + retry logic (3-5 times) with delay logic (exponential decayed delay 1-2-3-5-10 seconds) -> delay only on retries
+    // -> multiple failures -> pop into failure queue
+    // => [refactor in API] query CMS with room_id => list of lesson materials => map h5pIds to CMS content ids (no caching for now)
+    // => add event stream producer logic to live-backend service
 
     logger.debug(
       `setup >> Grouped by roomId, total groups: ${xapiEventsGroupedByRoom.size}`,
@@ -285,15 +303,15 @@ export class RoomScoresTemplateProvider2 {
             // logger.warn(`===============================================`)
             // logger.warn(`===============================================`)
             // console.log(userContentScore)
-            const fromDbUcs = await transactionalEntityManager
-              .getRepository(UserContentScore)
-              .findOne({
-                where: {
-                  roomId: roomId,
-                  studentId: userId,
-                  contentKey: contentKey,
-                },
-              })
+            // const fromDbUcs = await transactionalEntityManager
+            //   .getRepository(UserContentScore)
+            //   .findOne({
+            //     where: {
+            //       roomId: roomId,
+            //       studentId: userId,
+            //       contentKey: contentKey,
+            //     },
+            //   })
             // logger.warn(`mmmmmmmmmmmmm`)
             // logger.warn(`mmmmmmmmmmmmm`)
             // logger.warn(`mmmmmmmmmmmmm`)
