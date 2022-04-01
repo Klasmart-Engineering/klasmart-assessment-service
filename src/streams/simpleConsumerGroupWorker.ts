@@ -25,6 +25,7 @@ export const simpleConsumerGroupWorker = async (
     RoomScoresTemplateProvider2,
   )
   const processFn = roomScoreProviderWorker.process
+  console.log('processFn ===>', processFn)
 
   const state: State = {
     i: 0,
@@ -37,7 +38,7 @@ export const simpleConsumerGroupWorker = async (
       stream,
       group,
       consumer,
-      processFn,
+      roomScoreProviderWorker,
       state,
       {
         minEvents: MIN_EVENTS,
@@ -63,7 +64,7 @@ export const simpleConsumerGroupWorkerLoop = async (
   stream: string,
   group: string,
   consumer: string,
-  processFn: (rawXapiEvents: XApiRecord[]) => Promise<void>,
+  calculator: RoomScoresTemplateProvider2,
   { i, delays }: State,
   opts: Options = {
     minEvents: 0,
@@ -121,7 +122,7 @@ export const simpleConsumerGroupWorkerLoop = async (
     console.log(message)
     return JSON.parse(message?.data)
   })
-  await processFn(rawXapiEvents)
+  await calculator.process(rawXapiEvents)
 
   // Aknowledge the processed events
   const eventsIds = events.map(({ id }) => id)

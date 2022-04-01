@@ -94,10 +94,22 @@ export class RedisStreams {
 
   // XGROUP CREATE mystream mygroup $ MKSTREAM
   @RedisErrorRecovery()
-  public async createGroup(stream: string, group: string) {
-    return this.client.xGroupCreate(stream, group, '$', {
+  public async createGroup(stream: string, group: string, onlyLatest = false) {
+    return this.client.xGroupCreate(stream, group, onlyLatest ? '$' : '0', {
       MKSTREAM: true,
     })
+  }
+
+  // XGROUP DESTROY mystream mygroup
+  @RedisErrorRecovery()
+  public async deleteGroup(stream: string, group: string) {
+    return this.client.xGroupDestroy(stream, group)
+  }
+
+  // XGROUP DELCONSUMER mystream mygroup myconsumer
+  @RedisErrorRecovery()
+  public async deleteConsumer(stream: string, group: string, consumer: string) {
+    return this.client.xGroupDelConsumer(stream, group, consumer)
   }
 
   // XACK mystream mygroup 1526569495631-0

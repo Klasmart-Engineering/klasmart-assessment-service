@@ -32,7 +32,9 @@ type ParsedXapiEvent = {
   response?: string
 }
 
-const parseRawEvent = (rawXapiEvent?: XApiRecord): ParsedXapiEvent | null => {
+export const parseRawEvent = (
+  rawXapiEvent?: XApiRecord,
+): ParsedXapiEvent | null => {
   const userId = rawXapiEvent?.userId
   const roomId = rawXapiEvent?.roomId
   const timestamp = rawXapiEvent?.xapi?.clientTimestamp
@@ -123,9 +125,9 @@ export class RoomScoresTemplateProvider2 {
   constructor(
     // @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
     // private readonly userContentScoreRepository: Repository<UserContentScore>,
-    private readonly userContentScoreFactory: UserContentScoreFactory,
+    public readonly userContentScoreFactory: UserContentScoreFactory,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
-    private readonly assessmentDB: EntityManager,
+    public readonly assessmentDB: EntityManager,
   ) {}
 
   public static getUserContentScoreKey(
@@ -145,6 +147,7 @@ export class RoomScoresTemplateProvider2 {
     //      and geenrate new UserContentScores for non-h5p activities (such as pdf-activity)
     //      which didn't generate any xapiEvents. This would allow Teacher to add manual
     //      scores and comments.
+    console.log('this =================>', this)
 
     logger.debug(`setup >> rawXapiEvents received: ${rawXapiEvents.length}`)
 
