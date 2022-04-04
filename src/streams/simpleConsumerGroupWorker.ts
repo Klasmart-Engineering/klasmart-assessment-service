@@ -73,7 +73,7 @@ export const simpleConsumerGroupWorkerLoop = async (
 ): Promise<void> => {
   // await delay(1000)
   logger.debug(
-    `CONSUMER ${consumer}: reading group (loop ${i}, delays: ${delays})...`,
+    `${consumer} (${i}): reading group (loop ${i}, delays: ${delays})...`,
   )
 
   // check pending events
@@ -82,12 +82,14 @@ export const simpleConsumerGroupWorkerLoop = async (
       count: 1000,
       streamKey: '0',
     })) || []
-  logger.debug(`CONSUMER ${consumer}: found ${events.length} pending events`)
+  logger.debug(
+    `CONSUMER ${consumer} (${i}): found ${events.length} pending events`,
+  )
 
   // if there are too few pending events, then fetch new ones
   if (events.length <= opts.minEvents) {
     logger.debug(
-      `CONSUMER ${consumer}: very few or no pending messages, getting new ones...`,
+      `${consumer} (${i}): very few or no pending messages, getting new ones...`,
     )
     const newEvents =
       (await xClient.readGroup(stream, group, consumer, {
@@ -101,7 +103,9 @@ export const simpleConsumerGroupWorkerLoop = async (
   const tooFewEvents = events.length < opts.minEvents
   const hasNotExceededMaxDelays = delays < opts.maxDelays
   if (tooFewEvents && hasNotExceededMaxDelays) {
-    logger.debug(`CONSUMER ${consumer}: too few events found: ${events.length}`)
+    logger.debug(
+      `${consumer} (${i}): too few events found: ${events.length}, need at least ${opts.minEvents}`,
+    )
     delays += 1
     return
   }
@@ -109,27 +113,26 @@ export const simpleConsumerGroupWorkerLoop = async (
   // if no events have been found, sleep for a few seconds and continue
   if (events.length === 0) {
     logger.debug(
-      `CONSUMER ${consumer}: no events found: sleeping for 5 seconds...`,
+      `${consumer} (${i}): no events found: sleeping for 5 seconds...`,
     )
-    await delay(1000)
+    // await delay(1000)
     return
   }
 
   // Process events
-  logger.debug(`CONSUMER ${consumer}: too few events found: ${events.length}`)
+  logger.debug(`${consumer}: total events found: ${events.length}`)
   const rawXapiEvents: XApiRecord[] = events.map(({ id, message }) => {
-    console.warn('\n\n\njuhilgkyfdrtfugihojpk[ijouhgyfgiop9i0[puyigtuf')
-    console.log(message)
     return JSON.parse(message?.data)
   })
   await calculator.process(rawXapiEvents)
+  logger.debug(`${consumer} (${i}): total events JSON parsed: ${events.length}`)
 
   // Aknowledge the processed events
   const eventsIds = events.map(({ id }) => id)
-  logger.debug(`CONSUMER ${consumer}: acknowledging even ids ${eventsIds}`)
+  logger.debug(`${consumer} (${i}): acknowledging events: ${eventsIds.length}`)
   await xClient.ack(stream, group, eventsIds)
 
   delays = 0
-  logger.debug(`CONSUMER ${consumer}: FINISHED processing loop ${i}`)
+  logger.debug(`${consumer} (${i}): FINISHED processing loop ${i}`)
   return
 }

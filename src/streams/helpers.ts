@@ -26,6 +26,7 @@ export const createXapiEvents = ({
           const h5pName = `h5pName${hId}`
           const h5pType = `h5pType${hId}`
           const score = { min: 0, max: 2, raw: 1 }
+          const response = `${roomId}, ${userId}, ${h5pId} >> event${eId}`
           const i = uId * numUsers + hId * numActivities + eId
 
           const xapiRecord = new XApiRecordBuilder()
@@ -36,7 +37,7 @@ export const createXapiEvents = ({
             .withH5pName(h5pName)
             .withH5pType(h5pType)
             .withScore(score)
-            .withResponse(undefined)
+            .withResponse(response)
             .withServerTimestamp(curr_time + i)
             .withClientTimestamp(curr_time + i)
             .build()

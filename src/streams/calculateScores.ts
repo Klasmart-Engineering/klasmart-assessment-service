@@ -147,16 +147,14 @@ export class RoomScoresTemplateProvider2 {
     //      and geenrate new UserContentScores for non-h5p activities (such as pdf-activity)
     //      which didn't generate any xapiEvents. This would allow Teacher to add manual
     //      scores and comments.
-    console.log('this =================>', this)
-
-    logger.debug(`setup >> rawXapiEvents received: ${rawXapiEvents.length}`)
+    logger.debug(`process >> rawXapiEvents received: ${rawXapiEvents.length}`)
 
     // 1. Parse all the xapi events
     const xapiEvents = rawXapiEvents
       .map((event) => parseRawEvent(event))
       .filter(notEmpty)
 
-    logger.debug(`setup >> parsing DONE, total events: ${xapiEvents.length}`)
+    logger.debug(`process >> parsing DONE, total events: ${xapiEvents.length}`)
     // 2. Group the events by `roomId`, `userId` and `contentId`
     //    with`contentId` => is a composed of the `h5pId` or `h5pId + h5pSubId`
     // 2.1 Group by room
@@ -187,12 +185,12 @@ export class RoomScoresTemplateProvider2 {
     // => add event stream producer logic to live-backend service
 
     logger.debug(
-      `setup >> Grouped by roomId, total groups: ${xapiEventsGroupedByRoom.size}`,
+      `process >> Grouped by roomId, total groups: ${xapiEventsGroupedByRoom.size}`,
     )
     // Execute all sql inserts in a transaction
     await this.assessmentDB.transaction(async (transactionalEntityManager) => {
-      for (const roomId of xapiEventsGroupedByRoom.keys()) {
-        logger.debug(`setup >> roomId: ${roomId}`)
+      for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
+        logger.debug(`process >> roomId: ${roomId}`)
 
         // Get the room or create a new one
         let room = await this.assessmentDB.findOne(Room, roomId, {})
@@ -205,43 +203,42 @@ export class RoomScoresTemplateProvider2 {
             .values(room!)
             .execute()
 
-          logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
+          logger.debug(`process >> roomId: ${roomId} >> created new Room`)
         }
         const roomScores: UserContentScore[] = []
 
         // 2.1 Group by user
-        const xapiEvents = xapiEventsGroupedByRoom.get(roomId)!
         const xapiEventsGroupedByUser = groupBy(
           xapiEvents,
           (xapiEvent) => xapiEvent.userId,
         )
         logger.debug(
-          `setup >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
+          `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
         )
 
-        for (const userId of xapiEventsGroupedByUser.keys()) {
-          logger.debug(`setup >> roomId: ${roomId} >> userId: ${userId}`)
-          const xapiEvents = xapiEventsGroupedByUser.get(userId)!
+        for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
+          logger.debug(`process >> roomId: ${roomId} >> userId: ${userId}`)
           const xapiEventsGroupedByContentKey = groupBy(
             xapiEvents,
             (xapiEvent) =>
               ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // (3.) old way -> Material:content_id + xapiEvent:h5pSubId
           )
           logger.debug(
-            `setup >> Grouped by contentKey, total groups: ${xapiEventsGroupedByContentKey.size}`,
+            `process >> Grouped by contentKey, total groups: ${xapiEventsGroupedByContentKey.size}`,
           )
 
           // 2.3 Group by activity/content
-          for (const contentKey of xapiEventsGroupedByContentKey.keys()) {
+          for (const [
+            contentKey,
+            xapiEvents,
+          ] of xapiEventsGroupedByContentKey.entries()) {
             logger.debug(
-              `setup >> roomId: ${roomId} >> userId: ${userId} >> contentKey ${contentKey}`,
+              `process >> roomId: ${roomId} >> userId: ${userId} >> contentKey ${contentKey}`,
             )
-
-            const xapiEvents = xapiEventsGroupedByContentKey.get(contentKey)!
 
             // THIS IS IMPOSSIBLE -> ContentKey should not exist for events that don't exist
             if (xapiEvents.length == 0) {
-              logger.warn(`setup >> No event FOUND FOR SOME REASON ?!?!??!?!`)
+              logger.warn(`process >> No event FOUND FOR SOME REASON ?!?!??!?!`)
               continue
             }
 
@@ -249,7 +246,7 @@ export class RoomScoresTemplateProvider2 {
             // must also have the same Type, Name and h5pParentId
             const { h5pType, h5pName, h5pParentId } = xapiEvents[0]
 
-            logger.debug(`setup >> time for the userContentScore`)
+            logger.debug(`process >> time for the userContentScore`)
             // Time for the UserContentScore entity!
             // First, let's try to find one in the database if it already exists
             let userContentScore = await this.assessmentDB
@@ -264,7 +261,7 @@ export class RoomScoresTemplateProvider2 {
 
             // If we haven't found one, we will create a new one
             if (!userContentScore) {
-              logger.debug(`setup >> creating a new userContentScore`)
+              logger.debug(`process >> creating a new userContentScore`)
               userContentScore = this.userContentScoreFactory.create(
                 roomId,
                 userId,
@@ -284,7 +281,7 @@ export class RoomScoresTemplateProvider2 {
             } else {
               const answers = await userContentScore.answers
               logger.debug(
-                `setup >> userContentScore already exists and holds ${answers?.length} answers`,
+                `process >> userContentScore already exists and holds ${answers?.length} answers`,
               )
             }
             roomScores.push(userContentScore)
@@ -292,14 +289,14 @@ export class RoomScoresTemplateProvider2 {
 
             const scoreAnswers: Answer[] = []
             for (const xapiEvent of xapiEvents) {
-              logger.debug(`setup >> applying xapiEvent to userContentScore`)
+              logger.debug(`process >> applying xapiEvent to userContentScore`)
               const answer = await userContentScore.applyEvent(xapiEvent)
               if (answer) {
                 scoreAnswers.push(answer)
                 await transactionalEntityManager.save(answer)
               }
             }
-            logger.warn(`setup > scoreAnswers length: ${scoreAnswers.length}`)
+            logger.warn(`process > scoreAnswers length: ${scoreAnswers.length}`)
             // userContentScore.answers = Promise.resolve(scoreAnswers)
             await transactionalEntityManager.save(userContentScore)
             // logger.warn(`===============================================`)
