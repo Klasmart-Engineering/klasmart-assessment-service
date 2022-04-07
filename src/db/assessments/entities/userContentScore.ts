@@ -34,8 +34,9 @@ export class UserContentScore extends Base {
   )
   public room!: Promise<Room>
 
+  // @TypeormLoader()
   @OneToMany(() => Answer, (answer) => answer.userContentScore, {
-    lazy: false,
+    lazy: true,
     cascade: true,
   })
   @JoinColumn([
@@ -43,8 +44,7 @@ export class UserContentScore extends Base {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
-  @TypeormLoader()
-  public answers?: Promise<Answer[]>
+  public answers: Promise<Answer[]>
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -88,16 +88,16 @@ export class UserContentScore extends Base {
       console.warn('applyEvent > xapiEvent does not have a response or score')
       return
     }
-    await this.addAnswer(xapiEvent)
+    return await this.addAnswer(xapiEvent)
   }
 
-  public async applyEvents(xapiEvents: ParsedXapiEvent[]): Promise<void> {
+  public async applyEvents(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
     this.seen = true
     const filteredXapiEvents = xapiEvents.filter(
       (xapiEvent) =>
         xapiEvent.score !== undefined && xapiEvent.response !== undefined,
     )
-    await this.addAnswers(filteredXapiEvents)
+    return await this.addAnswers(filteredXapiEvents)
   }
 
   constructor(roomId: string, studentId: string, contentKey: string) {
@@ -106,6 +106,7 @@ export class UserContentScore extends Base {
     this.studentId = studentId
     this.contentKey = contentKey
     this.seen = false
+    this.answers = Promise.resolve([])
     if (roomId == null) {
       // typeorm is making the call, so don't overwrite answers.
       return
@@ -171,7 +172,7 @@ export class UserContentScore extends Base {
     // }
   }
 
-  protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<void> {
+  protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
     let answers = await this.answers
     if (!answers) {
       answers = []
@@ -188,6 +189,11 @@ export class UserContentScore extends Base {
         xapiEvent.score?.max,
       ),
     )
+    console.log(
+      `pushing newAnswers ${newAnswers.length} to existing ${answers.length} answers`,
+    )
     answers.push(...newAnswers)
+    console.log(`now there are ${answers.length} answers`)
+    return answers
   }
 }

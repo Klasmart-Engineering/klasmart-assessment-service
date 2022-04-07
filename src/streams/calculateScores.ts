@@ -7,7 +7,6 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { EntityManager, InsertQueryBuilder, Repository } from 'typeorm'
 import { UserContentScoreFactory } from '../providers/userContentScoreFactory'
 import ContentKey from '../helpers/contentKey'
-import { RoomBuilder } from '../../tests/builders'
 
 const logger = withLogger('streamCalculateScore')
 
@@ -123,9 +122,11 @@ function groupBy<K, V>(
 @Service()
 export class RoomScoresTemplateProvider2 {
   constructor(
-    // @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
-    // private readonly userContentScoreRepository: Repository<UserContentScore>,
     public readonly userContentScoreFactory: UserContentScoreFactory,
+    @InjectRepository(Room, ASSESSMENTS_CONNECTION_NAME)
+    private readonly roomRepository: Repository<Room>,
+    @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
+    private readonly userContentScoreRepository: Repository<UserContentScore>,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     public readonly assessmentDB: EntityManager,
   ) {}
@@ -138,6 +139,26 @@ export class RoomScoresTemplateProvider2 {
     return `${roomId}|${userId}|${contentKey}`
   }
 
+  // 1 rooms -> 10 students -> 1 events every 10s => 1 event/second
+  // 10 rooms -> fine
+  // 100 rooms ->fine
+  // 1000 rooms -> ok maybe it's fine
+  // 10000 rooms => probably slows down
+
+  // ! DOES NOT QUERY THE CMS SERVICE
+
+  // xapi events -> room_id, user_id, content_key = (h5p_id + h5p_sub_id)
+  //   -> process
+  //   -> room(room_id) + userContentScore(user_id, content_key)
+  //   -> xapiEvent -> userContentScore -> @oneToMany(Answers)
+
+  // ACTION plan:
+  // -> save/upsert at the very end so that all the edits happen in one go
+  // -> don't read
+  // -> add try/catch + retry logic (3-5 times) with delay logic (exponential decayed delay 1-2-3-5-10 seconds) -> delay only on retries
+  // -> multiple failures -> pop into failure queue
+  // => [refactor in API] query CMS with room_id => list of lesson materials => map h5pIds to CMS content ids (no caching for now)
+  // => add event stream producer logic to live-backend service
   public async process(rawXapiEvents: XApiRecord[]): Promise<void> {
     // create a map of <room-user-contentKey, UserContentScore>
     // const mapKeyToUserContentScoreMap: Map<string, UserContentScore> = new Map()
@@ -162,166 +183,179 @@ export class RoomScoresTemplateProvider2 {
       xapiEvents,
       (xapiEvent) => xapiEvent.roomId,
     )
-
-    // 1 rooms -> 10 students -> 1 events every 10s => 1 event/second
-    // 10 rooms -> fine
-    // 100 rooms ->fine
-    // 1000 rooms -> ok maybe it's fine
-    // 10000 rooms => probably slows down
-
-    // ! DOES NOT QUERY THE CMS SERVICE
-
-    // xapi events -> room_id, user_id, content_key = (h5p_id + h5p_sub_id)
-    //   -> process
-    //   -> room(room_id) + userContentScore(user_id, content_key)
-    //   -> xapiEvent -> userContentScore -> @oneToMany(Answers)
-
-    // ACTION plan:
-    // -> save/upsert at the very end so that all the edits happen in one go
-    // -> don't read
-    // -> add try/catch + retry logic (3-5 times) with delay logic (exponential decayed delay 1-2-3-5-10 seconds) -> delay only on retries
-    // -> multiple failures -> pop into failure queue
-    // => [refactor in API] query CMS with room_id => list of lesson materials => map h5pIds to CMS content ids (no caching for now)
-    // => add event stream producer logic to live-backend service
-
     logger.debug(
       `process >> Grouped by roomId, total groups: ${xapiEventsGroupedByRoom.size}`,
     )
     // Execute all sql inserts in a transaction
-    await this.assessmentDB.transaction(async (transactionalEntityManager) => {
-      for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
-        logger.debug(`process >> roomId: ${roomId}`)
+    // await this.assessmentDB.transaction(async (txManager) => {
+    const txManager = this.assessmentDB
+    for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
+      logger.debug(`process >> roomId: ${roomId}`)
 
-        // Get the room or create a new one
-        let room = await this.assessmentDB.findOne(Room, roomId, {})
-        if (!room) {
-          room = new Room(roomId)
-          await transactionalEntityManager
-            .createQueryBuilder()
-            .insert()
-            .into(Room)
-            .values(room!)
-            .execute()
+      // Get the room or create a new one
+      // let room = await this.assessmentDB.findOne(Room, roomId, {})
+      let room = await txManager.findOne(Room, roomId)
+      if (!room) {
+        room = new Room(roomId)
+        await txManager
+          .createQueryBuilder()
+          .insert()
+          .into(Room)
+          .values(room!)
+          .execute()
 
-          logger.debug(`process >> roomId: ${roomId} >> created new Room`)
-        }
-        const roomScores: UserContentScore[] = []
+        logger.debug(`process >> roomId: ${roomId} >> created new Room`)
+      } else {
+        logger.debug(`process >> roomId: ${roomId} >> Room already exists`)
+      }
 
-        // 2.1 Group by user
-        const xapiEventsGroupedByUser = groupBy(
+      // 2.1 Group by user
+      const xapiEventsGroupedByUser = groupBy(
+        xapiEvents,
+        (xapiEvent) => xapiEvent.userId,
+      )
+      logger.debug(
+        `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
+      )
+
+      // const newRoomScores: UserContentScore[] = []
+      for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
+        logger.debug(`process >> roomId: ${roomId} >> userId: ${userId}`)
+        const xapiEventsGroupedByContentKey = groupBy(
           xapiEvents,
-          (xapiEvent) => xapiEvent.userId,
+          (xapiEvent) =>
+            ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // (3.) old way -> Material:content_id + xapiEvent:h5pSubId
         )
         logger.debug(
-          `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
+          `process >> Grouped by contentKey, total groups: ${xapiEventsGroupedByContentKey.size}`,
         )
 
-        for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
-          logger.debug(`process >> roomId: ${roomId} >> userId: ${userId}`)
-          const xapiEventsGroupedByContentKey = groupBy(
-            xapiEvents,
-            (xapiEvent) =>
-              ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // (3.) old way -> Material:content_id + xapiEvent:h5pSubId
-          )
+        // 2.3 Group by activity/content
+        for (const [
+          contentKey,
+          xapiEvents,
+        ] of xapiEventsGroupedByContentKey.entries()) {
           logger.debug(
-            `process >> Grouped by contentKey, total groups: ${xapiEventsGroupedByContentKey.size}`,
+            `process >> roomId: ${roomId} >> userId: ${userId} >> contentKey ${contentKey}`,
           )
 
-          // 2.3 Group by activity/content
-          for (const [
-            contentKey,
-            xapiEvents,
-          ] of xapiEventsGroupedByContentKey.entries()) {
-            logger.debug(
-              `process >> roomId: ${roomId} >> userId: ${userId} >> contentKey ${contentKey}`,
-            )
-
-            // THIS IS IMPOSSIBLE -> ContentKey should not exist for events that don't exist
-            if (xapiEvents.length == 0) {
-              logger.warn(`process >> No event FOUND FOR SOME REASON ?!?!??!?!`)
-              continue
-            }
-
-            // At this point, xapi events that share the same h5pId and h5pSubId
-            // must also have the same Type, Name and h5pParentId
-            const { h5pType, h5pName, h5pParentId } = xapiEvents[0]
-
-            logger.debug(`process >> time for the userContentScore`)
-            // Time for the UserContentScore entity!
-            // First, let's try to find one in the database if it already exists
-            let userContentScore = await this.assessmentDB
-              .getRepository(UserContentScore)
-              .findOne({
-                where: {
-                  roomId: roomId,
-                  studentId: userId,
-                  contentKey: contentKey,
-                },
-              })
-
-            // If we haven't found one, we will create a new one
-            if (!userContentScore) {
-              logger.debug(`process >> creating a new userContentScore`)
-              userContentScore = this.userContentScoreFactory.create(
-                roomId,
-                userId,
-                contentKey,
-                h5pType,
-                h5pName,
-                h5pParentId,
-              )
-              // queries.push(async (dataSource) => {
-              //   await dataSource
-              //     .createQueryBuilder()
-              //     .insert()
-              //     .into(UserContentScore)
-              //     .values(userContentScore!)
-              //     .execute()
-              // })
-            } else {
-              const answers = await userContentScore.answers
-              logger.debug(
-                `process >> userContentScore already exists and holds ${answers?.length} answers`,
-              )
-            }
-            roomScores.push(userContentScore)
-            await transactionalEntityManager.save(userContentScore)
-
-            const scoreAnswers: Answer[] = []
-            for (const xapiEvent of xapiEvents) {
-              logger.debug(`process >> applying xapiEvent to userContentScore`)
-              const answer = await userContentScore.applyEvent(xapiEvent)
-              if (answer) {
-                scoreAnswers.push(answer)
-                await transactionalEntityManager.save(answer)
-              }
-            }
-            logger.warn(`process > scoreAnswers length: ${scoreAnswers.length}`)
-            // userContentScore.answers = Promise.resolve(scoreAnswers)
-            await transactionalEntityManager.save(userContentScore)
-            // logger.warn(`===============================================`)
-            // logger.warn(`===============================================`)
-            // logger.warn(`===============================================`)
-            // console.log(userContentScore)
-            // const fromDbUcs = await transactionalEntityManager
-            //   .getRepository(UserContentScore)
-            //   .findOne({
-            //     where: {
-            //       roomId: roomId,
-            //       studentId: userId,
-            //       contentKey: contentKey,
-            //     },
-            //   })
-            // logger.warn(`mmmmmmmmmmmmm`)
-            // logger.warn(`mmmmmmmmmmmmm`)
-            // logger.warn(`mmmmmmmmmmmmm`)
-            // console.log(fromDbUcs)
-            room.scores = Promise.resolve(roomScores)
-            await transactionalEntityManager.save(room)
+          // TODO: remove this unnecessary check
+          // THIS IS IMPOSSIBLE -> ContentKey should not exist for events that don't exist
+          if (xapiEvents.length == 0) {
+            logger.warn(`process >> No event FOUND FOR SOME REASON ?!?!??!?!`)
+            continue
           }
+
+          // At this point, xapi events that share the same h5pId and h5pSubId
+          // must also have the same Type, Name and h5pParentId
+          const { h5pType, h5pName, h5pParentId } = xapiEvents[0]
+
+          logger.debug(
+            `process >> time for the userContentScore(${roomId}:${userId}:${contentKey})`,
+          )
+          // Time for the UserContentScore entity!
+          // First, let's try to find one in the database if it already exists
+          let userContentScore = await txManager.findOne(UserContentScore, {
+            where: {
+              roomId: roomId,
+              studentId: userId,
+              contentKey: contentKey,
+            },
+          })
+          let existingAnswers: Answer[] = []
+
+          // const [userContentScore2, existingAnswers2] = await (async () => {})()
+
+          // If we haven't found one, we will create a new one
+          if (!userContentScore) {
+            logger.debug(
+              `process >> creating a new userContentScore(${roomId}:${userId}:${contentKey})`,
+            )
+            userContentScore = this.userContentScoreFactory.create(
+              roomId,
+              userId,
+              contentKey,
+              h5pType,
+              h5pName,
+              h5pParentId,
+            )
+            await txManager
+              .createQueryBuilder()
+              .insert()
+              .into(UserContentScore)
+              .values(userContentScore)
+              .execute()
+          } else {
+            // const answers = await userContentScore.answers
+            existingAnswers = await txManager.find(Answer, {
+              where: {
+                roomId: roomId,
+                studentId: userId,
+                contentKey: contentKey,
+              },
+            })
+            logger.debug(
+              `process >> userContentScore(${roomId}:${userId}:${contentKey}) already exists and holds ${existingAnswers?.length} answers`,
+            )
+          }
+
+          logger.debug(`process >> applying xapiEvents to userContentScore`)
+          // const answers = await userContentScore.applyEvents(xapiEvents)
+          const newAnswers = xapiEvents
+            .filter(
+              (xapiEvent) =>
+                xapiEvent.score !== undefined &&
+                xapiEvent.response !== undefined,
+            )
+            .map((xapiEvent) => {
+              const answer = Answer.new(
+                userContentScore!,
+                new Date(xapiEvent.timestamp),
+                xapiEvent.response,
+                // TODO: Maybe pass whole score object, instead.
+                xapiEvent.score?.raw,
+                xapiEvent.score?.min,
+                xapiEvent.score?.max,
+              )
+              return answer
+            })
+
+          logger.warn(`process > new Answers length: ${newAnswers.length}`)
+          const totalAnswers = [...existingAnswers, ...newAnswers]
+          logger.warn(`process > total answers length: ${totalAnswers.length}`)
+          await txManager.save(totalAnswers)
+          userContentScore.answers = Promise.resolve(totalAnswers)
+          // newRoomScores.push(userContentScore)
+          room.scores = Promise.resolve([
+            ...(await room.scores),
+            userContentScore,
+          ])
+          await txManager.save(userContentScore)
+          // logger.warn(`===============================================`)
+          // logger.warn(`===============================================`)
+          // logger.warn(`===============================================`)
+          // console.log(userContentScore)
+          // const fromDbUcs = await txManager
+          //   .getRepository(UserContentScore)
+          //   .findOne({
+          //     where: {
+          //       roomId: roomId,
+          //       studentId: userId,
+          //       contentKey: contentKey,
+          //     },
+          //   })
+          // logger.warn(`mmmmmmmmmmmmm`)
+          // logger.warn(`mmmmmmmmmmmmm`)
+          // logger.warn(`mmmmmmmmmmmmm`)
+          // console.log(fromDbUcs)
         }
       }
-    })
+
+      // await txManager.save(newRoomScores)
+      // room.scores = Promise.resolve([...(await room.scores), ...newRoomScores])
+      await txManager.save(room)
+    }
+    // })
   }
 
   // TODO: delete

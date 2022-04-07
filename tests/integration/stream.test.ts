@@ -52,12 +52,17 @@ describe('Event-driven Worker', () => {
   let dbConnection: Connection
   let entityManager: EntityManager
   let roomRepo: Repository<Room>
+  let userContentScoresRepo: Repository<UserContentScore>
   let roomScoreProviderWorker: RoomScoresTemplateProvider2
 
   before(async () => {
     dbConnection = await createAssessmentDbConnection()
     entityManager = getManager(ASSESSMENTS_CONNECTION_NAME)
     roomRepo = getRepository(Room, ASSESSMENTS_CONNECTION_NAME)
+    userContentScoresRepo = getRepository(
+      UserContentScore,
+      ASSESSMENTS_CONNECTION_NAME,
+    )
 
     redisClient = await connectToRedisCache(
       process.env.REDIS_URL || 'redis://localhost:6379',
@@ -65,6 +70,8 @@ describe('Event-driven Worker', () => {
     xClient = new RedisStreams(redisClient)
     roomScoreProviderWorker = new RoomScoresTemplateProvider2(
       new UserContentScoreFactory(),
+      roomRepo,
+      userContentScoresRepo,
       entityManager,
     )
   })
@@ -653,9 +660,9 @@ describe('Event-driven Worker', () => {
       const streamName = 'stream1'
       const groupName = 'group1'
       const numRooms = 1
-      const numUsers = 1
-      const numActivities = 1
-      const numEvents = 200
+      const numUsers = 2
+      const numActivities = 2
+      const numEvents = 20
       const xapiRecords = createXapiEvents({
         rooms: numRooms,
         users: numUsers,
@@ -665,7 +672,7 @@ describe('Event-driven Worker', () => {
       let entryIds: string[] = []
 
       before(async function () {
-        this.timeout(60000)
+        // this.timeout(60000)
         // delete stream from redis
         await redisClient.del(streamName)
 
@@ -723,8 +730,13 @@ describe('Event-driven Worker', () => {
             rooms.map(async (room) => {
               const userXscores = (await room?.scores) || []
               console.log(
-                `${room.roomId} userXscores.length =>`,
-                userXscores.length,
+                `${room.roomId} userXscores.length: ${userXscores.length}`,
+              )
+              console.log(
+                `${room.roomId} userXscores:`,
+                userXscores
+                  .map((x) => `${x.studentId}:${x.contentKey}`)
+                  .join(' + '),
               )
               return userXscores
             }),
