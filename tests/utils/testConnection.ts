@@ -33,7 +33,7 @@ export const createAssessmentDbConnection = (): Promise<Connection> => {
     migrationsRun: true,
     dropSchema: true,
     entities: ['src/db/assessments/entities/*.ts'],
-    logging: true,
+    logging: false,
   })
 }
 

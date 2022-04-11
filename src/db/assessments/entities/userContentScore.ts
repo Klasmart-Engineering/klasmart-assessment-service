@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryColumn,
+  getRepository,
 } from 'typeorm'
 import { Answer } from './answer'
 import { Base } from './base'
@@ -14,6 +15,7 @@ import { Room } from './room'
 import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
+import { ASSESSMENTS_CONNECTION_NAME } from '../connectToAssessmentDatabase'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -34,7 +36,6 @@ export class UserContentScore extends Base {
   )
   public room!: Promise<Room>
 
-  // @TypeormLoader()
   @OneToMany(() => Answer, (answer) => answer.userContentScore, {
     lazy: true,
     cascade: true,
@@ -44,7 +45,18 @@ export class UserContentScore extends Base {
     { name: 'student_id', referencedColumnName: 'student_id' },
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
+  @TypeormLoader()
   public answers: Promise<Answer[]>
+
+  public async getAnswers(): Promise<Answer[]> {
+    return getRepository(Answer, ASSESSMENTS_CONNECTION_NAME).find({
+      where: {
+        roomId: this.roomId,
+        studentId: this.studentId,
+        contentKey: this.contentKey,
+      },
+    })
+  }
 
   @Field(() => [TeacherScore])
   @OneToMany(
@@ -66,7 +78,7 @@ export class UserContentScore extends Base {
 
   @Field(() => ScoreSummary, { name: 'score' })
   public async scoreSummary(): Promise<ScoreSummary> {
-    return new ScoreSummary((await this.answers) ?? [])
+    return new ScoreSummary((await this.getAnswers()) ?? [])
   }
 
   @Column({ type: 'varchar', nullable: true })

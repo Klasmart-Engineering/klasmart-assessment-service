@@ -53,6 +53,7 @@ describe('Event-driven Worker', () => {
   let entityManager: EntityManager
   let roomRepo: Repository<Room>
   let userContentScoresRepo: Repository<UserContentScore>
+  let answerRepo: Repository<Answer>
   let roomScoreProviderWorker: RoomScoresTemplateProvider2
 
   before(async () => {
@@ -63,6 +64,7 @@ describe('Event-driven Worker', () => {
       UserContentScore,
       ASSESSMENTS_CONNECTION_NAME,
     )
+    answerRepo = getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
 
     redisClient = await connectToRedisCache(
       process.env.REDIS_URL || 'redis://localhost:6379',
@@ -72,6 +74,7 @@ describe('Event-driven Worker', () => {
       new UserContentScoreFactory(),
       roomRepo,
       userContentScoresRepo,
+      answerRepo,
       entityManager,
     )
   })
@@ -662,7 +665,7 @@ describe('Event-driven Worker', () => {
       const numRooms = 1
       const numUsers = 2
       const numActivities = 2
-      const numEvents = 20
+      const numEvents = 2
       const xapiRecords = createXapiEvents({
         rooms: numRooms,
         users: numUsers,
@@ -708,7 +711,7 @@ describe('Event-driven Worker', () => {
         }
 
         // loop
-        const chunkSize = 50
+        const chunkSize = 3
         for (let idx = 0; idx < xapiRecords.length; idx += chunkSize) {
           const newEntryIds = await pushPullLoop(
             xapiRecords.slice(idx, idx + chunkSize),
@@ -750,6 +753,35 @@ describe('Event-driven Worker', () => {
         console.log('rooms.length =', rooms.length)
         console.log('userContentScores.length =', userContentScores.length)
         console.log('answers.length =', answers.length)
+
+        console.log('======================')
+        const userContentScores2 = (
+          await Promise.all(
+            rooms.map((room) => {
+              return entityManager.find(UserContentScore, {
+                where: {
+                  roomId: room.roomId,
+                },
+              })
+            }),
+          )
+        ).flat()
+        const answers2 = (
+          await Promise.all(
+            userContentScores2.map(async (userX) => {
+              return entityManager.find(Answer, {
+                where: {
+                  roomId: userX!.roomId,
+                  studentId: userX!.studentId,
+                  contentKey: userX!.contentKey,
+                },
+              })
+            }),
+          )
+        ).flat()
+        console.log('userContentScores2.length =', userContentScores2.length)
+        console.log('answers2.length =', answers2.length)
+
         expect(rooms.length).to.equal(numRooms)
         expect(userContentScores.length).to.equal(
           numRooms * numUsers * numActivities,
