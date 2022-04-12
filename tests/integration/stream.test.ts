@@ -28,25 +28,7 @@ import {
 import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
 import { XApiRecord } from '../../src/db/xapi'
 
-// const produce = async (
-//   xClient: RedisStreams,
-//   stream: string,
-//   xapiEvents: any[],
-//   delayMs: number = 100,
-// ) => {
-//   for (const xapiEvent of xapiEvents) {
-//     await delay(delayMs)
-//     const event = {
-//       data: JSON.stringify(xapiEvent),
-//     }
-//     const entryId = await xClient.add(stream, event)
-//     console.log(
-//       `simpleConsumerGroupWorker > PRODUCER >> add entryId: ${entryId}`,
-//     )
-//   }
-// }
-
-describe('Event-driven Worker', () => {
+describe.only('Event-driven Worker', () => {
   let redisClient: RedisClientType
   let xClient: RedisStreams
   let dbConnection: Connection
@@ -95,7 +77,7 @@ describe('Event-driven Worker', () => {
       .withH5pName('h5pName')
       .withH5pType('h5pType')
       .withScore({ min: 0, max: 2, raw: 1 })
-      .withResponse(undefined)
+      .withResponse('')
       .withServerTimestamp(100000000000)
       .withClientTimestamp(100000000000)
     const xapiRecord1 = xapiEvent1.build()
@@ -135,7 +117,7 @@ describe('Event-driven Worker', () => {
     })
 
     after(async () => {
-      // await xClient.deleteGroup(streamName, groupName)
+      await xClient.deleteGroup(streamName, groupName)
     })
 
     it('stream has been created', async () => {
@@ -197,15 +179,17 @@ describe('Event-driven Worker', () => {
       const userContentScores = (await room?.scores) || []
       const answers = (
         await Promise.all(
-          userContentScores.map(async (userX) => userX.answers || []),
+          userContentScores.map(
+            async (userX) => (await userX.getAnswers()) || [],
+          ),
         )
       ).flat()
 
-      console.log('===================================')
-      console.log({ room })
-      console.log({ userContentScores })
-      console.log(answers)
-      console.log('===================================')
+      // console.log('===================================')
+      // console.log({ room })
+      // console.log({ userContentScores })
+      // console.log(answers)
+      // console.log('===================================')
       expect(room).to.not.be.undefined
       expect(userContentScores.length).to.equal(1)
       expect(answers.length).to.equal(1)
@@ -228,6 +212,7 @@ describe('Event-driven Worker', () => {
         users: 1,
         activities: 1,
         events: 10,
+        roomPrefix: '_test1_',
       })
       let entryIds: string[]
 
@@ -269,6 +254,10 @@ describe('Event-driven Worker', () => {
         )
       })
 
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+      })
+
       it('events can be read from the stream', async () => {
         const result = await xClient.read(streamName, {
           count: 10,
@@ -302,11 +291,13 @@ describe('Event-driven Worker', () => {
       })
 
       it('processed events are found in the database', async () => {
-        let room = await entityManager.findOne(Room, 'room0', {})
+        let room = await entityManager.findOne(Room, '_test1_room0', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
-            userContentScores.map(async (userX) => userX.answers || []),
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
           )
         ).flat()
 
@@ -320,7 +311,7 @@ describe('Event-driven Worker', () => {
         expect(answers.length).to.equal(10)
         const answer = answers[0]
         expect(answer).to.contain({
-          roomId: 'room0',
+          roomId: '_test1_room0',
           studentId: 'user0',
           contentKey: 'h5pId0',
         })
@@ -338,6 +329,7 @@ describe('Event-driven Worker', () => {
         users: 2,
         activities: 2,
         events: 10,
+        roomPrefix: '_test2_',
       })
       let entryIds: string[]
 
@@ -378,6 +370,10 @@ describe('Event-driven Worker', () => {
         )
       })
 
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+      })
+
       it('all xapiEvents have been pushed to the stream', async () => {
         expect(entryIds.length).to.equal(xapiRecords.length)
       })
@@ -395,11 +391,13 @@ describe('Event-driven Worker', () => {
       })
 
       it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        let room0 = await entityManager.findOne(Room, 'room0', {})
+        let room0 = await entityManager.findOne(Room, '_test2_room0', {})
         const userContentScores0 = (await room0?.scores) || []
         const answers0 = (
           await Promise.all(
-            userContentScores0.map(async (userX) => userX.answers || []),
+            userContentScores0.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
           )
         ).flat()
         expect(room0).to.not.be.undefined
@@ -408,11 +406,13 @@ describe('Event-driven Worker', () => {
       })
 
       it('room1 and its UsercontentScores and Answers are found in the database', async () => {
-        let room1 = await entityManager.findOne(Room, 'room1', {})
+        let room1 = await entityManager.findOne(Room, '_test2_room1', {})
         const userContentScores1 = (await room1?.scores) || []
         const answers1 = (
           await Promise.all(
-            userContentScores1.map(async (userX) => userX.answers || []),
+            userContentScores1.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
           )
         ).flat()
         expect(room1).to.not.be.undefined
@@ -432,6 +432,7 @@ describe('Event-driven Worker', () => {
         users: 1,
         activities: 1,
         events: 10,
+        roomPrefix: '_test3_',
       })
       let entryIdsBatch1: string[]
       let entryIdsBatch2: string[]
@@ -499,6 +500,10 @@ describe('Event-driven Worker', () => {
         )
       })
 
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+      })
+
       it('all xapiEvents have been pushed to the stream', async () => {
         expect(entryIdsBatch1.length + entryIdsBatch2.length).to.equal(
           xapiRecords.length,
@@ -516,11 +521,13 @@ describe('Event-driven Worker', () => {
       })
 
       it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        let room = await entityManager.findOne(Room, 'room0', {})
+        let room = await entityManager.findOne(Room, '_test3_room0', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
-            userContentScores.map(async (userX) => userX.answers || []),
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
           )
         ).flat()
         console.log('===================================')
@@ -545,6 +552,7 @@ describe('Event-driven Worker', () => {
         users: 1,
         activities: 1,
         events: 10,
+        roomPrefix: '_test4_',
       })
       let entryIdsBatch01: string[]
       let entryIdsBatch02: string[]
@@ -630,11 +638,13 @@ describe('Event-driven Worker', () => {
       })
 
       it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        let room = await entityManager.findOne(Room, 'room0', {})
+        let room = await entityManager.findOne(Room, '_test4_room0', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
-            userContentScores.map(async (userX) => userX.answers || []),
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
           )
         ).flat()
         expect(room).to.not.be.undefined
@@ -643,11 +653,13 @@ describe('Event-driven Worker', () => {
       })
 
       it('room1 and its UsercontentScores and Answers are found in the database', async () => {
-        let room = await entityManager.findOne(Room, 'room1', {})
+        let room = await entityManager.findOne(Room, '_test4_room1', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
-            userContentScores.map(async (userX) => userX.answers || []),
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
           )
         ).flat()
         expect(room).to.not.be.undefined
@@ -657,20 +669,21 @@ describe('Event-driven Worker', () => {
     },
   )
 
-  context.only(
+  context(
     'Pushing 10 rooms, 10 users, 10 activity, 10000 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
       const groupName = 'group1'
-      const numRooms = 1
-      const numUsers = 2
-      const numActivities = 2
-      const numEvents = 2
+      const numRooms = 3
+      const numUsers = 3
+      const numActivities = 3
+      const numEvents = 10
       const xapiRecords = createXapiEvents({
         rooms: numRooms,
         users: numUsers,
         activities: numActivities,
         events: numEvents,
+        roomPrefix: '_test5_',
       })
       let entryIds: string[] = []
 
@@ -711,7 +724,7 @@ describe('Event-driven Worker', () => {
         }
 
         // loop
-        const chunkSize = 3
+        const chunkSize = 42
         for (let idx = 0; idx < xapiRecords.length; idx += chunkSize) {
           const newEntryIds = await pushPullLoop(
             xapiRecords.slice(idx, idx + chunkSize),
@@ -721,13 +734,19 @@ describe('Event-driven Worker', () => {
         }
       })
 
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+      })
+
       it('all xapiEvents have been pushed to the stream', async () => {
         console.log(`xapiRecords.length =>`, xapiRecords.length)
         expect(entryIds.length).to.equal(xapiRecords.length)
       })
 
       it('all rooms have are found in the database', async () => {
-        const rooms = await roomRepo.find()
+        const rooms = (await roomRepo.find()).filter((room) =>
+          room.roomId.startsWith('_test5_'),
+        )
         const userContentScores = (
           await Promise.all(
             rooms.map(async (room) => {
@@ -747,28 +766,7 @@ describe('Event-driven Worker', () => {
         ).flat()
         const answers = (
           await Promise.all(
-            userContentScores.map(async (userX) => userX.answers || []),
-          )
-        ).flat()
-        console.log('rooms.length =', rooms.length)
-        console.log('userContentScores.length =', userContentScores.length)
-        console.log('answers.length =', answers.length)
-
-        console.log('======================')
-        const userContentScores2 = (
-          await Promise.all(
-            rooms.map((room) => {
-              return entityManager.find(UserContentScore, {
-                where: {
-                  roomId: room.roomId,
-                },
-              })
-            }),
-          )
-        ).flat()
-        const answers2 = (
-          await Promise.all(
-            userContentScores2.map(async (userX) => {
+            userContentScores.map(async (userX) => {
               return entityManager.find(Answer, {
                 where: {
                   roomId: userX!.roomId,
@@ -779,8 +777,9 @@ describe('Event-driven Worker', () => {
             }),
           )
         ).flat()
-        console.log('userContentScores2.length =', userContentScores2.length)
-        console.log('answers2.length =', answers2.length)
+        console.log('rooms.length =', rooms.length)
+        console.log('userContentScores.length =', userContentScores.length)
+        console.log('answers.length =', answers.length)
 
         expect(rooms.length).to.equal(numRooms)
         expect(userContentScores.length).to.equal(

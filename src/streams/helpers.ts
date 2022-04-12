@@ -6,6 +6,7 @@ type CreateXapiEventsOptions = {
   users?: number
   activities?: number
   events?: number
+  roomPrefix?: string
 }
 
 export const createXapiEvents = ({
@@ -13,6 +14,7 @@ export const createXapiEvents = ({
   users: numUsers = 2,
   activities: numActivities = 2,
   events: numEvents = 5,
+  roomPrefix = '',
 }: CreateXapiEventsOptions): XApiRecord[] => {
   const rawXapiEvents: XApiRecord[] = []
   const curr_time = 1647865897520 || Date.now()
@@ -20,7 +22,7 @@ export const createXapiEvents = ({
     for (const uId of [...Array(numUsers).keys()]) {
       for (const hId of [...Array(numActivities).keys()]) {
         for (const eId of [...Array(numEvents).keys()]) {
-          const roomId = `room${rId}`
+          const roomId = `${roomPrefix}room${rId}`
           const userId = `user${uId}`
           const h5pId = `h5pId${hId}`
           const h5pName = `h5pName${hId}`

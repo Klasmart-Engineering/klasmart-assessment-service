@@ -162,23 +162,23 @@ export class RoomScoresTemplateProvider2 {
   // => [refactor in API] query CMS with room_id => list of lesson materials => map h5pIds to CMS content ids (no caching for now)
   // => add event stream producer logic to live-backend service
   public async process(rawXapiEvents: XApiRecord[]): Promise<void> {
-    logger.warn(`process >> rawXapiEvents received: ${rawXapiEvents.length}`)
+    logger.info(`process >> rawXapiEvents received: ${rawXapiEvents.length}`)
 
     // 1. Parse all the xapi events
     const xapiEvents = rawXapiEvents
       .map((event) => parseRawEvent(event))
       .filter(notEmpty)
 
-    logger.warn(`process >> parsing DONE, total events: ${xapiEvents.length}`)
+    logger.debug(`process >> parsing DONE, total events: ${xapiEvents.length}`)
     const xapiEventsGroupedByRoom = groupBy(
       xapiEvents,
       (xapiEvent) => xapiEvent.roomId,
     )
-    logger.warn(
+    logger.debug(
       `process >> Grouped by roomId, total groups: ${xapiEventsGroupedByRoom.size}`,
     )
     for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
-      logger.warn(`process >> roomId: ${roomId}`)
+      logger.debug(`process >> roomId: ${roomId}`)
 
       // Get the room or create a new one
       // let room = await this.assessmentDB.findOne(Room, roomId, {})
@@ -186,10 +186,9 @@ export class RoomScoresTemplateProvider2 {
       if (!room) {
         room = new Room(roomId)
         await this.assessmentDB.save(Room, room)
-
-        logger.warn(`process >> roomId: ${roomId} >> created new Room`)
+        logger.info(`process >> roomId: ${roomId} >> created new Room`)
       } else {
-        logger.warn(`process >> roomId: ${roomId} >> Room already exists`)
+        logger.debug(`process >> roomId: ${roomId} >> Room already exists`)
       }
 
       // 2.1 Group by user
@@ -197,19 +196,19 @@ export class RoomScoresTemplateProvider2 {
         xapiEvents,
         (xapiEvent) => xapiEvent.userId,
       )
-      logger.warn(
+      logger.debug(
         `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
       )
 
       // const newRoomScores: UserContentScore[] = []
       for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
-        logger.warn(`process >> roomId: ${roomId} >> userId: ${userId}`)
+        logger.debug(`process >> roomId: ${roomId} >> userId: ${userId}`)
         const xapiEventsGroupedByContentKey = groupBy(
           xapiEvents,
           (xapiEvent) =>
             ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // (3.) old way -> Material:content_id + xapiEvent:h5pSubId
         )
-        logger.warn(
+        logger.debug(
           `process >> Grouped by contentKey, total groups: ${xapiEventsGroupedByContentKey.size}`,
         )
 
@@ -218,14 +217,14 @@ export class RoomScoresTemplateProvider2 {
           contentKey,
           xapiEvents,
         ] of xapiEventsGroupedByContentKey.entries()) {
-          logger.warn(
+          logger.debug(
             `process >> roomId: ${roomId} >> userId: ${userId} >> contentKey ${contentKey}`,
           )
 
           // TODO: remove this unnecessary check
           // THIS IS IMPOSSIBLE -> ContentKey should not exist for events that don't exist
           if (xapiEvents.length == 0) {
-            logger.warn(`process >> No event FOUND FOR SOME REASON ?!?!??!?!`)
+            logger.debug(`process >> No event FOUND FOR SOME REASON ?!?!??!?!`)
             continue
           }
 
@@ -233,7 +232,7 @@ export class RoomScoresTemplateProvider2 {
           // must also have the same Type, Name and h5pParentId
           const { h5pType, h5pName, h5pParentId } = xapiEvents[0]
 
-          logger.warn(
+          logger.debug(
             `process >> time for the userContentScore(${roomId}:${userId}:${contentKey})`,
           )
           // Time for the UserContentScore entity!
@@ -252,7 +251,7 @@ export class RoomScoresTemplateProvider2 {
 
           // If we haven't found one, we will create a new one
           if (!userContentScore) {
-            logger.warn(
+            logger.debug(
               `process >> creating a new userContentScore(${roomId}:${userId}:${contentKey})`,
             )
             userContentScore = this.userContentScoreFactory.create(
@@ -277,12 +276,12 @@ export class RoomScoresTemplateProvider2 {
                 contentKey: contentKey,
               },
             })
-            logger.warn(
+            logger.debug(
               `process >> userContentScore(${roomId}:${userId}:${contentKey}) already exists and holds ${existingAnswers?.length} answers`,
             )
           }
 
-          logger.warn(`process >> applying xapiEvents to userContentScore`)
+          logger.debug(`process >> applying xapiEvents to userContentScore`)
           const newAnswers = xapiEvents
             .filter(
               (xapiEvent) =>
@@ -302,7 +301,7 @@ export class RoomScoresTemplateProvider2 {
               return answer
             })
 
-          logger.warn(`process > new Answers length: ${newAnswers.length}`)
+          logger.debug(`process > new Answers length: ${newAnswers.length}`)
           await Promise.all(
             newAnswers.map(async (a) => {
               await this.assessmentDB.save(Answer, a)
