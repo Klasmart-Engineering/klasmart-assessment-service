@@ -10,7 +10,11 @@ import {
 
 import { XApiRecordBuilder } from '../builders'
 import { createAssessmentDbConnection } from '../utils/testConnection'
-import { connectToRedisCache, RedisClientType } from '../../src/cache/redis'
+import {
+  connectToIoRedis,
+  IoRedisClientType,
+  RedisMode,
+} from '../../src/streams/redisApi'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import {
   Answer,
@@ -29,7 +33,7 @@ import { UserContentScoreFactory } from '../../src/providers/userContentScoreFac
 import { XApiRecord } from '../../src/db/xapi'
 
 describe.only('Event-driven Worker', () => {
-  let redisClient: RedisClientType
+  let redisClient: IoRedisClientType
   let xClient: RedisStreams
   let dbConnection: Connection
   let entityManager: EntityManager
@@ -48,9 +52,14 @@ describe.only('Event-driven Worker', () => {
     )
     answerRepo = getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
 
-    redisClient = await connectToRedisCache(
-      process.env.REDIS_URL || 'redis://localhost:6379',
-    )
+    const redisMode = (
+      process.env.REDIS_MODE || 'node'
+    ).toUpperCase() as RedisMode
+    const redisHost = process.env.REDIS_HOST || 'localhost'
+    const redisPort = Number(process.env.REDIS_PORT) || 6379
+    // const redisStreamName = process.env.REDIS_STREAM_NAME
+
+    redisClient = await connectToIoRedis(redisMode, redisHost, redisPort)
     xClient = new RedisStreams(redisClient)
     roomScoreProviderWorker = new RoomScoresTemplateProvider2(
       new UserContentScoreFactory(),
@@ -81,7 +90,7 @@ describe.only('Event-driven Worker', () => {
       .withServerTimestamp(100000000000)
       .withClientTimestamp(100000000000)
     const xapiRecord1 = xapiEvent1.build()
-    let entryId: string
+    let entryId: string | null
 
     before(async () => {
       // delete stream from redis
@@ -96,7 +105,6 @@ describe.only('Event-driven Worker', () => {
         data: JSON.stringify(xapiRecord1),
       }
       entryId = await xClient.add(streamName, event)
-      console.log({ entryId })
 
       const state = {
         i: 0,
@@ -121,18 +129,18 @@ describe.only('Event-driven Worker', () => {
     })
 
     it('stream has been created', async () => {
-      const info = await redisClient.xInfoStream(streamName)
+      const info = await xClient.infoStream(streamName)
       expect(info).to.not.be.null
       expect(info).to.not.be.undefined
-      expect(info.length).to.not.be.null
-      expect(info.length).to.not.be.undefined
-      expect(info.length).to.be.greaterThanOrEqual(1)
+      expect(info!.length).to.not.be.null
+      expect(info!.length).to.not.be.undefined
+      expect(info!.length).to.be.greaterThanOrEqual(1)
     })
 
     it('consumer group has been created', async () => {
-      const info = await redisClient.xInfoGroups(streamName)
+      const info = await xClient.infoGroups(streamName)
       expect(info).to.be.lengthOf(1)
-      expect(info[0].name).to.be.equal(groupName)
+      expect(info![0][1]).to.be.equal(groupName)
     })
 
     it('events can be read from the stream', async () => {
@@ -142,26 +150,26 @@ describe.only('Event-driven Worker', () => {
         streamKey: '0',
       })
       expect(result).to.not.be.null
-      expect(result?.name).to.be.equal(streamName)
-      expect(result?.messages).to.not.be.undefined
-      expect(result?.messages?.length).to.be.greaterThanOrEqual(1)
-      expect(result?.messages[0].id).to.not.be.undefined
-      expect(result?.messages[0].message).to.not.be.undefined
-      const parseJsonDataFn = () => JSON.parse(result?.messages[0].message.data)
+      expect(result).to.not.be.undefined
+      expect(result?.length).to.be.greaterThanOrEqual(1)
+      expect(result?.[0].id).to.not.be.undefined
+      expect(result?.[0].message).to.not.be.undefined
+      const parseJsonDataFn = () => JSON.parse(result![0].message.data)
       expect(parseJsonDataFn).to.not.throw
       const parsedXapiEvent = parseRawEvent(parseJsonDataFn())
       expect(parsedXapiEvent).to.not.be.undefined
     })
 
     it('events can be reverse range queried from the stream', async () => {
-      const results = await redisClient.xRevRange(streamName, '+', '-', {})
+      const results = await redisClient.xrevrange(streamName, '+', '-')
       expect(results).to.not.be.null
       expect(results?.length).to.be.greaterThanOrEqual(1)
-      expect(results?.[0].id).to.not.be.undefined
-      expect(results?.[0].id).to.equal(entryId)
-      expect(results?.[0].message).to.not.be.undefined
-      expect(results?.[0].message.data).to.not.be.undefined
-      const parseJsonDataFn = () => JSON.parse(results?.[0].message.data)
+      expect(results?.[0][0]).to.not.be.undefined
+      expect(results?.[0][0]).to.equal(entryId)
+      expect(results?.[0][1]).to.not.be.undefined
+      expect(results?.[0][1].length).to.be.eq(2)
+      expect(results?.[0][1][1]).to.not.be.undefined
+      const parseJsonDataFn = () => JSON.parse(results?.[0][1][1])
       expect(parseJsonDataFn).to.not.throw
       const parsedXapiEvent = parseRawEvent(parseJsonDataFn())
       expect(parsedXapiEvent).to.not.be.null
@@ -185,11 +193,6 @@ describe.only('Event-driven Worker', () => {
         )
       ).flat()
 
-      // console.log('===================================')
-      // console.log({ room })
-      // console.log({ userContentScores })
-      // console.log(answers)
-      // console.log('===================================')
       expect(room).to.not.be.undefined
       expect(userContentScores.length).to.equal(1)
       expect(answers.length).to.equal(1)
@@ -201,6 +204,88 @@ describe.only('Event-driven Worker', () => {
       })
     })
   })
+
+  context(
+    'Pushing multiple duplicate events to a Redis stream with 1 Consumer',
+    () => {
+      const streamName = 'stream1'
+      const groupName = 'group1'
+      const xapiEvent1 = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId('user1')
+        .withH5pId('h5p1')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('')
+        .withServerTimestamp(100000000000)
+        .withClientTimestamp(100000000000)
+      const xapiRecord1 = xapiEvent1.build()
+
+      before(async () => {
+        // delete stream from redis
+        await redisClient.del(streamName)
+
+        // create redis consumer group after the stream gets created
+        const onlyLatest = false
+        await xClient.createGroup(streamName, groupName, onlyLatest)
+
+        // push events to a new stream that gets created automatically
+        const event = {
+          data: JSON.stringify(xapiRecord1),
+        }
+        // push the same xapi event twice
+        await xClient.add(streamName, event)
+        await xClient.add(streamName, event)
+        await xClient.add(streamName, event)
+        await xClient.add(streamName, event)
+
+        const state = {
+          i: 0,
+          delays: 0,
+        }
+        await simpleConsumerGroupWorkerLoop(
+          xClient,
+          streamName,
+          groupName,
+          'consumer1',
+          roomScoreProviderWorker,
+          state,
+          {
+            minEvents: 0,
+            maxDelays: 0,
+          },
+        )
+      })
+
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+      })
+
+      it('Idempotently processes the duplicate events and finds a single answer record', async () => {
+        let room = await entityManager.findOne(Room, 'room1', {})
+        const userContentScores = (await room?.scores) || []
+        const answers = (
+          await Promise.all(
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
+          )
+        ).flat()
+
+        expect(room).to.not.be.undefined
+        expect(userContentScores.length).to.equal(1)
+        expect(answers.length).to.equal(1)
+        const answer = answers[0]
+        expect(answer).to.contain({
+          roomId: 'room1',
+          studentId: 'user1',
+          contentKey: 'h5p1',
+        })
+      })
+    },
+  )
 
   context(
     'Pushing 1 room, 1 user, 1 activity, 10 events with 1 Consumer',
@@ -234,7 +319,6 @@ describe.only('Event-driven Worker', () => {
             return entryId
           }),
         )
-        console.log({ entryIds })
 
         const state = {
           i: 0,
@@ -265,25 +349,21 @@ describe.only('Event-driven Worker', () => {
           streamKey: '0',
         })
         expect(result).to.not.be.null
-        expect(result?.name).to.be.equal(streamName)
-        expect(result?.messages).to.not.be.undefined
-        expect(result?.messages?.length).to.equal(10)
-        expect(result?.messages[0].id).to.not.be.undefined
-        expect(result?.messages[0].message).to.not.be.undefined
-        const parseJsonDataFn = () =>
-          JSON.parse(result?.messages[0].message.data)
+        expect(result?.length).to.equal(10)
+        expect(result?.[0].id).to.not.be.undefined
+        expect(result?.[0].message).to.not.be.undefined
+        const parseJsonDataFn = () => JSON.parse(result![0].message.data)
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvent = parseRawEvent(parseJsonDataFn())
         expect(parsedXapiEvent).to.not.be.undefined
       })
 
       it('events can be reverse range queried from the stream', async () => {
-        const results = await redisClient.xRevRange(streamName, '+', '-', {})
+        const results = await redisClient.xrevrange(streamName, '+', '-')
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(10)
-        expect(results.map((x) => x.id)).to.have.members(entryIds)
-        const parseJsonDataFn = () =>
-          results.map((x) => JSON.parse(x.message.data))
+        expect(results.map((x) => x[0])).to.have.members(entryIds)
+        const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvents = parseJsonDataFn().map((x) => parseRawEvent(x))
         expect(parsedXapiEvents.length).to.be.equal(10)
@@ -301,11 +381,6 @@ describe.only('Event-driven Worker', () => {
           )
         ).flat()
 
-        // console.log('===================================')
-        // console.log({ room })
-        // console.log({ userContentScores })
-        // console.log(answers)
-        // console.log('===================================')
         expect(room).to.not.be.undefined
         expect(userContentScores.length).to.equal(1)
         expect(answers.length).to.equal(10)
@@ -379,12 +454,11 @@ describe.only('Event-driven Worker', () => {
       })
 
       it('all pushed events can be reverse range queried from the stream', async () => {
-        const results = await redisClient.xRevRange(streamName, '+', '-', {})
+        const results = await redisClient.xrevrange(streamName, '+', '-')
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(80)
-        expect(results.map((x) => x.id)).to.have.members(entryIds)
-        const parseJsonDataFn = () =>
-          results.map((x) => JSON.parse(x.message.data))
+        expect(results.map((x) => x[0])).to.have.members(entryIds)
+        const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvents = parseJsonDataFn().map((x) => parseRawEvent(x))
         expect(parsedXapiEvents.length).to.be.equal(80)
@@ -511,10 +585,10 @@ describe.only('Event-driven Worker', () => {
       })
 
       it('all pushed events can be reverse range queried from the stream', async () => {
-        const results = await redisClient.xRevRange(streamName, '+', '-', {})
+        const results = await redisClient.xrevrange(streamName, '+', '-')
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(10)
-        expect(results.map((x) => x.id)).to.have.members([
+        expect(results.map((x) => x[0])).to.have.members([
           ...entryIdsBatch1,
           ...entryIdsBatch2,
         ])
@@ -530,11 +604,7 @@ describe.only('Event-driven Worker', () => {
             ),
           )
         ).flat()
-        console.log('===================================')
-        console.log({ room })
-        console.log({ userContentScores })
-        console.log(answers)
-        console.log('===================================')
+
         expect(room).to.not.be.undefined
         expect(userContentScores.length).to.equal(1)
         expect(answers.length).to.equal(10)
@@ -739,7 +809,6 @@ describe.only('Event-driven Worker', () => {
       })
 
       it('all xapiEvents have been pushed to the stream', async () => {
-        console.log(`xapiRecords.length =>`, xapiRecords.length)
         expect(entryIds.length).to.equal(xapiRecords.length)
       })
 
@@ -751,15 +820,15 @@ describe.only('Event-driven Worker', () => {
           await Promise.all(
             rooms.map(async (room) => {
               const userXscores = (await room?.scores) || []
-              console.log(
-                `${room.roomId} userXscores.length: ${userXscores.length}`,
-              )
-              console.log(
-                `${room.roomId} userXscores:`,
-                userXscores
-                  .map((x) => `${x.studentId}:${x.contentKey}`)
-                  .join(' + '),
-              )
+              // console.log(
+              //   `${room.roomId} userXscores.length: ${userXscores.length}`,
+              // )
+              // console.log(
+              //   `${room.roomId} userXscores:`,
+              //   userXscores
+              //     .map((x) => `${x.studentId}:${x.contentKey}`)
+              //     .join(' + '),
+              // )
               return userXscores
             }),
           )
@@ -777,9 +846,6 @@ describe.only('Event-driven Worker', () => {
             }),
           )
         ).flat()
-        console.log('rooms.length =', rooms.length)
-        console.log('userContentScores.length =', userContentScores.length)
-        console.log('answers.length =', answers.length)
 
         expect(rooms.length).to.equal(numRooms)
         expect(userContentScores.length).to.equal(
