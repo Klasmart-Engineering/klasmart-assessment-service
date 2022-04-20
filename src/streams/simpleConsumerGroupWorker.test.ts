@@ -37,7 +37,7 @@ const main = async () => {
   const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
   const redisPort = Number(process.env.REDIS_PORT) || 6379
   const redisHost = process.env.REDIS_HOST
-  const redisStreamName = process.env.REDIS_STREAM_NAME || 'xapi:events'
+  const redisStreamName = process.env.REDIS_STREAM || 'xapi:events'
 
   const redisConfiguredCorrectly =
     redisHost &&
@@ -48,7 +48,7 @@ const main = async () => {
   if (!redisConfiguredCorrectly) {
     throw new Error(
       'To configure Redis please specify REDIS_HOST, REDIS_PORT, ' +
-        'REDIS_MODE and REDIS_STREAM_NAME environment variables',
+        'REDIS_MODE, REDIS_STREAM and REDIS_ERROR_STREAM environment variables',
     )
   }
   const redisClient = await connectToIoRedis(

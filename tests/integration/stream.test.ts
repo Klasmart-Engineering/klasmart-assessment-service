@@ -56,7 +56,6 @@ describe.only('Event-driven Worker', () => {
     ).toUpperCase() as RedisMode
     const redisHost = process.env.REDIS_HOST || 'localhost'
     const redisPort = Number(process.env.REDIS_PORT) || 6379
-    // const redisStreamName = process.env.REDIS_STREAM_NAME
 
     redisClient = await connectToIoRedis(redisMode, redisHost, redisPort)
     xClient = new RedisStreams(redisClient)
