@@ -3,10 +3,9 @@ import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 useContainer(TypeormTypediContainer)
 
-// import { connectToRedisCache } from '../cache/redis'
 import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
 import { delay } from '../helpers/delay'
-import { createXapiEvents } from './helpers'
+import { createXapiEvents } from '../../tests/utils/createXapiEvents'
 
 export const STREAM_NAME = 'mystream'
 export const GROUP_NAME = 'mygroup'

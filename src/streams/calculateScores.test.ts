@@ -4,7 +4,7 @@ import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { RoomScoresTemplateProvider2 } from './calculateScores'
-import { createXapiEvents } from './helpers'
+import { createXapiEvents } from '../../tests/utils/createXapiEvents'
 
 const logger = withLogger('calculateScores.test')
 

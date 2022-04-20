@@ -3,13 +3,12 @@ import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-// import { connectToRedisCache } from '../cache/redis'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { delay } from '../helpers/delay'
-import { STREAM_NAME, GROUP_NAME } from './index'
-import { createXapiEvents } from './helpers'
+import { STREAM_NAME, GROUP_NAME, ERROR_STREAM_NAME } from './index'
 import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
 import { simpleConsumerGroupWorker } from './simpleConsumerGroupWorker'
+import { createXapiEvents } from '../../tests/utils/createXapiEvents'
 
 const logger = withLogger('simpleConsumerGroupWorker.test')
 
@@ -59,6 +58,7 @@ const main = async () => {
   )
   const xClient = new RedisStreams(redisClient)
   const stream = STREAM_NAME
+  const errorStream = ERROR_STREAM_NAME
   const group = GROUP_NAME
   const consumer = process.env.CONSUMER_NAME || 'assessment-worker'
 
@@ -91,7 +91,7 @@ const main = async () => {
 
   // infinite process
   logger.info('🌭 Assessment Worker ready to consume xapi events')
-  simpleConsumerGroupWorker(xClient, stream, group, consumer)
+  simpleConsumerGroupWorker(xClient, stream, errorStream, group, consumer)
 }
 
 main()

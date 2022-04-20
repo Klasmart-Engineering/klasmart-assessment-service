@@ -12,20 +12,32 @@ useContainer(TypeormTypediContainer)
 
 const logger = withLogger('simpleConsumerGroupWorker')
 
-const MIN_EVENTS = 0
-const MAX_DELAYS = 5
+type State = {
+  i: number
+  delays: number
+}
+
+type Options = {
+  minEvents: number
+  maxDelays: number
+  retryWhenFailed: boolean
+}
 
 export const simpleConsumerGroupWorker = async (
   xClient: RedisStreams,
   stream: string,
+  errorStream: string,
   group: string,
   consumer: string,
+  opts: Options = {
+    minEvents: 0,
+    maxDelays: 0,
+    retryWhenFailed: false,
+  },
 ) => {
   const roomScoreProviderWorker = TypeormTypediContainer.get(
     RoomScoresTemplateProvider2,
   )
-  const processFn = roomScoreProviderWorker.process
-  console.log('processFn ===>', processFn)
 
   const state: State = {
     i: 0,
@@ -36,32 +48,25 @@ export const simpleConsumerGroupWorker = async (
     await simpleConsumerGroupWorkerLoop(
       xClient,
       stream,
+      errorStream,
       group,
       consumer,
       roomScoreProviderWorker,
       state,
       {
-        minEvents: MIN_EVENTS,
-        maxDelays: MAX_DELAYS,
+        minEvents: opts.minEvents,
+        maxDelays: opts.maxDelays,
+        retryWhenFailed: opts.retryWhenFailed,
       },
     )
-    state.i = +1
+    state.i = state.i + 1
   }
-}
-
-type State = {
-  i: number
-  delays: number
-}
-
-type Options = {
-  minEvents: number
-  maxDelays: number
 }
 
 export const simpleConsumerGroupWorkerLoop = async (
   xClient: RedisStreams,
   stream: string,
+  errorStream: string,
   group: string,
   consumer: string,
   calculator: RoomScoresTemplateProvider2,
@@ -69,9 +74,9 @@ export const simpleConsumerGroupWorkerLoop = async (
   opts: Options = {
     minEvents: 0,
     maxDelays: 0,
+    retryWhenFailed: false,
   },
 ): Promise<void> => {
-  // await delay(1000)
   logger.debug(
     `${consumer} (${i}): reading group (loop ${i}, delays: ${delays})...`,
   )
@@ -97,7 +102,6 @@ export const simpleConsumerGroupWorkerLoop = async (
         block: 0,
         streamKey: '>',
       })) || []
-    console.log('newEvents ===>', { newEvents })
     events = [...events, ...newEvents]
   }
 
@@ -116,7 +120,6 @@ export const simpleConsumerGroupWorkerLoop = async (
     logger.debug(
       `${consumer} (${i}): no events found: sleeping for 5 seconds...`,
     )
-    // await delay(1000)
     return
   }
 
@@ -125,8 +128,45 @@ export const simpleConsumerGroupWorkerLoop = async (
   const rawXapiEvents: XApiRecord[] = events.map(({ id, message }) => {
     return JSON.parse(message?.data)
   })
-  await calculator.process(rawXapiEvents)
-  logger.debug(`${consumer} (${i}): total events JSON parsed: ${events.length}`)
+
+  let attempt = 1
+  let MAX_ATTEMPS = 3
+  let EXP_DELAY = 1000
+
+  while (true) {
+    try {
+      await calculator.process(rawXapiEvents)
+      logger.debug(
+        `${consumer} (${i}): total events JSON parsed: ${rawXapiEvents.length}`,
+      )
+      break
+    } catch (e) {
+      logger.error(`Failed to process ${rawXapiEvents.length} xapi events`, e)
+      if (!opts.retryWhenFailed) {
+        break
+      }
+      if (attempt >= MAX_ATTEMPS) {
+        logger.error(
+          `Failed to process ${rawXapiEvents.length} xapi events ${MAX_ATTEMPS}`,
+          e,
+        )
+        logger.error(`Acknowledging and pushing events to error stream`)
+        const eventsIds = events.map(({ id }) => id)
+        await Promise.all(
+          events.map(async (event) => {
+            xClient.add(errorStream, event.message)
+          }),
+        )
+        logger.debug(
+          `${consumer} (${i}): acknowledging events: ${eventsIds.length}`,
+        )
+        await xClient.ack(stream, group, eventsIds)
+        break
+      }
+      delay(attempt ** 2 * EXP_DELAY)
+    }
+    attempt += 1
+  }
 
   // Aknowledge the processed events
   const eventsIds = events.map(({ id }) => id)
