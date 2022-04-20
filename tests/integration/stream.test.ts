@@ -21,8 +21,7 @@ import {
   Room,
   UserContentScore,
 } from '../../src/db/assessments/entities'
-import { delay } from '../../src/helpers/delay'
-import { createXapiEvents } from '../../src/streams/helpers'
+import { createXapiEvents } from '../utils/createXapiEvents'
 import { RedisStreams } from '../../src/streams/redisApi'
 import { simpleConsumerGroupWorkerLoop } from '../../src/streams/simpleConsumerGroupWorker'
 import {
@@ -77,6 +76,7 @@ describe.only('Event-driven Worker', () => {
 
   context('Pushing 1 event to a Redis stream with 1 Consumer', () => {
     const streamName = 'stream1'
+    const errorStreamName = 'errorstream1'
     const groupName = 'group1'
     const xapiEvent1 = new XApiRecordBuilder()
       .withRoomId('room1')
@@ -113,14 +113,11 @@ describe.only('Event-driven Worker', () => {
       await simpleConsumerGroupWorkerLoop(
         xClient,
         streamName,
+        errorStreamName,
         groupName,
         'consumer1',
         roomScoreProviderWorker,
         state,
-        {
-          minEvents: 0,
-          maxDelays: 0,
-        },
       )
     })
 
@@ -209,6 +206,7 @@ describe.only('Event-driven Worker', () => {
     'Pushing multiple duplicate events to a Redis stream with 1 Consumer',
     () => {
       const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
       const groupName = 'group1'
       const xapiEvent1 = new XApiRecordBuilder()
         .withRoomId('room1')
@@ -248,14 +246,11 @@ describe.only('Event-driven Worker', () => {
         await simpleConsumerGroupWorkerLoop(
           xClient,
           streamName,
+          errorStreamName,
           groupName,
           'consumer1',
           roomScoreProviderWorker,
           state,
-          {
-            minEvents: 0,
-            maxDelays: 0,
-          },
         )
       })
 
@@ -291,6 +286,7 @@ describe.only('Event-driven Worker', () => {
     'Pushing 1 room, 1 user, 1 activity, 10 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
       const groupName = 'group1'
       const xapiRecords = createXapiEvents({
         rooms: 1,
@@ -327,14 +323,11 @@ describe.only('Event-driven Worker', () => {
         await simpleConsumerGroupWorkerLoop(
           xClient,
           streamName,
+          errorStreamName,
           groupName,
           'consumer1',
           roomScoreProviderWorker,
           state,
-          {
-            minEvents: 0,
-            maxDelays: 0,
-          },
         )
       })
 
@@ -398,6 +391,7 @@ describe.only('Event-driven Worker', () => {
     'Pushing 2 rooms, 2 user, 2 activities, 10 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
       const groupName = 'group1'
       const xapiRecords = createXapiEvents({
         rooms: 2,
@@ -434,14 +428,11 @@ describe.only('Event-driven Worker', () => {
         await simpleConsumerGroupWorkerLoop(
           xClient,
           streamName,
+          errorStreamName,
           groupName,
           'consumer1',
           roomScoreProviderWorker,
           state,
-          {
-            minEvents: 0,
-            maxDelays: 0,
-          },
         )
       })
 
@@ -500,6 +491,7 @@ describe.only('Event-driven Worker', () => {
     'Pushing 1 room, 1 user, 1 activity, 5 + 5 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
       const groupName = 'group1'
       const xapiRecords = createXapiEvents({
         rooms: 1,
@@ -537,14 +529,11 @@ describe.only('Event-driven Worker', () => {
         await simpleConsumerGroupWorkerLoop(
           xClient,
           streamName,
+          errorStreamName,
           groupName,
           'consumer1',
           roomScoreProviderWorker,
           state,
-          {
-            minEvents: 0,
-            maxDelays: 0,
-          },
         )
 
         // push next batch of 5 events for the same room/user/activity
@@ -563,14 +552,11 @@ describe.only('Event-driven Worker', () => {
         await simpleConsumerGroupWorkerLoop(
           xClient,
           streamName,
+          errorStreamName,
           groupName,
           'consumer1',
           roomScoreProviderWorker,
           state,
-          {
-            minEvents: 0,
-            maxDelays: 0,
-          },
         )
       })
 
@@ -616,6 +602,7 @@ describe.only('Event-driven Worker', () => {
     'Pushing 2 rooms, 1 user, 1 activity, 2+2+2+2+2 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
       const groupName = 'group1'
       const xapiRecords = createXapiEvents({
         rooms: 2,
@@ -658,14 +645,11 @@ describe.only('Event-driven Worker', () => {
           await simpleConsumerGroupWorkerLoop(
             xClient,
             streamName,
+            errorStreamName,
             groupName,
             'consumer1',
             roomScoreProviderWorker,
             state,
-            {
-              minEvents: 0,
-              maxDelays: 0,
-            },
           )
           return entryIds
         }
@@ -743,6 +727,7 @@ describe.only('Event-driven Worker', () => {
     'Pushing 10 rooms, 10 users, 10 activity, 10000 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
       const groupName = 'group1'
       const numRooms = 3
       const numUsers = 3
@@ -781,14 +766,11 @@ describe.only('Event-driven Worker', () => {
           await simpleConsumerGroupWorkerLoop(
             xClient,
             streamName,
+            errorStreamName,
             groupName,
             'consumer1',
             roomScoreProviderWorker,
             state,
-            {
-              minEvents: 0,
-              maxDelays: 0,
-            },
           )
           return entryIds
         }

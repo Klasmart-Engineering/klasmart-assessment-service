@@ -19,18 +19,19 @@ const main = async () => {
   const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
   const redisPort = Number(process.env.REDIS_PORT) || 6379
   const redisHost = process.env.REDIS_HOST
-  const redisStreamName = process.env.REDIS_STREAM_NAME || 'xapi:events'
+  const streamName = process.env.REDIS_STREAM || 'xapi:events'
+  const errorStreamName = process.env.REDIS_ERROR_STREAM || 'xapi:events:error'
 
   const redisConfiguredCorrectly =
     redisHost &&
     redisPort &&
     ['NODE', 'CLUSTER'].includes(redisMode) &&
-    redisStreamName
+    streamName
 
   if (!redisConfiguredCorrectly) {
     throw new Error(
       'To configure Redis please specify REDIS_HOST, REDIS_PORT, ' +
-        'REDIS_MODE and REDIS_STREAM_NAME environment variables',
+        'REDIS_MODE, REDIS_STREAM and REDIS_ERROR_STREAM environment variables',
     )
   }
   const redisClient = await connectToIoRedis(
@@ -60,7 +61,18 @@ const main = async () => {
 
   // infinite process
   logger.info('🌭 Assessment Worker ready to consume xapi events')
-  simpleConsumerGroupWorker(xClient, stream, group, consumer)
+  simpleConsumerGroupWorker(
+    xClient,
+    streamName,
+    errorStreamName,
+    group,
+    consumer,
+    {
+      minEvents: 0,
+      maxDelays: 0,
+      retryWhenFailed: true,
+    },
+  )
 }
 
 main()
