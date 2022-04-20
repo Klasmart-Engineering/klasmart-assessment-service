@@ -7,14 +7,13 @@ import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
 import { delay } from '../helpers/delay'
 import { createXapiEvents } from '../../tests/utils/createXapiEvents'
 
-export const STREAM_NAME = 'mystream'
-export const GROUP_NAME = 'mygroup'
+export const STREAM_NAME = 'xapi:events'
 
 const main = async () => {
   const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
   const redisPort = Number(process.env.REDIS_PORT) || 6379
   const redisHost = process.env.REDIS_HOST
-  const redisStreamName = process.env.REDIS_STREAM_NAME || 'xapi:events'
+  const redisStreamName = process.env.REDIS_STREAM || 'xapi:events'
 
   const redisConfiguredCorrectly =
     redisHost &&
@@ -25,7 +24,7 @@ const main = async () => {
   if (!redisConfiguredCorrectly) {
     throw new Error(
       'To configure Redis please specify REDIS_HOST, REDIS_PORT, ' +
-        'REDIS_MODE and REDIS_STREAM_NAME environment variables',
+        'REDIS_MODE, REDIS_STREAM and REDIS_ERROR_STREAM environment variables',
     )
   }
   const redisClient = await connectToIoRedis(
@@ -43,6 +42,9 @@ const main = async () => {
   })
 
   console.log('🚜 Starting to produce events!')
+  console.log('🌭 Assessment Worker ready to consume xapi events')
+  console.log(`Stream: ${STREAM_NAME}`)
+
   for (const xapiEvent of xapiEvents) {
     await delay(100)
     const event = {

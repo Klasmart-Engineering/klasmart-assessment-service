@@ -59,7 +59,7 @@ export const simpleConsumerGroupWorker = async (
         retryWhenFailed: opts.retryWhenFailed,
       },
     )
-    state.i = state.i + 1
+    state.i = (state.i + 1) % 1_000
   }
 }
 
@@ -87,9 +87,7 @@ export const simpleConsumerGroupWorkerLoop = async (
       count: 1000,
       streamKey: '0',
     })) || []
-  logger.debug(
-    `CONSUMER ${consumer} (${i}): found ${events.length} pending events`,
-  )
+  logger.debug(`${consumer} (${i}): found ${events.length} pending events`)
 
   // if there are too few pending events, then fetch new ones
   if (events.length <= opts.minEvents) {
@@ -120,6 +118,7 @@ export const simpleConsumerGroupWorkerLoop = async (
     logger.debug(
       `${consumer} (${i}): no events found: sleeping for 5 seconds...`,
     )
+    await delay(5000)
     return
   }
 
