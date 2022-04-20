@@ -3,12 +3,12 @@ import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-import { connectToRedisCache } from '../cache/redis'
+// import { connectToRedisCache } from '../cache/redis'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { delay } from '../helpers/delay'
 import { STREAM_NAME, GROUP_NAME } from './index'
 import { createXapiEvents } from './helpers'
-import { RedisStreams } from './redisApi'
+import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
 import { simpleConsumerGroupWorker } from './simpleConsumerGroupWorker'
 
 const logger = withLogger('simpleConsumerGroupWorker.test')
@@ -35,12 +35,29 @@ const produce = async (
 
 const main = async () => {
   logger.info('⏳ Starting Assessment Worker')
-  const redisUrl = process.env.REDIS_URL || ''
-  if (!redisUrl) {
-    throw new Error('Please specify a value for REDIS_URL')
+  const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
+  const redisPort = Number(process.env.REDIS_PORT) || 6379
+  const redisHost = process.env.REDIS_HOST
+  const redisStreamName = process.env.REDIS_STREAM_NAME || 'xapi:events'
+
+  const redisConfiguredCorrectly =
+    redisHost &&
+    redisPort &&
+    ['NODE', 'CLUSTER'].includes(redisMode) &&
+    redisStreamName
+
+  if (!redisConfiguredCorrectly) {
+    throw new Error(
+      'To configure Redis please specify REDIS_HOST, REDIS_PORT, ' +
+        'REDIS_MODE and REDIS_STREAM_NAME environment variables',
+    )
   }
-  const client = await connectToRedisCache(redisUrl)
-  const xClient = new RedisStreams(client)
+  const redisClient = await connectToIoRedis(
+    redisMode as RedisMode,
+    redisHost,
+    redisPort,
+  )
+  const xClient = new RedisStreams(redisClient)
   const stream = STREAM_NAME
   const group = GROUP_NAME
   const consumer = process.env.CONSUMER_NAME || 'assessment-worker'
