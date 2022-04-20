@@ -3,8 +3,8 @@ import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 useContainer(TypeormTypediContainer)
 
-import { connectToRedisCache } from '../cache/redis'
-import { RedisStreams } from './redisApi'
+// import { connectToRedisCache } from '../cache/redis'
+import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
 import { delay } from '../helpers/delay'
 import { createXapiEvents } from './helpers'
 
@@ -12,12 +12,29 @@ export const STREAM_NAME = 'mystream'
 export const GROUP_NAME = 'mygroup'
 
 const main = async () => {
-  const redisUrl = process.env.REDIS_URL || ''
-  if (!redisUrl) {
-    throw new Error('Please specify a value for REDIS_URL')
+  const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
+  const redisPort = Number(process.env.REDIS_PORT) || 6379
+  const redisHost = process.env.REDIS_HOST
+  const redisStreamName = process.env.REDIS_STREAM_NAME || 'xapi:events'
+
+  const redisConfiguredCorrectly =
+    redisHost &&
+    redisPort &&
+    ['NODE', 'CLUSTER'].includes(redisMode) &&
+    redisStreamName
+
+  if (!redisConfiguredCorrectly) {
+    throw new Error(
+      'To configure Redis please specify REDIS_HOST, REDIS_PORT, ' +
+        'REDIS_MODE and REDIS_STREAM_NAME environment variables',
+    )
   }
-  const client = await connectToRedisCache(redisUrl)
-  const xClient = new RedisStreams(client)
+  const redisClient = await connectToIoRedis(
+    redisMode as RedisMode,
+    redisHost,
+    redisPort,
+  )
+  const xClient = new RedisStreams(redisClient)
 
   const xapiEvents = createXapiEvents({
     rooms: 10,

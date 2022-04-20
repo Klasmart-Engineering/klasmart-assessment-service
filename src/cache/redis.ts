@@ -5,6 +5,7 @@ import { Content } from '../db/cms/entities/content'
 
 export type RedisClientType = ReturnType<typeof createClient>
 const logger = withLogger('RedisCache')
+const decoratorlogger = withLogger('RedisErrorRecovery')
 
 export class RedisError extends Error {
   constructor(message: string) {
@@ -51,7 +52,7 @@ export const RedisErrorRecovery =
         const result = await originalMethod.apply(this, args)
         return result
       } catch (error) {
-        logger.debug('Redis Error Recovery:', error)
+        decoratorlogger.debug('Redis Error Recovery:', error)
         if (error instanceof RedisError) {
           return undefined
         }

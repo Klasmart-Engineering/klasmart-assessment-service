@@ -97,6 +97,7 @@ export const simpleConsumerGroupWorkerLoop = async (
         block: 0,
         streamKey: '>',
       })) || []
+    console.log('newEvents ===>', { newEvents })
     events = [...events, ...newEvents]
   }
 
