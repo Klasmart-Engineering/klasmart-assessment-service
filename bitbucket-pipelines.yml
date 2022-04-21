@@ -40,9 +40,9 @@ definitions:
 
       - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
 
-      - export MAJOR_VERSION=$(echo $BITBUCKET_TAG | grep -o "[v][0-9]")
-      - export MINOR_VERSION=$(echo $BITBUCKET_TAG | grep -o "[v][0-9].[0-9]")
-      - export PATCH_VERSION=$(echo $BITBUCKET_TAG | grep -o "[v][0-9].[0-9].[0-9]")
+      - export MAJOR_VERSION=$(echo $BITBUCKET_TAG | grep -o "[v][0-9]*")
+      - export MINOR_VERSION=$(echo $BITBUCKET_TAG | grep -o "[v][0-9]*.[0-9]*")
+      - export PATCH_VERSION=$(echo $BITBUCKET_TAG | grep -o "[v][0-9]*.[0-9]*.[0-9]*")
       - echo "$MAJOR_VERSION, $MINOR_VERSION, $PATCH_VERSION"
 
       - docker build -t kidsloop-assessment .
@@ -54,8 +54,8 @@ definitions:
       - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
       - docker tag kidsloop-assessment:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
 
-      - docker push $REPO:$MAJOR_VERSION
-      - docker push $REPO:$MINOR_VERSION
+      # - docker push $REPO:$MAJOR_VERSION
+      # - docker push $REPO:$MINOR_VERSION
       - docker push $REPO:$BITBUCKET_TAG
       - docker push $REPO:$BRANCH_TAG
       - docker push $REPO:$BRANCH_TAG-latest
@@ -235,5 +235,5 @@ pipelines:
           services:
             - docker
           script: *docker-build-and-push-to-aws
-      - step: *step-deploy-landing-zone
+      # - step: *step-deploy-landing-zone
       - step: *slack-notification-build
