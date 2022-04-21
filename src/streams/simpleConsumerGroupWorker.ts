@@ -77,7 +77,7 @@ export const simpleConsumerGroupWorkerLoop = async (
     retryWhenFailed: false,
   },
 ): Promise<void> => {
-  logger.debug(
+  logger.info(
     `${consumer} (${i}): reading group (loop ${i}, delays: ${delays})...`,
   )
 
@@ -115,7 +115,7 @@ export const simpleConsumerGroupWorkerLoop = async (
 
   // if no events have been found, sleep for a few seconds and continue
   if (events.length === 0) {
-    logger.debug(
+    logger.info(
       `${consumer} (${i}): no events found: sleeping for 5 seconds...`,
     )
     await delay(5000)
@@ -123,15 +123,17 @@ export const simpleConsumerGroupWorkerLoop = async (
   }
 
   // Process events
-  logger.debug(`${consumer}: total events found: ${events.length}`)
+  logger.info(
+    `${consumer} (${i}): total events found: ${events.length}, starting to process`,
+  )
   const rawXapiEvents: XApiRecord[] = events.map(({ id, message }) => {
     return JSON.parse(message?.data)
   })
 
+  // retry mechanism
   let attempt = 1
   let MAX_ATTEMPS = 3
   let EXP_DELAY = 1000
-
   while (true) {
     try {
       await calculator.process(rawXapiEvents)
@@ -173,6 +175,6 @@ export const simpleConsumerGroupWorkerLoop = async (
   await xClient.ack(stream, group, eventsIds)
 
   delays = 0
-  logger.debug(`${consumer} (${i}): FINISHED processing loop ${i}`)
+  logger.info(`${consumer} (${i}): FINISHED processing loop ${i}`)
   return
 }
