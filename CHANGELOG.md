@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.0](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.0..v1.18.1) (2022-04-21)
+
+
+### Features
+
+* add optional retry upon error with delay mechanism ([1d0cc66](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/1d0cc667f1a08d6d0524cf2ef0b27810bee3a647))
+* working version + fixed tests ([8af28f7](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/8af28f718233caf2a78ca37c1e06e95a436dd09f))
+
+
+### Refactor
+
+* improved logs ([70cd0cb](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/70cd0cbb25590a0499c0cf0dad80ad6ca28a3c3a))
+* move worker to root + update env vars ([9a68ec2](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/9a68ec26af504cc1e440f02550ab330abdc2e5ee))
+* switch from redis lib to ioredis for streaming + fix all tests ([ecb5814](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/ecb58144a91a215083bebc5248087eac48e7a0e1))
+
 ### [1.18.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.18.1..v1.18.0) (2022-03-24)
 
 
