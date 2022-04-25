@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.20.0..v1.19.0) (2022-04-25)
+
+
+### Features
+
+* include userId in response when user fetch fails ([06c0ff5](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/06c0ff53b79e287b7cb01a8c8fd8c0aa6cf683b1))
+
 ## [1.19.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.19.0..v1.18.1) (2022-03-29)
 
 
