@@ -147,7 +147,7 @@ export class UserApi {
       map.set(userIds[idx], {
         data: data.userNode
           ? { user: convertUserNodeResultToTypedUser(data.userNode) }
-          : undefined,
+          : { user: { userId: userIds[idx] } },
         errors,
       })
     })
