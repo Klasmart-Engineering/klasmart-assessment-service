@@ -7,8 +7,8 @@ ${title} {
 `
 export interface GqlUser {
   user_id?: string
-  given_name?: string
-  family_name?: string
+  given_name?: string | null
+  family_name?: string | null
 }
 
 // ====================================================

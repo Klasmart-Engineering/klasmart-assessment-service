@@ -77,60 +77,6 @@ describe('teacherCommentResolver.setComment', () => {
     after(async () => await dbDisconnect())
   })
 
-  context('no student with the provided id exists', () => {
-    it('throws unknown User error', async () => {
-      // Arrange
-      await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
-      const comment = 'great job!'
-      const room = await new RoomBuilder().buildAndPersist()
-      const schedule = new ScheduleBuilder().withRoomId(room.roomId).build()
-      const providedStudentId = v4()
-
-      const userServiceUnkownUserErrorMsg = (userId: string) =>
-        `UserConnectionNode ${userId} doesn't exist.`
-      const endUser = new EndUserBuilder().authenticate().build()
-
-      userApi.batchFetchUsers(Arg.any(), endUser.token).resolves(
-        generateBatchFetchUserRepsonse([
-          endUser,
-          {
-            user: {
-              ...endUser,
-              userId: providedStudentId,
-            },
-            error: new ApolloError(
-              userServiceUnkownUserErrorMsg(providedStudentId),
-            ),
-          },
-        ]),
-      )
-
-      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider
-        .getSchedule(room.roomId, endUser.token)
-        .resolves(schedule)
-      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
-
-      // Act
-      const fn = () =>
-        setTeacherCommentMutation(
-          room.roomId,
-          providedStudentId,
-          comment,
-          endUser,
-          false,
-        )
-
-      // Assert
-      await expect(fn()).to.be.rejectedWith(
-        userServiceUnkownUserErrorMsg(providedStudentId),
-      )
-    })
-
-    after(async () => await dbDisconnect())
-  })
-
   context(TestTitle.ScheduleNotFound.context, () => {
     it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
@@ -224,8 +170,8 @@ describe('teacherCommentResolver.setComment', () => {
     it('returns teacherComment with expected teacher', async () => {
       const expectedTeacher: FindConditions<GqlUser> = {
         user_id: endUser.userId,
-        given_name: endUser.givenName,
-        family_name: endUser.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherComment?.teacher).to.deep.equal(expectedTeacher)
     })
@@ -233,8 +179,8 @@ describe('teacherCommentResolver.setComment', () => {
     it('returns teacherComment with expected student', async () => {
       const expectedStudent: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherComment?.student).to.deep.equal(expectedStudent)
     })
@@ -312,8 +258,8 @@ describe('teacherCommentResolver.setComment', () => {
     it('returns teacherComment with expected teacher', async () => {
       const expectedTeacher: FindConditions<GqlUser> = {
         user_id: endUser.userId,
-        given_name: endUser.givenName,
-        family_name: endUser.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherComment?.teacher).to.deep.equal(expectedTeacher)
     })
@@ -321,8 +267,8 @@ describe('teacherCommentResolver.setComment', () => {
     it('returns teacherComment with expected student', async () => {
       const expectedStudent: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherComment?.student).to.deep.equal(expectedStudent)
     })
@@ -414,8 +360,8 @@ describe('teacherCommentResolver.setComment', () => {
       it('returns teacherComment with expected teacher', async () => {
         const expectedTeacher: FindConditions<GqlUser> = {
           user_id: endUser.userId,
-          given_name: endUser.givenName,
-          family_name: endUser.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlTeacherComment?.teacher).to.deep.equal(expectedTeacher)
       })
@@ -423,8 +369,8 @@ describe('teacherCommentResolver.setComment', () => {
       it('returns teacherComment with expected student', async () => {
         const expectedStudent: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlTeacherComment?.student).to.deep.equal(expectedStudent)
       })
@@ -530,8 +476,8 @@ describe('teacherCommentResolver.setComment', () => {
       it('returns teacherComment with expected teacher', async () => {
         const expectedTeacher: FindConditions<GqlUser> = {
           user_id: endUser.userId,
-          given_name: endUser.givenName,
-          family_name: endUser.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlTeacherComment?.teacher).to.deep.equal(expectedTeacher)
       })
@@ -539,8 +485,8 @@ describe('teacherCommentResolver.setComment', () => {
       it('returns teacherComment with expected student', async () => {
         const expectedStudent: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlTeacherComment?.student).to.deep.equal(expectedStudent)
       })

@@ -361,8 +361,8 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[0]?.user
       const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(actual).to.deep.equal(expected)
     })
@@ -608,8 +608,8 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[0]?.user
       const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(actual).to.deep.equal(expected)
     })
@@ -833,8 +833,8 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[0]?.user
       const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(actual).to.deep.equal(expected)
     })
@@ -1057,8 +1057,8 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[0]?.user
       const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(actual).to.deep.equal(expected)
     })
@@ -1266,8 +1266,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[0]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -1276,8 +1276,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[1]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -1286,8 +1286,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[2]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -1679,8 +1679,8 @@ describe('roomResolver.Room', () => {
         const gqlStudent = score?.user
         const expectedStudent: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlStudent).to.deep.equal(expectedStudent)
       })
@@ -1939,8 +1939,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[0]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -1949,8 +1949,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[1]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -2278,8 +2278,8 @@ describe('roomResolver.Room', () => {
       const gqlStudent = score?.user
       const expectedStudent: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlStudent).to.deep.equal(expectedStudent)
     })
@@ -2520,8 +2520,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[0]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -2727,8 +2727,8 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[0]?.user
       const expected: FindConditions<GqlUser> = {
         user_id: student1.userId,
-        given_name: student1.givenName,
-        family_name: student1.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(actual).to.deep.equal(expected)
     })
@@ -2737,8 +2737,8 @@ describe('roomResolver.Room', () => {
       const actual = gqlRoom?.scores?.[1]?.user
       const expected: FindConditions<GqlUser> = {
         user_id: student2.userId,
-        given_name: student2.givenName,
-        family_name: student2.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(actual).to.deep.equal(expected)
     })
@@ -3007,8 +3007,8 @@ describe('roomResolver.Room', () => {
       const gqlStudent = score?.user
       const expectedStudent: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlStudent).to.deep.equal(expectedStudent)
     })
@@ -3194,8 +3194,8 @@ describe('roomResolver.Room', () => {
       const gqlStudent = score?.user
       const expectedStudent: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlStudent).to.deep.equal(expectedStudent)
     })
@@ -3413,13 +3413,13 @@ describe('roomResolver.Room', () => {
           comment: teacherComment.comment,
           student: {
             user_id: student.userId,
-            given_name: student.givenName,
-            family_name: student.familyName,
+            given_name: null,
+            family_name: null,
           },
           teacher: {
             user_id: endUser.userId,
-            given_name: endUser.givenName,
-            family_name: endUser.familyName,
+            given_name: null,
+            family_name: null,
           },
         }
         expect(actual).to.deep.include(expected)
@@ -3435,8 +3435,8 @@ describe('roomResolver.Room', () => {
         const expected: FindConditions<GqlTeacherCommentsByStudent> = {
           student: {
             user_id: student.userId,
-            given_name: student.givenName,
-            family_name: student.familyName,
+            given_name: null,
+            family_name: null,
           },
           teacherComments: [
             {
@@ -3445,13 +3445,13 @@ describe('roomResolver.Room', () => {
               comment: teacherComment.comment,
               student: {
                 user_id: student.userId,
-                given_name: student.givenName,
-                family_name: student.familyName,
+                given_name: null,
+                family_name: null,
               },
               teacher: {
                 user_id: endUser.userId,
-                given_name: endUser.givenName,
-                family_name: endUser.familyName,
+                given_name: null,
+                family_name: null,
               },
             },
           ],
@@ -3472,13 +3472,13 @@ describe('roomResolver.Room', () => {
           score: 1,
           student: {
             user_id: student.userId,
-            given_name: student.givenName,
-            family_name: student.familyName,
+            given_name: null,
+            family_name: null,
           },
           teacher: {
             user_id: endUser.userId,
-            given_name: endUser.givenName,
-            family_name: endUser.familyName,
+            given_name: null,
+            family_name: null,
           },
           content: {
             content_id: lessonMaterial.contentId,
@@ -3503,8 +3503,8 @@ describe('roomResolver.Room', () => {
         const gqlStudent = score?.user
         const expectedStudent: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlStudent).to.deep.equal(expectedStudent)
       })
@@ -3765,8 +3765,8 @@ describe('roomResolver.Room', () => {
         const gqlStudent = score?.user
         const expectedStudent: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlStudent).to.deep.equal(expectedStudent)
       })
@@ -4045,8 +4045,8 @@ describe('roomResolver.Room', () => {
         const gqlStudent = score?.user
         const expectedStudent: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlStudent).to.deep.equal(expectedStudent)
       })
@@ -4286,8 +4286,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[0]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -4296,8 +4296,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[1]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })
@@ -4306,8 +4306,8 @@ describe('roomResolver.Room', () => {
         const actual = gqlRoom?.scores?.[2]?.user
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(actual).to.deep.equal(expected)
       })

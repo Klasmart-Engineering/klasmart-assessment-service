@@ -1,5 +1,3 @@
-import { ApolloError } from 'apollo-server-express'
-import DataLoader from 'dataloader'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { Ctx, FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
@@ -9,11 +7,7 @@ import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import getContent from '../helpers/getContent'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
-import {
-  UserDataLoader,
-  UserDataLoaderFunc,
-  UserProvider,
-} from '../providers/userProvider'
+import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
 const logger = withLogger('UserContentScoreResolver')
@@ -27,15 +21,11 @@ export default class UserContentScoreResolver {
   ) {}
 
   @FieldResolver(() => User, { nullable: true })
-  @UserDataLoader()
-  public async user(
-    @Root() source: UserContentScore,
-  ): Promise<UserDataLoaderFunc> {
+  public user(@Root() source: UserContentScore): User {
     logger.debug(
       `UserContentScore { studentId: ${source.studentId} } >> student`,
     )
-    return async (dataloader: DataLoader<string, ApolloError | User>) =>
-      dataloader.load(source.studentId)
+    return { userId: source.studentId }
   }
 
   @FieldResolver(() => Content, { nullable: true })

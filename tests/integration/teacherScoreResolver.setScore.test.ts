@@ -379,8 +379,8 @@ describe('teacherScoreResolver.setScore', function () {
       it('returns expected teacherScore.student', async () => {
         const expected: FindConditions<GqlUser> = {
           user_id: student.userId,
-          given_name: student.givenName,
-          family_name: student.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlTeacherScore?.student).to.deep.equal(expected)
       })
@@ -388,8 +388,8 @@ describe('teacherScoreResolver.setScore', function () {
       it('returns expected teacherScore.teacher', async () => {
         const expected: FindConditions<GqlUser> = {
           user_id: endUser.userId,
-          given_name: endUser.givenName,
-          family_name: endUser.familyName,
+          given_name: null,
+          family_name: null,
         }
         expect(gqlTeacherScore?.teacher).to.deep.equal(expected)
       })
@@ -491,8 +491,8 @@ describe('teacherScoreResolver.setScore', function () {
     it('returns expected teacherScore.student', async () => {
       const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherScore?.student).to.deep.equal(expected)
     })
@@ -500,8 +500,8 @@ describe('teacherScoreResolver.setScore', function () {
     it('returns expected teacherScore.teacher', async () => {
       const expected: FindConditions<GqlUser> = {
         user_id: endUser.userId,
-        given_name: endUser.givenName,
-        family_name: endUser.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherScore?.teacher).to.deep.equal(expected)
     })
@@ -610,8 +610,8 @@ describe('teacherScoreResolver.setScore', function () {
     it('returns expected teacherScore.student', async () => {
       const expected: FindConditions<GqlUser> = {
         user_id: student.userId,
-        given_name: student.givenName,
-        family_name: student.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherScore?.student).to.deep.equal(expected)
     })
@@ -619,8 +619,8 @@ describe('teacherScoreResolver.setScore', function () {
     it('returns expected teacherScore.teacher', async () => {
       const expected: FindConditions<GqlUser> = {
         user_id: endUser.userId,
-        given_name: endUser.givenName,
-        family_name: endUser.familyName,
+        given_name: null,
+        family_name: null,
       }
       expect(gqlTeacherScore?.teacher).to.deep.equal(expected)
     })

@@ -1,5 +1,3 @@
-import { ApolloError } from 'apollo-server-express'
-import DataLoader from 'dataloader'
 import {
   Arg,
   FieldResolver,
@@ -20,11 +18,7 @@ import { TeacherComment } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
-import {
-  UserDataLoader,
-  UserDataLoaderFunc,
-  UserProvider,
-} from '../providers/userProvider'
+import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
 const logger = withLogger('TeacherCommentResolver')
@@ -112,22 +106,14 @@ export default class TeacherCommentResolver {
   }
 
   @FieldResolver(() => User, { nullable: true })
-  @UserDataLoader()
-  public async teacher(
-    @Root() source: TeacherComment,
-  ): Promise<UserDataLoaderFunc> {
+  public teacher(@Root() source: TeacherComment): User {
     logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
-    return async (dataloader: DataLoader<string, ApolloError | User>) =>
-      dataloader.load(source.teacherId)
+    return { userId: source.teacherId }
   }
 
   @FieldResolver(() => User, { nullable: true })
-  @UserDataLoader()
-  public async student(
-    @Root() source: TeacherComment,
-  ): Promise<UserDataLoaderFunc> {
+  public student(@Root() source: TeacherComment): User {
     logger.debug(`TeacherScore { studentId: ${source.studentId} } >> student`)
-    return async (dataloader: DataLoader<string, ApolloError | User>) =>
-      dataloader.load(source.studentId)
+    return { userId: source.studentId }
   }
 }

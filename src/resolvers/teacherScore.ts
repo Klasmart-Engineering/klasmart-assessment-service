@@ -1,5 +1,4 @@
-import { ApolloError, UserInputError } from 'apollo-server-express'
-import DataLoader from 'dataloader'
+import { UserInputError } from 'apollo-server-express'
 import {
   Mutation,
   Arg,
@@ -21,11 +20,7 @@ import { Content } from '../db/cms/entities/content'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
-import {
-  UserDataLoader,
-  UserDataLoaderFunc,
-  UserProvider,
-} from '../providers/userProvider'
+import { UserProvider } from '../providers/userProvider'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { User } from '../web/user'
 
@@ -108,23 +103,15 @@ export default class TeacherScoreResolver {
   }
 
   @FieldResolver(() => User, { nullable: true })
-  @UserDataLoader()
-  public async teacher(
-    @Root() source: TeacherScore,
-  ): Promise<UserDataLoaderFunc> {
+  public teacher(@Root() source: TeacherScore): User {
     logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
-    return async (dataloader: DataLoader<string, ApolloError | User>) =>
-      dataloader.load(source.teacherId)
+    return { userId: source.teacherId }
   }
 
   @FieldResolver(() => User, { nullable: true })
-  @UserDataLoader()
-  public async student(
-    @Root() source: TeacherScore,
-  ): Promise<UserDataLoaderFunc> {
+  public student(@Root() source: TeacherScore): User {
     logger.debug(`TeacherScore { studentId: ${source.studentId} } >> student`)
-    return async (dataloader: DataLoader<string, ApolloError | User>) =>
-      dataloader.load(source.studentId)
+    return { userId: source.studentId }
   }
 
   @FieldResolver(() => Content, { nullable: true })
