@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.21.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.1..v1.21.0) (2022-04-26)
+
+
+### Bug Fixes
+
+* **DAS-340:** only return userId (don't fetch from user service) ([81cefda](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/81cefdaed0a4ba6b861bd6eaf96f9b2717fe7098))
+
 ## [1.21.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.0..v1.20.0) (2022-04-26)
 
 
