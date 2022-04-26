@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.21.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.0..v1.20.0) (2022-04-26)
+
+
+### Features
+
+* **DAS-353:** use parent h5pType if subcontent h5pType is undefined ([3cc5e42](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/3cc5e42dd5561c24c63f62b76dd7c7ade94ee296))
+
 ## [1.20.0](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.20.0..v1.19.0) (2022-04-25)
 
 
