@@ -16,7 +16,7 @@ export class ParsedXapiEvent {
   public readonly h5pId!: string
   public readonly timestamp!: number
   public readonly h5pSubId?: string
-  public readonly h5pType?: string
+  public h5pType?: string
   public readonly h5pName?: string
   public readonly h5pParentId?: string
   public readonly verb?: string
@@ -67,7 +67,7 @@ export class ParsedXapiEvent {
     const fullParentId = statement.context?.contextActivities?.parent?.[0]?.id
     if (fullParentId) {
       const parentIdStartIndex = fullParentId.indexOf('=') + 1
-      h5pParentId = fullParentId.substr(parentIdStartIndex)
+      h5pParentId = fullParentId.substring(parentIdStartIndex)
     } else if (h5pSubId !== undefined) {
       h5pParentId = h5pId
     }

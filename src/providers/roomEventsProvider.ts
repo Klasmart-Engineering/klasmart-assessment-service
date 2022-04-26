@@ -126,6 +126,46 @@ export class RoomEventsProvider {
         `Filtered out events that aren't part of the lesson plan for roomId [${roomId}]. h5pIds: ${h5pIds}`,
       )
     }
+
+    this.populateUndefinedH5pTypesWithParentType(parsedXapiEvents)
+
     return parsedXapiEvents
+  }
+
+  private populateUndefinedH5pTypesWithParentType(
+    parsedXapiEvents: ReadonlyArray<ParsedXapiEvent>,
+  ) {
+    const h5pWithChildren = new Set<string>()
+    for (const x of parsedXapiEvents) {
+      if (x.h5pParentId != null) {
+        h5pWithChildren.add(x.h5pParentId)
+      }
+    }
+    const parentKeyToEventMap = new Map<string, ParsedXapiEvent>()
+    for (const x of parsedXapiEvents) {
+      if (!x.h5pSubId && h5pWithChildren.has(x.h5pId)) {
+        parentKeyToEventMap.set(x.h5pId, x)
+      }
+      if (x.h5pSubId && h5pWithChildren.has(x.h5pSubId)) {
+        parentKeyToEventMap.set(`${x.h5pId}|${x.h5pSubId}`, x)
+      }
+    }
+    for (const x of parsedXapiEvents) {
+      if (x.h5pSubId == null) {
+        continue
+      }
+      let current: ParsedXapiEvent | undefined = x
+      while (current != null && current.h5pType == null) {
+        const key =
+          current.h5pParentId === current.h5pId
+            ? current.h5pId
+            : `${current.h5pId}|${current.h5pParentId}`
+        const parent = parentKeyToEventMap.get(key)
+        current.h5pType = parent?.h5pType
+        if (current.h5pType == null) {
+          current = parent
+        }
+      }
+    }
   }
 }
