@@ -37,6 +37,7 @@ const main = async () => {
     users: 6,
     activities: 6,
     events: 10,
+    withInvalidProbability: 0,
   })
 
   console.log('🚜 Starting to produce events!')
