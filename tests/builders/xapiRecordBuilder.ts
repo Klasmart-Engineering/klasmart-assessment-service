@@ -6,7 +6,7 @@ import { XApiRecord } from '../../src/db/xapi'
 
 export default class XApiRecordBuilder {
   private userId?: string = v4()
-  private serverTimestamp: number = Date.now()
+  private serverTimestamp?: number = Date.now()
   private clientTimestamp?: number = Date.now()
   private roomId?: string
   private ipHash?: string = 'xyz'
@@ -24,7 +24,7 @@ export default class XApiRecordBuilder {
     return this
   }
 
-  public withServerTimestamp(value: number): this {
+  public withServerTimestamp(value?: number): this {
     this.serverTimestamp = value
     return this
   }

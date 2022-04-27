@@ -7,6 +7,7 @@ type CreateXapiEventsOptions = {
   activities?: number
   events?: number
   roomPrefix?: string
+  withInvalidProbability?: number
 }
 
 export const createXapiEvents = ({
@@ -15,6 +16,7 @@ export const createXapiEvents = ({
   activities: numActivities = 2,
   events: numEvents = 5,
   roomPrefix = '',
+  withInvalidProbability = 0,
 }: CreateXapiEventsOptions): XApiRecord[] => {
   const rawXapiEvents: XApiRecord[] = []
   const curr_time = 100000000000
@@ -25,13 +27,33 @@ export const createXapiEvents = ({
         for (const eId of [...Array(numEvents).keys()]) {
           k += 1
           const i = uId * numUsers + hId * numActivities + eId
-          const roomId = `${roomPrefix}room${rId}`
-          const userId = `user${uId}`
+          let roomId: string | undefined = `${roomPrefix}room${rId}`
+          let userId: string | undefined = `user${uId}`
           const h5pId = `h5pId${hId}`
           const h5pName = `h5pName${hId}`
           const h5pType = `h5pType${hId}`
-          const score = { min: 0, max: 2, raw: 1 }
-          const response = `(${k}) ${roomId}, ${userId}, ${h5pId} >> event${eId}`
+          let score: any | undefined = { min: 0, max: 2, raw: 1 }
+          let response:
+            | string
+            | undefined = `(${k}) ${roomId}, ${userId}, ${h5pId} >> event${eId}`
+          let timestamp: number | undefined = curr_time + i
+
+          if (withInvalidProbability) {
+            if (Math.random() < withInvalidProbability) {
+              const rand = Math.random()
+              if (rand > 0.8) {
+                roomId = undefined
+              } else if (rand > 0.6) {
+                userId = undefined
+              } else if (rand > 0.4) {
+                score = undefined
+              } else if (rand > 0.2) {
+                response = undefined
+              } else {
+                timestamp = undefined
+              }
+            }
+          }
 
           const xapiRecord = new XApiRecordBuilder()
             .withRoomId(roomId)
@@ -42,8 +64,8 @@ export const createXapiEvents = ({
             .withH5pType(h5pType)
             .withScore(score)
             .withResponse(response)
-            .withServerTimestamp(curr_time + i)
-            .withClientTimestamp(curr_time + i)
+            .withServerTimestamp(timestamp)
+            .withClientTimestamp(timestamp)
             .build()
           rawXapiEvents.push(xapiRecord)
         }
