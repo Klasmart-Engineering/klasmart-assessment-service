@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.2](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.2..v2.0.0-alpha.1) (2022-04-27)
+
+
+### Bug Fixes
+
+* function signature in test script ([3c6fa21](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/3c6fa2123abb7ae7f01f712ed5bbcd3aead06e57))
+
 ## [2.0.0-alpha.1](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.1..v2.0.0-alpha.0) (2022-04-27)
 
 
