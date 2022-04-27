@@ -158,30 +158,7 @@ export class UserContentScore extends Base {
       xapiEvent.score?.max,
     )
     answers.push(answer)
-    // this.answers = answers
     return answer
-    // console.log(
-    //   'answer =',
-    //   answer.roomId,
-    //   answer.studentId,
-    //   answer.contentKey,
-    //   answer.timestamp,
-    // )
-    // const duplicates = answers.filter((a) => {
-    //   console.log('a ===>', a.roomId, a.studentId, a.contentKey, a.timestamp)
-    //   return (
-    //     a.roomId === answer.roomId &&
-    //     a.studentId === answer.studentId &&
-    //     a.contentKey === answer.contentKey &&
-    //     a.timestamp === answer.timestamp
-    //   )
-    // })
-    // console.log(`====================> answers found ${answers.length}`)
-    // console.log(`====================> duplicates found ${duplicates.length}`)
-
-    // if (duplicates.length == 0) {
-    //   answers.push(answer)
-    // }
   }
 
   protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
@@ -207,5 +184,17 @@ export class UserContentScore extends Base {
     answers.push(...newAnswers)
     console.log(`now there are ${answers.length} answers`)
     return answers
+  }
+
+  public async addReadyAnswer(answer: Answer): Promise<void> {
+    this.seen = true
+    let answers = await this.answers
+    if (!answers) {
+      answers = [answer]
+      this.answers = Promise.resolve(answers)
+    } else {
+      answers.push(answer)
+    }
+    return
   }
 }

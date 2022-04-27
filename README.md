@@ -168,6 +168,45 @@ docker run --rm -it \
   kl-assessment
 ```
 
+API:
+
+```sh
+docker run --rm -it \
+  --name kl_assessment_api \
+  --net kidsloop \
+  --env-file .env \
+  --env PORT=8080 \
+  --env ASSESSMENT_DATABASE_URL=postgres://postgres:assessments@kl_postgres:5432/assessment_db \
+  --env USE_XAPI_SQL_DATABASE_FLAG=1 \
+  --env XAPI_DATABASE_URL=postgres://kidsloop:T5YjUyskt3YcC4NpKfuNAEkFcWzIaYrn@host.docker.internal:15434/kidsloop_alpha_xapidb \
+  --env REDIS_URL=redis://kl_redis:6379 \
+  --env REDIS_HOST=host.docker.internal \
+  --env REDIS_CONSUMER_GROUP=evgeny-local \
+  -p 8081:8080 \
+  kl-assessment
+```
+
+Worker:
+
+```sh
+docker run --rm -it \
+  --name kl_assessment_worker \
+  --net kidsloop \
+  --env-file .env \
+  --env NODE_ENV=development \
+  --env ASSESSMENT_DATABASE_URL=postgres://postgres:assessments@kl_postgres:5432/assessment_db \
+  --env ASSESSMENT_DATABASE_LOGGING=false \
+  --env REDIS_HOST=host.docker.internal \
+  --env REDIS_PORT=7000 \
+  --env REDIS_MODE=cluster \
+  --env REDIS_STREAM=xapi-demo:events \
+  --env REDIS_ERROR_STREAM=xapi:events:error \
+  --env REDIS_CONSUMER_GROUP=evgeny-local \
+  --env REDIS_CONSUMER=worker-0 \
+  kl-assessment \
+  node src/worker.js
+```
+
 ### Debugging
 
 1. Navigate to the VS Code sidebar debug panel

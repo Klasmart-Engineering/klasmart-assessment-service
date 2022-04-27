@@ -17,19 +17,21 @@ export const createXapiEvents = ({
   roomPrefix = '',
 }: CreateXapiEventsOptions): XApiRecord[] => {
   const rawXapiEvents: XApiRecord[] = []
-  const curr_time = 1647865897520 || Date.now()
+  const curr_time = 100000000000
+  let k = 0
   for (const rId of [...Array(numRooms).keys()]) {
     for (const uId of [...Array(numUsers).keys()]) {
       for (const hId of [...Array(numActivities).keys()]) {
         for (const eId of [...Array(numEvents).keys()]) {
+          k += 1
+          const i = uId * numUsers + hId * numActivities + eId
           const roomId = `${roomPrefix}room${rId}`
           const userId = `user${uId}`
           const h5pId = `h5pId${hId}`
           const h5pName = `h5pName${hId}`
           const h5pType = `h5pType${hId}`
           const score = { min: 0, max: 2, raw: 1 }
-          const response = `${roomId}, ${userId}, ${h5pId} >> event${eId}`
-          const i = uId * numUsers + hId * numActivities + eId
+          const response = `(${k}) ${roomId}, ${userId}, ${h5pId} >> event${eId}`
 
           const xapiRecord = new XApiRecordBuilder()
             .withRoomId(roomId)

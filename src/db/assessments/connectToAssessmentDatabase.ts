@@ -9,6 +9,9 @@ export const ASSESSMENTS_CONNECTION_NAME = 'assessments'
 export function getAssessmentDatabaseConnectionOptions(
   url: string,
 ): ConnectionOptions {
+  const dbLogging = process.env.ASSESSMENT_DATABASE_LOGGING || 'false'
+  const logging = dbLogging.toLowerCase() === 'true' || dbLogging === '1'
+
   return {
     name: ASSESSMENTS_CONNECTION_NAME,
     type: 'postgres',
@@ -18,7 +21,7 @@ export function getAssessmentDatabaseConnectionOptions(
       path.join(__dirname, './entities/*.ts'),
       path.join(__dirname, './entities/*.js'),
     ],
-    logging: Boolean(process.env.ASSESSMENT_DATABASE_LOGGING),
+    logging,
     migrations: [path.join(__dirname, '../../migrations/*.{ts,js}')],
     migrationsTableName: 'assessment_xapi_migration',
     migrationsRun: true,

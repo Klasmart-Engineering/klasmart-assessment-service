@@ -7,6 +7,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { EntityManager, InsertQueryBuilder, Repository } from 'typeorm'
 import { UserContentScoreFactory } from '../providers/userContentScoreFactory'
 import ContentKey from '../helpers/contentKey'
+import { RedisStreams, StreamMessageReply } from './redisApi'
 
 const logger = withLogger('streamCalculateScore')
 
@@ -29,6 +30,10 @@ type ParsedXapiEvent = {
   verb?: string
   score?: XapiScore
   response?: string
+}
+
+type XApiRecordEvent = ParsedXapiEvent & {
+  entryId: string
 }
 
 export const parseRawEvent = (
@@ -161,24 +166,68 @@ export class RoomScoresTemplateProvider2 {
   // -> multiple failures -> pop into failure queue
   // => [refactor in API] query CMS with room_id => list of lesson materials => map h5pIds to CMS content ids (no caching for now)
   // => add event stream producer logic to live-backend service
-  public async process(rawXapiEvents: XApiRecord[]): Promise<void> {
-    logger.info(`process >> rawXapiEvents received: ${rawXapiEvents.length}`)
+  public async process(
+    events: StreamMessageReply[],
+    xClient: RedisStreams,
+    stream: string,
+    errorStream: string,
+    group: string,
+  ): Promise<void> {
+    logger.info(`process >> events received: ${events.length}`)
 
-    // 1. Parse all the xapi events
-    const xapiEvents = rawXapiEvents
-      .map((event) => parseRawEvent(event))
-      .filter(notEmpty)
+    // 1. Separate VALID from the INVALID events
+    const validXapiEvents: XApiRecordEvent[] = []
+    const invalidXapiEvents: StreamMessageReply[] = []
+    events.forEach(({ id, message }) => {
+      const data = message?.data
+      try {
+        const valid = parseRawEvent(JSON.parse(data))
+        if (valid) {
+          validXapiEvents.push({ ...valid, entryId: id })
+        } else {
+          invalidXapiEvents.push({
+            id,
+            message: { data, error: 'Invalid JSON' },
+          })
+        }
+      } catch (e) {
+        invalidXapiEvents.push({ id, message: { data, error: String(e) } })
+      }
+    })
+    logger.info(
+      `process >> events ${validXapiEvents.length}/${events.length} VALID +` +
+        ` ${invalidXapiEvents.length}/${events.length} INVALID`,
+    )
 
-    logger.debug(`process >> parsing DONE, total events: ${xapiEvents.length}`)
+    // 1.1 Send the invalid events to the error queue and acknolewdge them
+    if (invalidXapiEvents.length > 0) {
+      await Promise.all(
+        invalidXapiEvents.map(async (event) => {
+          xClient.add(errorStream, event.message)
+        }),
+      )
+      const invalidEventsIds = invalidXapiEvents.map((x) => x.id)
+      await xClient.ack(stream, group, invalidEventsIds)
+      logger.info(
+        `process >> ${invalidXapiEvents.length} invalid events aknowledged` +
+          ` and pushed to error strea(${errorStream})`,
+      )
+    }
+
+    // 2. Group by Room
     const xapiEventsGroupedByRoom = groupBy(
-      xapiEvents,
+      validXapiEvents,
       (xapiEvent) => xapiEvent.roomId,
     )
-    logger.debug(
-      `process >> Grouped by roomId, total groups: ${xapiEventsGroupedByRoom.size}`,
+    logger.info(
+      `process >> valid events grouped by roomId,` +
+        ` total groups: ${xapiEventsGroupedByRoom.size}`,
     )
+
     for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
-      logger.debug(`process >> roomId: ${roomId}`)
+      logger.info(
+        `process >> roomId(${roomId}) >> events: ${xapiEvents.length}`,
+      )
 
       // Get the room or create a new one
       // let room = await this.assessmentDB.findOne(Room, roomId, {})
@@ -186,12 +235,10 @@ export class RoomScoresTemplateProvider2 {
       if (!room) {
         room = new Room(roomId)
         await this.assessmentDB.save(Room, room)
-        logger.info(`process >> roomId: ${roomId} >> created new Room`)
-      } else {
-        logger.debug(`process >> roomId: ${roomId} >> Room already exists`)
+        logger.debug(`process >> roomId(${roomId}) >> created new Room`)
       }
 
-      // 2.1 Group by user
+      // 3. Group by user
       const xapiEventsGroupedByUser = groupBy(
         xapiEvents,
         (xapiEvent) => xapiEvent.userId,
@@ -202,29 +249,33 @@ export class RoomScoresTemplateProvider2 {
 
       // const newRoomScores: UserContentScore[] = []
       for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
-        logger.debug(`process >> roomId: ${roomId} >> userId: ${userId}`)
+        logger.info(
+          `process >> roomId(${roomId}) userId(${userId}) >>` +
+            ` events: ${xapiEvents.length}`,
+        )
         const xapiEventsGroupedByContentKey = groupBy(
           xapiEvents,
           (xapiEvent) =>
-            ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // (3.) old way -> Material:content_id + xapiEvent:h5pSubId
+            ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // old way -> Material:content_id + xapiEvent:h5pSubId
         )
         logger.debug(
-          `process >> Grouped by contentKey, total groups: ${xapiEventsGroupedByContentKey.size}`,
+          `process >> Grouped by contentKey, ` +
+            `total groups: ${xapiEventsGroupedByContentKey.size}`,
         )
 
-        // 2.3 Group by activity/content
+        // 4. Group by activity/content
         for (const [
           contentKey,
           xapiEvents,
         ] of xapiEventsGroupedByContentKey.entries()) {
-          logger.debug(
-            `process >> roomId: ${roomId} >> userId: ${userId} >> contentKey ${contentKey}`,
+          logger.info(
+            `process >> roomId(${roomId}) userId(${userId}) ` +
+              `contentKey(${contentKey}) >> events: ${xapiEvents.length}`,
           )
 
-          // TODO: remove this unnecessary check
-          // THIS IS IMPOSSIBLE -> ContentKey should not exist for events that don't exist
+          // Sanity check, should be IMPOSSIBLE -> ContentKey should not exist for events that don't exist
           if (xapiEvents.length == 0) {
-            logger.debug(`process >> No event FOUND FOR SOME REASON ?!?!??!?!`)
+            logger.error(`process >> No events found after groupby!`)
             continue
           }
 
@@ -233,7 +284,7 @@ export class RoomScoresTemplateProvider2 {
           const { h5pType, h5pName, h5pParentId } = xapiEvents[0]
 
           logger.debug(
-            `process >> time for the userContentScore(${roomId}:${userId}:${contentKey})`,
+            `process >> userContentScore(${roomId}:${userId}:${contentKey})`,
           )
           // Time for the UserContentScore entity!
           // First, let's try to find one in the database if it already exists
@@ -247,7 +298,6 @@ export class RoomScoresTemplateProvider2 {
               },
             },
           )
-          let existingAnswers: Answer[] = []
 
           // If we haven't found one, we will create a new one
           if (!userContentScore) {
@@ -262,66 +312,59 @@ export class RoomScoresTemplateProvider2 {
               h5pName,
               h5pParentId,
             )
-            await this.assessmentDB.save(userContentScore)
+            await this.assessmentDB.save(UserContentScore, userContentScore)
             room.scores = Promise.resolve([
               ...(await room.scores),
               userContentScore,
             ])
-            // await this.assessmentDB.save(room)
-          } else {
-            existingAnswers = await this.assessmentDB.find(Answer, {
-              where: {
-                roomId: roomId,
-                studentId: userId,
-                contentKey: contentKey,
-              },
-            })
-            logger.debug(
-              `process >> userContentScore(${roomId}:${userId}:${contentKey}) already exists and holds ${existingAnswers?.length} answers`,
+          }
+
+          // 5. Filter out events that don't have a score or a response
+          const xapiEventsWithAnswers = xapiEvents.filter(
+            (xapiEvent) =>
+              xapiEvent.score !== undefined && xapiEvent.response !== undefined,
+          )
+
+          if (xapiEventsWithAnswers.length < xapiEvents.length) {
+            logger.warn(
+              `process >> (${roomId}:${userId}:${contentKey}) >> ` +
+                `${xapiEvents.length - xapiEventsWithAnswers.length}/` +
+                `${xapiEvents.length} events don't have a score and response fields ` +
+                `>> are filtered out`,
             )
           }
 
-          logger.debug(`process >> applying xapiEvents to userContentScore`)
-          const newAnswers = xapiEvents
-            .filter(
-              (xapiEvent) =>
-                xapiEvent.score !== undefined &&
-                xapiEvent.response !== undefined,
+          // 6. Create new Answer records
+          const newAnswers = xapiEventsWithAnswers.map((xapiEvent) => {
+            const answer = Answer.new(
+              userContentScore!,
+              new Date(xapiEvent.timestamp),
+              xapiEvent.response,
+              // TODO: Maybe pass whole score object, instead.
+              xapiEvent.score?.raw,
+              xapiEvent.score?.min,
+              xapiEvent.score?.max,
             )
-            .map((xapiEvent) => {
-              const answer = Answer.new(
-                userContentScore!,
-                new Date(xapiEvent.timestamp),
-                xapiEvent.response,
-                // TODO: Maybe pass whole score object, instead.
-                xapiEvent.score?.raw,
-                xapiEvent.score?.min,
-                xapiEvent.score?.max,
-              )
-              return answer
-            })
+            return answer
+          })
 
-          logger.debug(`process > new Answers length: ${newAnswers.length}`)
+          logger.info(`process >> total new Answers: ${newAnswers.length}`)
           await Promise.all(
             newAnswers.map(async (a) => {
               await this.assessmentDB.save(Answer, a)
+              await userContentScore!.addReadyAnswer(a)
             }),
           )
 
-          // // save again
-          // const allAnswers = await this.assessmentDB.find(Answer, {
-          //   where: {
-          //     roomId: userContentScore.roomId,
-          //     studentId: userContentScore.studentId,
-          //     contentKey: userContentScore.contentKey,
-          //   },
-          // })
-          // userContentScore.answers = Promise.resolve(allAnswers)
-          // await this.assessmentDB.save(userContentScore)
-          // const allAnswers2 = await userContentScore.answers
-          // // await this.assessmentDB.save(userContentScore)
-          // logger.warn(`process > allAnswers length: ${allAnswers.length}`)
-          // logger.warn(`process > allAnswers2 length: ${allAnswers2.length}`)
+          // 7. Acknolewdge
+          logger.info(
+            `process >> Redis acknolewdge processed events: ${xapiEvents.length}`,
+          )
+          await xClient.ack(
+            stream,
+            group,
+            xapiEvents.map((x) => x.entryId),
+          )
         }
       }
       await this.assessmentDB.save(room)

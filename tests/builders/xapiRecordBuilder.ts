@@ -29,7 +29,7 @@ export default class XApiRecordBuilder {
     return this
   }
 
-  public withRoomId(value: string): this {
+  public withRoomId(value?: string): this {
     this.roomId = value
     return this
   }
