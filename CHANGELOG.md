@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.1](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.1..v2.0.0-alpha.0) (2022-04-27)
+
+
+### Bug Fixes
+
+* improve error handling during processing + fix readgroup block options command ([19d0038](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/19d00386d60dfdec7bd93156cc47233466104e9a))
+
 ## [2.0.0-alpha.0](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.0..v1.18.1) (2022-04-21)
 
 
