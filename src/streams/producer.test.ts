@@ -7,13 +7,11 @@ import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
 import { delay } from '../helpers/delay'
 import { createXapiEvents } from '../../tests/utils/createXapiEvents'
 
-export const STREAM_NAME = 'xapi:events'
-
 const main = async () => {
   const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
   const redisPort = Number(process.env.REDIS_PORT) || 6379
   const redisHost = process.env.REDIS_HOST
-  const redisStreamName = process.env.REDIS_STREAM || 'xapi:events'
+  const redisStreamName = process.env.REDIS_STREAM || 'xapi-demo:events'
 
   const redisConfiguredCorrectly =
     redisHost &&
@@ -35,7 +33,7 @@ const main = async () => {
   const xClient = new RedisStreams(redisClient)
 
   const xapiEvents = createXapiEvents({
-    rooms: 10,
+    rooms: 2,
     users: 6,
     activities: 6,
     events: 10,
@@ -43,16 +41,16 @@ const main = async () => {
 
   console.log('🚜 Starting to produce events!')
   console.log('🌭 Assessment Worker ready to consume xapi events')
-  console.log(`Stream: ${STREAM_NAME}`)
+  console.log(`Stream: ${redisStreamName}`)
 
-  for (const xapiEvent of xapiEvents) {
+  for (const [idx, xapiEvent] of xapiEvents.entries()) {
     await delay(100)
     const event = {
       data: JSON.stringify(xapiEvent),
     }
-    const entryId = await xClient.add(STREAM_NAME, event)
+    const entryId = await xClient.add(redisStreamName, event)
     console.log(
-      `producer > PRODUCER >> add [room: ${xapiEvent.roomId}, user: ${xapiEvent.userId}] entryId: ${entryId}`,
+      `producer > PRODUCER >> add (${idx}) [room: ${xapiEvent.roomId}, user: ${xapiEvent.userId}] entryId: ${entryId}`,
     )
   }
 }

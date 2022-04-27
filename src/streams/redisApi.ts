@@ -51,6 +51,7 @@ export const connectToIoRedis = async (
     throw new RedisError(`Redis Client Error ${err.message}`)
   })
   try {
+    logger.info('🏎  Attempting to connect to Redis')
     await client.connect()
     logger.info('🏎  Connected to Redis')
   } catch (e) {
@@ -73,7 +74,7 @@ interface TuplesObject {
   [field: string]: string
 }
 
-interface StreamMessageReply {
+export interface StreamMessageReply {
   id: string
   message: TuplesObject
 }
@@ -126,9 +127,10 @@ export class RedisStreams {
   @RedisErrorRecovery()
   public async read(
     stream: string,
-    { count, block, streamKey }: any,
+    options: { count?: number; block?: number; streamKey?: string },
   ): Promise<StreamMessageReply[] | null> {
     logger.debug(`read >> stream: ${stream}`)
+    const { count, block, streamKey } = options
     let entries = await (count
       ? this.client.xread(
           'COUNT',
@@ -154,11 +156,18 @@ export class RedisStreams {
       const streamEntries = entries[0][1].map((val) => {
         const entryId = val[0]
         const message = val[1]
+
+        const numKeyValuePairs = Math.floor(message.length / 2)
+        const msgObject =
+          Array.from(Array(numKeyValuePairs).keys()).reduce(
+            (acc, idx) =>
+              Object.assign(acc, { [message[2 * idx]]: message[2 * idx + 1] }),
+            {},
+          ) || {}
+
         return {
           id: entryId,
-          message: {
-            [message[0]]: message[1],
-          },
+          message: msgObject,
         }
       })
       return streamEntries
@@ -228,8 +237,9 @@ export class RedisStreams {
     stream: string,
     groupName: string,
     consumerName: string,
-    { count, block, streamKey }: any,
+    opts: { count?: number; block?: number; streamKey?: string },
   ): Promise<StreamMessageReply[] | null> {
+    const { count, block, streamKey } = opts
     const args = []
     if (count) {
       args.push('COUNT', count)
@@ -256,15 +266,18 @@ export class RedisStreams {
       const streamEntries = thisStreamEntries.map((val) => {
         const entryId = val[0]
         const message = val[1]
-        const msgOject =
-          message.length >= 2
-            ? {
-                [message[0]]: message[1],
-              }
-            : {}
+
+        const numKeyValuePairs = Math.floor(message.length / 2)
+        const msgObject =
+          Array.from(Array(numKeyValuePairs).keys()).reduce(
+            (acc, idx) =>
+              Object.assign(acc, { [message[2 * idx]]: message[2 * idx + 1] }),
+            {},
+          ) || {}
+
         return {
           id: entryId,
-          message: msgOject,
+          message: msgObject,
         }
       })
       return streamEntries

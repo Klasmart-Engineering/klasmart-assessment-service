@@ -94,11 +94,9 @@ describe.only('Event-driven Worker', () => {
     before(async () => {
       // delete stream from redis
       await redisClient.del(streamName)
-
       // create redis consumer group after the stream gets created
       const onlyLatest = false
       await xClient.createGroup(streamName, groupName, onlyLatest)
-
       // push events to a new stream that gets created automatically
       const event = {
         data: JSON.stringify(xapiRecord1),
@@ -237,6 +235,146 @@ describe.only('Event-driven Worker', () => {
         await xClient.add(streamName, event)
         await xClient.add(streamName, event)
         await xClient.add(streamName, event)
+
+        const state = {
+          i: 0,
+          delays: 0,
+        }
+        await simpleConsumerGroupWorkerLoop(
+          xClient,
+          streamName,
+          errorStreamName,
+          groupName,
+          'consumer1',
+          roomScoreProviderWorker,
+          state,
+        )
+      })
+
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+      })
+
+      it('Idempotently processes the duplicate events and finds a single answer record', async () => {
+        let room = await entityManager.findOne(Room, 'room1', {})
+        const userContentScores = (await room?.scores) || []
+        const answers = (
+          await Promise.all(
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
+          )
+        ).flat()
+
+        expect(room).to.not.be.undefined
+        expect(userContentScores.length).to.equal(1)
+        expect(answers.length).to.equal(1)
+        const answer = answers[0]
+        expect(answer).to.contain({
+          roomId: 'room1',
+          studentId: 'user1',
+          contentKey: 'h5p1',
+        })
+      })
+    },
+  )
+
+  context(
+    'Pushing valid and invalid events to a Redis stream with 1 Consumer',
+    () => {
+      const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
+      const groupName = 'group1'
+
+      const xapiEvent = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId('user1')
+        .withH5pId('h5p1')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('response')
+        .withServerTimestamp(100000000000)
+        .withClientTimestamp(100000000000)
+      const xapiRecord = xapiEvent.build()
+
+      const xapiEvent1 = new XApiRecordBuilder()
+        .withRoomId(undefined)
+        .withUserId('user1')
+        .withH5pId('h5p1')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('response')
+        .withServerTimestamp(100000000001)
+        .withClientTimestamp(100000000001)
+      const xapiRecord1 = xapiEvent1.build()
+
+      const xapiEvent2 = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId(undefined)
+        .withH5pId('h5p1')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('response')
+        .withServerTimestamp(100000000002)
+        .withClientTimestamp(100000000002)
+      const xapiRecord2 = xapiEvent2.build()
+
+      const xapiEvent3 = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId('user1')
+        .withH5pId('h5p1')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore(undefined)
+        .withResponse('response')
+        .withServerTimestamp(100000000003)
+        .withClientTimestamp(100000000003)
+      const xapiRecord3 = xapiEvent3.build()
+
+      const xapiEvent4 = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId('user1')
+        .withH5pId('h5p1')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse(undefined)
+        .withServerTimestamp(100000000004)
+        .withClientTimestamp(100000000004)
+      const xapiRecord4 = xapiEvent4.build()
+
+      before(async () => {
+        // delete stream from redis
+        await redisClient.del(streamName)
+
+        // create redis consumer group after the stream gets created
+        const onlyLatest = false
+        await xClient.createGroup(streamName, groupName, onlyLatest)
+
+        // push events to a new stream that gets created automatically
+        const events = [
+          xapiRecord,
+          xapiRecord1,
+          xapiRecord2,
+          xapiRecord3,
+          xapiRecord4,
+        ].map((record) => ({
+          data: JSON.stringify(record),
+        }))
+        const entryIds = await Promise.all(
+          events.map(async (event) => {
+            const entryId = await xClient.add(streamName, event)
+            return entryId
+          }),
+        )
 
         const state = {
           i: 0,
