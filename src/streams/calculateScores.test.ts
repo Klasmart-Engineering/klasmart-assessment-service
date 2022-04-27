@@ -25,7 +25,10 @@ const main = async () => {
   const rawXapiEvents = createXapiEvents({})
 
   logger.info('🏋️‍♀️ Processing events!')
-  await roomScoreProviderWorker.process(rawXapiEvents)
+  // await roomScoreProviderWorker.process(rawXapiEvents, xClient
+  //   stream
+  //   errorStream
+  //   group)
   logger.info('🧘‍♀️ Done!')
 
   const someEvent = rawXapiEvents[0]
