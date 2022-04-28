@@ -243,11 +243,10 @@ export class RoomScoresTemplateProvider2 {
         xapiEvents,
         (xapiEvent) => xapiEvent.userId,
       )
-      logger.debug(
+      logger.info(
         `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
       )
 
-      // const newRoomScores: UserContentScore[] = []
       for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
         logger.info(
           `process >> roomId(${roomId}) userId(${userId}) >>` +
@@ -258,7 +257,7 @@ export class RoomScoresTemplateProvider2 {
           (xapiEvent) =>
             ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // old way -> Material:content_id + xapiEvent:h5pSubId
         )
-        logger.debug(
+        logger.info(
           `process >> Grouped by contentKey, ` +
             `total groups: ${xapiEventsGroupedByContentKey.size}`,
         )
