@@ -95,11 +95,11 @@ export const simpleConsumerGroupWorkerLoop = async (
       count: opts.count,
       streamKey: '0',
     })) || []
-  logger.debug(`${consumer} (${i}): found ${events.length} pending events`)
+  logger.info(`${consumer} (${i}): found ${events.length} pending events`)
 
   // if there are too few pending events, then fetch new ones
   if (events.length <= opts.minEvents) {
-    logger.debug(
+    logger.info(
       `${consumer} (${i}): very few or no pending messages, getting new ones...`,
     )
     const newEvents =

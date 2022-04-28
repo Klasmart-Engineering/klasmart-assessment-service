@@ -39,21 +39,21 @@ export class RoomScoresCalculator {
     logger.debug(
       `calculate >> roomId: ${roomId} >> attendances found: ${userIds.size}`,
     )
-    const xapiEvents = await this.roomEventsProvider.getEvents(
-      roomId,
-      attendances,
-      h5pIdToContentIdMap,
-    )
-    logger.debug(
-      `calculate >> roomId: ${roomId} >> xapiEvents found: ${xapiEvents.length}`,
-    )
+    // const xapiEvents = await this.roomEventsProvider.getEvents(
+    //   roomId,
+    //   attendances,
+    //   h5pIdToContentIdMap,
+    // )
+    // logger.debug(
+    //   `calculate >> roomId: ${roomId} >> xapiEvents found: ${xapiEvents.length}`,
+    // )
 
     const userContentScores = await this.calculateScores(
       roomId,
       teacherId,
       materials,
       userIds,
-      xapiEvents,
+      [],
       h5pIdToContentIdMap,
     )
     logger.debug(
@@ -92,35 +92,35 @@ export class RoomScoresCalculator {
         teacherId,
         materials,
         userIds,
-        xapiEvents,
+        [],
       )
 
-    for (const xapiEvent of xapiEvents) {
-      const contentId = h5pIdToContentIdMap.get(xapiEvent.h5pId)
-      if (!contentId) {
-        continue
-      }
-      // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
-      //const contentKey = ContentKey.construct(contentId, xapiEvent.h5pSubId)
-      const contentKey =
-        await this.roomScoresTemplateProvider.getCompatContentKey(
-          roomId,
-          xapiEvent.userId,
-          contentId,
-          xapiEvent.h5pId,
-          xapiEvent.h5pSubId,
-        )
-      const mapKey = RoomScoresTemplateProvider.getMapKey(
-        roomId,
-        xapiEvent.userId,
-        contentKey,
-      )
-      const userContentScore = mapKeyToUserContentScoreMap.get(mapKey)
-      if (!userContentScore) {
-        continue
-      }
-      await userContentScore.applyEvent(xapiEvent)
-    }
+    // for (const xapiEvent of xapiEvents) {
+    //   const contentId = h5pIdToContentIdMap.get(xapiEvent.h5pId)
+    //   if (!contentId) {
+    //     continue
+    //   }
+    //   // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
+    //   //const contentKey = ContentKey.construct(contentId, xapiEvent.h5pSubId)
+    //   const contentKey =
+    //     await this.roomScoresTemplateProvider.getCompatContentKey(
+    //       roomId,
+    //       xapiEvent.userId,
+    //       contentId,
+    //       xapiEvent.h5pId,
+    //       xapiEvent.h5pSubId,
+    //     )
+    //   const mapKey = RoomScoresTemplateProvider.getMapKey(
+    //     roomId,
+    //     xapiEvent.userId,
+    //     contentKey,
+    //   )
+    //   const userContentScore = mapKeyToUserContentScoreMap.get(mapKey)
+    //   if (!userContentScore) {
+    //     continue
+    //   }
+    //   await userContentScore.applyEvent(xapiEvent)
+    // }
 
     const end = new Date()
     const diff = end.getTime() - start.getTime()

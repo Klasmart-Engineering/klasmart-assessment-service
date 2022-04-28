@@ -53,28 +53,28 @@ export class RoomScoresTemplateProvider {
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
 
     // Won't be necessary when a subcontent API is implemented.
-    const h5pKeyToXapiEventMap = new Map<string, ParsedXapiEvent>()
-    const h5pIdToSubIdsMap = new Map<string, Set<string>>()
-    for (const x of xapiEvents) {
-      const h5pKey = ContentKey.construct(x.h5pId, x.h5pSubId)
-      h5pKeyToXapiEventMap.set(h5pKey, x)
-      if (!x.h5pSubId) continue
-      const subIds = h5pIdToSubIdsMap.get(x.h5pId) ?? new Set<string>()
-      h5pIdToSubIdsMap.set(x.h5pId, subIds)
-      subIds.add(x.h5pSubId)
+    // const h5pKeyToXapiEventMap = new Map<string, ParsedXapiEvent>()
+    // const h5pIdToSubIdsMap = new Map<string, Set<string>>()
+    // for (const x of xapiEvents) {
+    //   const h5pKey = ContentKey.construct(x.h5pId, x.h5pSubId)
+    //   h5pKeyToXapiEventMap.set(h5pKey, x)
+    //   if (!x.h5pSubId) continue
+    //   const subIds = h5pIdToSubIdsMap.get(x.h5pId) ?? new Set<string>()
+    //   h5pIdToSubIdsMap.set(x.h5pId, subIds)
+    //   subIds.add(x.h5pSubId)
 
-      // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
-      // Because without a subcontent API, we can't know about it.
-      // But now we use the fact that an xAPI event will include a parent ID if the activity
-      // that generated the event is a sub-activity. So we now use that parent ID to generate a
-      // UserContentScore for that parent, even though the parent may not emit an event.
-      if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
-        subIds.add(x.h5pParentId)
-      }
-    }
+    //   // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
+    //   // Because without a subcontent API, we can't know about it.
+    //   // But now we use the fact that an xAPI event will include a parent ID if the activity
+    //   // that generated the event is a sub-activity. So we now use that parent ID to generate a
+    //   // UserContentScore for that parent, even though the parent may not emit an event.
+    //   if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
+    //     subIds.add(x.h5pParentId)
+    //   }
+    // }
 
     // Populate mapKeyToUserContentScoreMap with an empty UserContentScore for every user-material combination.
-    const emptySet = new Set<string>()
+    // const emptySet = new Set<string>()
     for (const userId of userIds) {
       if (userId === teacherId) {
         continue
@@ -86,7 +86,7 @@ export class RoomScoresTemplateProvider {
           userId,
           material,
           undefined,
-          h5pKeyToXapiEventMap,
+          null,
           mapKeyToUserContentScoreMap,
         )
         // Only H5P content can have subcontent.
@@ -94,17 +94,17 @@ export class RoomScoresTemplateProvider {
           continue
         }
         // Now loop through all the subcontents.
-        const subcontentIds = h5pIdToSubIdsMap.get(material.h5pId) || emptySet
-        for (const subcontentId of subcontentIds) {
-          await this.addUserContentScoreToMap(
-            roomId,
-            userId,
-            material,
-            subcontentId,
-            h5pKeyToXapiEventMap,
-            mapKeyToUserContentScoreMap,
-          )
-        }
+        // const subcontentIds = h5pIdToSubIdsMap.get(material.h5pId) || emptySet
+        // for (const subcontentId of subcontentIds) {
+        //   await this.addUserContentScoreToMap(
+        //     roomId,
+        //     userId,
+        //     material,
+        //     subcontentId,
+        //     null,
+        //     mapKeyToUserContentScoreMap,
+        //   )
+        // }
       }
     }
     return mapKeyToUserContentScoreMap
@@ -115,7 +115,7 @@ export class RoomScoresTemplateProvider {
     userId: string,
     material: Content,
     subcontentId: string | undefined,
-    h5pKeyToXapiEventMap: Map<string, ParsedXapiEvent>,
+    h5pKeyToXapiEventMap: Map<string, ParsedXapiEvent> | null,
     mapKeyToUserContentScoreMap: Map<string, UserContentScore>,
   ) {
     // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
@@ -137,9 +137,9 @@ export class RoomScoresTemplateProvider {
     let h5pParentId: string | undefined
     if (material.h5pId) {
       const h5pKey = ContentKey.construct(material.h5pId, subcontentId)
-      h5pType = h5pKeyToXapiEventMap.get(h5pKey)?.h5pType
-      h5pName = h5pKeyToXapiEventMap.get(h5pKey)?.h5pName
-      h5pParentId = h5pKeyToXapiEventMap.get(h5pKey)?.h5pParentId
+      // h5pType = h5pKeyToXapiEventMap.get(h5pKey)?.h5pType
+      // h5pName = h5pKeyToXapiEventMap.get(h5pKey)?.h5pName
+      // h5pParentId = h5pKeyToXapiEventMap.get(h5pKey)?.h5pParentId
       if (subcontentId != null && h5pParentId == null) {
         // subcontent.parentId is always non-null if the parent is another subcontent.
         // In this case, h5pParentId is null so the parent must be the root h5p id.

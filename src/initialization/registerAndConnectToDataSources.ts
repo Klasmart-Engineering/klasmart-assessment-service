@@ -57,6 +57,7 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
   if (!assessmentDatabaseUrl) {
     throw new Error('Please specify a value for ASSESSMENT_DATABASE_URL')
   }
+  console.log('assessmentDatabaseUrl ===>', assessmentDatabaseUrl)
   connectionPromises.push(connectToAssessmentDatabase(assessmentDatabaseUrl))
 
   if (process.env.USE_XAPI_SQL_DATABASE_FLAG === '1') {
