@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.4](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.4..v1.18.1) (2022-04-28)
+
+
+### Features
+
+* add optional retry upon error with delay mechanism ([2cfb086](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/2cfb08672db4c767524093396c853a8ac68580ac))
+* query CMS for materials to generate missing userContentScores that didn't generate events ([607ead3](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/607ead35fce5c1bbdc49267745fd63f0a3beb49f))
+* working version ([5471604](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/5471604d6dac1776056e59a61041657d866e6b84))
+
+
+### Bug Fixes
+
+* function signature in test script ([f0b5dae](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/f0b5daef49a8ac977f961c4b4bc5c5004e948e65))
+* improve error handling during processing + fix readgroup block options command ([11496eb](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/11496eb292ad9e00bd8ea8c45d0c9c48776f2d2d))
+
+
+### Refactor
+
+* improved logs ([d5d00ce](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/d5d00cec436fb1b930a6f3518e4ac5db64274173))
+* move worker to root + update env vars ([4e006da](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/4e006da199abe2d281a9e5d2601c018ab476b97b))
+* switch from redis lib to ioredis for streaming + fix all tests ([c6fe1ef](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/c6fe1ef723ad3481a28ba0cd6fa49c2242118e8f))
+
 ## [2.0.0-alpha.3](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.3..v2.0.0-alpha.2) (2022-04-28)
 
 
