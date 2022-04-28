@@ -49,19 +49,19 @@ export default class RoomResolver {
         roomId,
       )
       const attendanceCount = attendances.length
-      if (room) {
-        const cachedAttendanceCount = room.attendanceCount
-        if (attendanceCount === cachedAttendanceCount) {
-          return room
-        }
-      }
+      // if (room) {
+      //   const cachedAttendanceCount = room.attendanceCount
+      //   if (attendanceCount === cachedAttendanceCount) {
+      //     return room
+      //   }
+      // }
       if (!room) {
         room = new Room(roomId)
         logger.warn(`Room >> roomId: ${roomId} >> created new Room`)
       }
-      if (attendanceCount === 0) {
-        return room
-      }
+      // if (attendanceCount === 0) {
+      //   return room
+      // }
 
       // merge existing scores calculated from xapi events
       // and new scores calculated from the materials or lesson plan
@@ -71,6 +71,9 @@ export default class RoomResolver {
         teacherId,
         attendances,
         context.encodedAuthenticationToken,
+      )
+      logger.debug(
+        `existingScores num: ${existingScores.length}, newScores num: ${newScores.length}`,
       )
       const allScores = [...existingScores, ...newScores].filter(
         (val, idx, self) =>
@@ -82,6 +85,7 @@ export default class RoomResolver {
               t.contentKey === val.contentKey,
           ),
       )
+      logger.debug(`allScores num: ${allScores.length}`)
       room.scores = Promise.resolve(allScores)
       room.attendanceCount = attendanceCount
       await this.assessmentDB.save(room)
