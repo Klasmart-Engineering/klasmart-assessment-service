@@ -33,13 +33,13 @@ export default class RoomResolver {
   ) {}
 
   @Authorized()
-  @Query(() => Room, { nullable: true })
+  @Query(() => Room)
   public async Room(
     // TODO: This shouldn't be nullable.
     @Arg('room_id', { nullable: true }) roomId: string,
     @UserID() teacherId: string,
     @Ctx() context: Context,
-  ): Promise<Room | null> {
+  ): Promise<Room> {
     logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})

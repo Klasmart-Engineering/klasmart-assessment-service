@@ -321,7 +321,10 @@ export class RoomScoresTemplateProvider2 {
           // 5. Filter out events that don't have a score or a response
           const xapiEventsWithAnswers = xapiEvents.filter(
             (xapiEvent) =>
-              xapiEvent.score !== undefined && xapiEvent.response !== undefined,
+              !(
+                xapiEvent.score === undefined &&
+                xapiEvent.response === undefined
+              ),
           )
 
           if (xapiEventsWithAnswers.length < xapiEvents.length) {
