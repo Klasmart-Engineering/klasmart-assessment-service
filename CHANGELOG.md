@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.3](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.3..v2.0.0-alpha.2) (2022-04-28)
+
+
+### Features
+
+* query CMS for materials to generate missing userContentScores that didn't generate events ([b269ac7](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/b269ac7701b195f65d1cb0af5d85f917530d03be))
+
 ## [2.0.0-alpha.2](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.2..v2.0.0-alpha.1) (2022-04-27)
 
 
