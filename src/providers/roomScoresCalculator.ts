@@ -38,10 +38,10 @@ export class RoomScoresCalculator {
     const h5pIdToContentIdMap = this.createH5pIdToContentIdMap(
       studentContentsResult.contents.values(),
     )
-    const userIds = new Set(attendances.map((x) => x.userId))
-    logger.debug(
-      `calculate >> roomId: ${roomId} >> attendances found: ${userIds.size}`,
-    )
+    // const userIds = new Set(attendances.map((x) => x.userId))
+    // logger.debug(
+    //   `calculate >> roomId: ${roomId} >> attendances found: ${userIds.size}`,
+    // )
     // const xapiEvents = await this.roomEventsProvider.getEvents(
     //   roomId,
     //   attendances,

@@ -45,10 +45,10 @@ export default class RoomResolver {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
       // return room || null
 
-      const attendances = await this.roomAttendanceProvider.getAttendances(
-        roomId,
-      )
-      const attendanceCount = attendances.length
+      // const attendances = await this.roomAttendanceProvider.getAttendances(
+      //   roomId,
+      // )
+      // const attendanceCount = attendances.length
       // if (room) {
       //   const cachedAttendanceCount = room.attendanceCount
       //   if (attendanceCount === cachedAttendanceCount) {
@@ -69,7 +69,7 @@ export default class RoomResolver {
       const newScores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
-        attendances,
+        [], // attendances
         context.encodedAuthenticationToken,
       )
       logger.debug(
@@ -87,7 +87,7 @@ export default class RoomResolver {
       )
       logger.debug(`allScores num: ${allScores.length}`)
       room.scores = Promise.resolve(allScores)
-      room.attendanceCount = attendanceCount
+      // room.attendanceCount = attendanceCount
       await this.assessmentDB.save(room)
       logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
       return room
