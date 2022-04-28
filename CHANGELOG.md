@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.5](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.5..v1.21.1) (2022-04-28)
+
+
+### Features
+
+* add optional retry upon error with delay mechanism ([f8c0e17](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/f8c0e1799df0353f049f52e21431a6ca42bf9348))
+* query CMS for materials to generate missing userContentScores that didn't generate events ([efd98f1](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/efd98f101a7f4508b49eb07f350937876883be65))
+* remove attendance service calls entirely ([f9e17d6](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/f9e17d6a8c1ea7b3bc6317292b38b79f08bbf3cf))
+* working version ([f6def76](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/f6def76f99fbe35d0ebe2389d08acfd13ad333a5))
+
+
+### Bug Fixes
+
+* function signature in test script ([d9941ab](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/d9941ab6bd6cea068fe47597cd3c39ed64ec97df))
+* improve error handling during processing + fix readgroup block options command ([1f776fc](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/1f776fc663e89edd1ccabae0846196bba9c07be4))
+
+
+### Refactor
+
+* improved logs ([8640807](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/864080758da78657dbb7bdc9d1df277ffa8a9032))
+* move worker to root + update env vars ([b2789a2](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/b2789a28979efd60d68421fa075a46f0fe678c51))
+* switch from redis lib to ioredis for streaming + fix all tests ([77471e0](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/77471e044206bb837c7aec3cd802e878c2dfa88f))
+
 ## [2.0.0-alpha.4](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.4..v1.18.1) (2022-04-28)
 
 
