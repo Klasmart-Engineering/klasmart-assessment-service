@@ -43,35 +43,50 @@ export default class RoomResolver {
     logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
-      return room || null
-      // const attendances = await this.roomAttendanceProvider.getAttendances(
-      //   roomId,
-      // )
-      // const attendanceCount = attendances.length
-      // if (room) {
-      //   const cachedAttendanceCount = room.attendanceCount
-      //   if (attendanceCount === cachedAttendanceCount) {
-      //     return room
-      //   }
-      // }
-      // if (!room) {
-      //   room = new Room(roomId)
-      //   logger.debug(`Room >> roomId: ${roomId} >> created new Room`)
-      // }
-      // if (attendanceCount === 0) {
-      //   return room
-      // }
-      // const scores = await this.roomScoresCalculator.calculate(
-      //   roomId,
-      //   teacherId,
-      //   attendances,
-      //   context.encodedAuthenticationToken,
-      // )
-      // room.scores = Promise.resolve(scores)
-      // room.attendanceCount = attendanceCount
-      // await this.assessmentDB.save(room)
-      // logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
-      // return room
+      // return room || null
+
+      const attendances = await this.roomAttendanceProvider.getAttendances(
+        roomId,
+      )
+      const attendanceCount = attendances.length
+      if (room) {
+        const cachedAttendanceCount = room.attendanceCount
+        if (attendanceCount === cachedAttendanceCount) {
+          return room
+        }
+      }
+      if (!room) {
+        room = new Room(roomId)
+        logger.warn(`Room >> roomId: ${roomId} >> created new Room`)
+      }
+      if (attendanceCount === 0) {
+        return room
+      }
+
+      // merge existing scores calculated from xapi events
+      // and new scores calculated from the materials or lesson plan
+      const existingScores = await room.scores
+      const newScores = await this.roomScoresCalculator.calculate(
+        roomId,
+        teacherId,
+        attendances,
+        context.encodedAuthenticationToken,
+      )
+      const allScores = [...existingScores, ...newScores].filter(
+        (val, idx, self) =>
+          idx ===
+          self.findIndex(
+            (t) =>
+              t.roomId === val.roomId &&
+              t.studentId === val.studentId &&
+              t.contentKey === val.contentKey,
+          ),
+      )
+      room.scores = Promise.resolve(allScores)
+      room.attendanceCount = attendanceCount
+      await this.assessmentDB.save(room)
+      logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
+      return room
     } catch (e) {
       logger.error(e)
       throw e
