@@ -78,7 +78,7 @@ import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
  * - specify expected xapi timestamps
  */
 
-describe('roomResolver.Room', () => {
+describe.skip('roomResolver.Room', () => {
   const roomRepo = () => getRepository(Room, ASSESSMENTS_CONNECTION_NAME)
   const userContentScoreRepo = () =>
     getRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)

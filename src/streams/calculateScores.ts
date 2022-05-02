@@ -4,7 +4,7 @@ import { Service } from 'typedi'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { Answer, Room, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { EntityManager, InsertQueryBuilder, Repository } from 'typeorm'
+import { EntityManager, Repository } from 'typeorm'
 import { UserContentScoreFactory } from '../providers/userContentScoreFactory'
 import ContentKey from '../helpers/contentKey'
 import { RedisStreams, StreamMessageReply } from './redisApi'
@@ -371,42 +371,5 @@ export class RoomScoresTemplateProvider2 {
       }
       await this.assessmentDB.save(room)
     }
-  }
-
-  // TODO: delete
-  public async getRoom({ roomId }: any) {
-    console.log('getRoom > input:', { roomId })
-    const room: Room = await this.assessmentDB.findOne(Room, roomId, {})
-    console.log('getRoom > room:', room)
-    const userContentScores = await room.scores
-    console.log('getRoom > userContentScores:', userContentScores)
-    const answers = await userContentScores[0].answers
-    console.log('getRoom > answers:', answers)
-  }
-
-  // TODO: delete
-  public async checkExistence({ roomId, userId, h5pId }: any) {
-    console.log('checkExistence > input:', { roomId, userId, h5pId })
-    // const userContentScores = await this.userContentScoreRepository.find({
-    //   where: {
-    //     roomId: roomId,
-    //     studentId: userId,
-    //     contentKey: h5pId,
-    //   },
-    // })
-
-    const userContentScores = await this.assessmentDB
-      .getRepository(UserContentScore)
-      .createQueryBuilder('score')
-      .where('score.roomId = :roomId', { roomId })
-      .andWhere('score.studentId = :userId', { userId })
-      .andWhere('score.contentKey = :h5pId', { h5pId })
-      .getMany()
-
-    console.log('checkExistence > userContentScores:', userContentScores)
-    const answers = await userContentScores[0].answers
-    console.log('checkExistence > --------------------------------->')
-    console.log('checkExistence > Found number Answers =>', answers?.length)
-    console.log('checkExistence > Answers =>', answers)
   }
 }

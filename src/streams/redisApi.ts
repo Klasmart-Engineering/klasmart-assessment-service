@@ -1,68 +1,8 @@
 import 'reflect-metadata'
-import Redis, { Cluster } from 'ioredis'
-import { RedisError, RedisErrorRecovery } from '../cache/redis'
+import { RedisErrorRecovery, IoRedisClientType } from '../cache/redis'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-export type IoRedisClientType = Redis | Cluster
-export type RedisMode = 'NODE' | 'CLUSTER'
-
 const logger = withLogger('RedisStreams')
-
-export const connectToIoRedis = async (
-  mode: RedisMode,
-  host: string,
-  port: number,
-): Promise<IoRedisClientType> => {
-  let client: IoRedisClientType
-  if (mode === 'CLUSTER') {
-    logger.info('🏎 🏎 🏎 🏎  Creating CLUSTER mode Redis connection')
-    client = new Redis.Cluster(
-      [
-        {
-          host,
-          port,
-        },
-      ],
-      {
-        lazyConnect: true,
-        redisOptions: {
-          password: process.env.REDIS_PASS,
-          reconnectOnError: (err) => {
-            const targetError = 'READONLY'
-            if (err.message.includes(targetError)) {
-              // Only reconnect when the error contains "READONLY"
-              return true
-            }
-            return false
-          },
-        },
-      },
-    )
-  } else {
-    logger.info('🏎  Creating NODE mode Redis connection')
-    client = new Redis(port, host, {
-      lazyConnect: true,
-      password: process.env.REDIS_PASS,
-    })
-  }
-
-  client.on('error', (err) => {
-    logger.error('Redis Client Error', err.message)
-    throw new RedisError(`Redis Client Error ${err.message}`)
-  })
-  try {
-    logger.info('🏎  Attempting to connect to Redis')
-    await client.connect()
-    logger.info('🏎  Connected to Redis')
-  } catch (e) {
-    logger.error('❌ Failed to connect to Redis')
-    throw e
-  }
-  return client
-}
-
-export const STREAM_NAME = 'mystream'
-export const GROUP_NAME = 'mygroup'
 
 type ReadStreamReply = [stream: string, entries: Entry[]][]
 type Entry = [
