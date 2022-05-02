@@ -5,10 +5,11 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import {
-  connectToRedisCache,
   RedisCache,
   InMemoryCache,
   ICache,
+  connectToIoRedis,
+  RedisMode,
 } from '../cache'
 import { connectToAttendanceDatabase } from '../db/attendance/connectToAttendanceDatabase'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
@@ -93,12 +94,25 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
   }
 
   let cache: ICache
-  if (config.REDIS_URL) {
+  const redisMode = (process.env.REDIS_MODE || 'NODE').toUpperCase()
+  const redisPort = Number(process.env.REDIS_PORT) || 6379
+  const redisHost = process.env.REDIS_HOST
+  const redisConfiguredCorrectly =
+    redisHost && redisPort && ['NODE', 'CLUSTER'].includes(redisMode)
+
+  if (redisConfiguredCorrectly) {
     logger.info('CONFIG: Using Redis as Caching solution')
-    const redisClient = await connectToRedisCache(config.REDIS_URL)
+    const redisClient = await connectToIoRedis(
+      redisMode as RedisMode,
+      redisHost,
+      redisPort,
+    )
     cache = new RedisCache(redisClient)
   } else {
-    logger.info('CONFIG: Using InMemory as Caching solution')
+    logger.info(
+      'CONFIG: To configure Redis please specify REDIS_HOST, REDIS_PORT and' +
+        ' REDIS_MODE  environment variables',
+    )
     cache = new InMemoryCache()
   }
   MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)

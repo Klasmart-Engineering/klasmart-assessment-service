@@ -1,9 +1,11 @@
-import { createClient } from 'redis'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
+import Redis, { Cluster } from 'ioredis'
 import { ICache } from './interface'
 import { Content } from '../db/cms/entities/content'
 
-export type RedisClientType = ReturnType<typeof createClient>
+export type IoRedisClientType = Redis | Cluster
+export type RedisMode = 'NODE' | 'CLUSTER'
+
 const logger = withLogger('RedisCache')
 const decoratorlogger = withLogger('RedisErrorRecovery')
 
@@ -14,29 +16,63 @@ export class RedisError extends Error {
   }
 }
 
-export const connectToRedisCache = async (
-  url: string,
-): Promise<RedisClientType> => {
-  const client: RedisClientType = createClient({
-    url,
-  })
-  client.on('error', (err) => {
-    logger.error('Redis Client Error', err.message)
-    throw new RedisError(`Redis Client Error ${err.message}`)
+const prefix = `assessment`
+const assessmentKey = (key: string) => `${prefix}:${key}`
+const materialKey = (key: string) => `${prefix}:material:${key}`
+
+export const connectToIoRedis = async (
+  mode: RedisMode,
+  host: string,
+  port: number,
+): Promise<IoRedisClientType> => {
+  let client: IoRedisClientType
+  if (mode === 'CLUSTER') {
+    logger.info('🏎 🏎 🏎 🏎  Creating CLUSTER mode Redis connection')
+    client = new Redis.Cluster(
+      [
+        {
+          host,
+          port,
+        },
+      ],
+      {
+        lazyConnect: true,
+        redisOptions: {
+          password: process.env.REDIS_PASS,
+          reconnectOnError: (err) => {
+            const targetError = 'READONLY'
+            if (err.message.includes(targetError)) {
+              // Only reconnect when the error contains "READONLY"
+              return true
+            }
+            return false
+          },
+        },
+      },
+    )
+  } else {
+    logger.info('🏎  Creating NODE mode Redis connection')
+    client = new Redis(port, host, {
+      lazyConnect: true,
+      password: process.env.REDIS_PASS,
+    })
+  }
+
+  client.on('error', async (err) => {
+    logger.error('Redis Client Error', err)
+    throw new RedisError(`Redis Client Error ${err}`)
   })
   try {
+    logger.info('🏎  Attempting to connect to Redis')
     await client.connect()
-    logger.info('☕️ Connected to Redis')
+    logger.info('🏎  Connected to Redis')
   } catch (e) {
     logger.error('❌ Failed to connect to Redis')
+    await client.quit()
     throw e
   }
   return client
 }
-
-const prefix = `assessment`
-const assessmentKey = (key: string) => `${prefix}:${key}`
-const materialKey = (key: string) => `${prefix}:material:${key}`
 
 export const RedisErrorRecovery =
   (): MethodDecorator =>
@@ -63,7 +99,7 @@ export const RedisErrorRecovery =
   }
 
 export class RedisCache implements ICache {
-  constructor(private readonly client: RedisClientType) {}
+  constructor(private readonly client: IoRedisClientType) {}
 
   @RedisErrorRecovery()
   public async getLessonMaterial(
@@ -101,7 +137,7 @@ export class RedisCache implements ICache {
       `setLessonPlanMaterials >> materials count: ${materialMap.length}`,
     )
     if (materialMap.length > 0) {
-      await this.client.multi().mSet(materialMap).exec()
+      await this.client.multi().mset(materialMap).exec()
     }
   }
 

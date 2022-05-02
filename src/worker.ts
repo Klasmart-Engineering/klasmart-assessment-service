@@ -4,7 +4,8 @@ import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
-import { RedisMode, RedisStreams, connectToIoRedis } from './streams/redisApi'
+import { RedisStreams } from './streams/redisApi'
+import { RedisMode, connectToIoRedis } from './cache/redis'
 import { simpleConsumerGroupWorker } from './streams/simpleConsumerGroupWorker'
 
 useContainer(TypeormTypediContainer)

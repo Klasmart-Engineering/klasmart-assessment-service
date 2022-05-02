@@ -6,8 +6,9 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 import { connectToAssessmentDatabase } from '../db/assessments/connectToAssessmentDatabase'
 import { delay } from '../helpers/delay'
 import { STREAM_NAME, GROUP_NAME, ERROR_STREAM_NAME } from './index'
-import { connectToIoRedis, RedisMode, RedisStreams } from './redisApi'
+import { RedisStreams } from './redisApi'
 import { simpleConsumerGroupWorker } from './simpleConsumerGroupWorker'
+import { connectToIoRedis, RedisMode } from '../cache'
 import { createXapiEvents } from '../../tests/utils/createXapiEvents'
 
 const logger = withLogger('simpleConsumerGroupWorker.test')

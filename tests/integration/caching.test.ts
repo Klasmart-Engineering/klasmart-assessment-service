@@ -3,21 +3,19 @@ import { expect } from 'chai'
 import { LessonPlanBuilder, LessonMaterialBuilder } from '../builders'
 import {
   RedisCache,
-  RedisClientType,
+  IoRedisClientType,
   InMemoryCache,
-  connectToRedisCache,
+  connectToIoRedis,
 } from '../../src/cache'
 import { delay } from '../../src/helpers/delay'
 
 describe('Redis caching and InMermory caching', () => {
-  let redisClient: RedisClientType
+  let redisClient: IoRedisClientType
   let redisCache: RedisCache
   let inMemorycache: InMemoryCache
 
   before(async () => {
-    redisClient = await connectToRedisCache(
-      process.env.REDIS_URL || 'redis://localhost:6379',
-    )
+    redisClient = await connectToIoRedis('NODE', 'localhost', 6379)
     redisCache = new RedisCache(redisClient)
     inMemorycache = new InMemoryCache()
   })

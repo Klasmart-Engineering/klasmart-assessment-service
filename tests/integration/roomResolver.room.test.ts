@@ -77,7 +77,7 @@ import DiKeys from '../../src/initialization/diKeys'
  * - specify expected xapi timestamps
  */
 
-describe('roomResolver.Room', () => {
+describe.skip('roomResolver.Room', () => {
   const roomRepo = () => getRepository(Room, ASSESSMENTS_CONNECTION_NAME)
   const userContentScoreRepo = () =>
     getRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)

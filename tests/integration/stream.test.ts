@@ -14,7 +14,7 @@ import {
   connectToIoRedis,
   IoRedisClientType,
   RedisMode,
-} from '../../src/streams/redisApi'
+} from '../../src/cache/redis'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToAssessmentDatabase'
 import {
   Answer,
@@ -31,7 +31,7 @@ import {
 import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
 import { XApiRecord } from '../../src/db/xapi'
 
-describe.only('Event-driven Worker', () => {
+describe('Event-driven Worker', () => {
   let redisClient: IoRedisClientType
   let xClient: RedisStreams
   let dbConnection: Connection
@@ -286,7 +286,8 @@ describe.only('Event-driven Worker', () => {
       const errorStreamName = 'errorstream1'
       const groupName = 'group1'
 
-      const xapiEvent = new XApiRecordBuilder()
+      // Valid
+      const xapiEventValid1 = new XApiRecordBuilder()
         .withRoomId('room1')
         .withUserId('user1')
         .withH5pId('h5p1')
@@ -297,38 +298,13 @@ describe.only('Event-driven Worker', () => {
         .withResponse('response')
         .withServerTimestamp(100000000000)
         .withClientTimestamp(100000000000)
-      const xapiRecord = xapiEvent.build()
+      const xapiRecordValid1 = xapiEventValid1.build()
 
-      const xapiEvent1 = new XApiRecordBuilder()
-        .withRoomId(undefined)
-        .withUserId('user1')
-        .withH5pId('h5p1')
-        .withH5pSubId(undefined)
-        .withH5pName('h5pName')
-        .withH5pType('h5pType')
-        .withScore({ min: 0, max: 2, raw: 1 })
-        .withResponse('response')
-        .withServerTimestamp(100000000001)
-        .withClientTimestamp(100000000001)
-      const xapiRecord1 = xapiEvent1.build()
-
-      const xapiEvent2 = new XApiRecordBuilder()
-        .withRoomId('room1')
-        .withUserId(undefined)
-        .withH5pId('h5p1')
-        .withH5pSubId(undefined)
-        .withH5pName('h5pName')
-        .withH5pType('h5pType')
-        .withScore({ min: 0, max: 2, raw: 1 })
-        .withResponse('response')
-        .withServerTimestamp(100000000002)
-        .withClientTimestamp(100000000002)
-      const xapiRecord2 = xapiEvent2.build()
-
-      const xapiEvent3 = new XApiRecordBuilder()
+      // Valid => Score missing
+      const xapiEventValid2 = new XApiRecordBuilder()
         .withRoomId('room1')
         .withUserId('user1')
-        .withH5pId('h5p1')
+        .withH5pId('h5p5')
         .withH5pSubId(undefined)
         .withH5pName('h5pName')
         .withH5pType('h5pType')
@@ -336,12 +312,13 @@ describe.only('Event-driven Worker', () => {
         .withResponse('response')
         .withServerTimestamp(100000000003)
         .withClientTimestamp(100000000003)
-      const xapiRecord3 = xapiEvent3.build()
+      const xapiRecordValid2 = xapiEventValid2.build()
 
-      const xapiEvent4 = new XApiRecordBuilder()
+      // Valid => Response Missing
+      const xapiEventValid3 = new XApiRecordBuilder()
         .withRoomId('room1')
         .withUserId('user1')
-        .withH5pId('h5p1')
+        .withH5pId('h5p6')
         .withH5pSubId(undefined)
         .withH5pName('h5pName')
         .withH5pType('h5pType')
@@ -349,7 +326,64 @@ describe.only('Event-driven Worker', () => {
         .withResponse(undefined)
         .withServerTimestamp(100000000004)
         .withClientTimestamp(100000000004)
-      const xapiRecord4 = xapiEvent4.build()
+      const xapiRecordValid3 = xapiEventValid3.build()
+
+      // invalid RoomId missing
+      const xapiEventInvalid1 = new XApiRecordBuilder()
+        .withRoomId(undefined)
+        .withUserId('user1')
+        .withH5pId('h5p2')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('response')
+        .withServerTimestamp(100000000001)
+        .withClientTimestamp(100000000001)
+      const xapiRecordInvalid1 = xapiEventInvalid1.build()
+
+      // Invalid => UserId missing
+      const xapiEventInvalid2 = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId(undefined)
+        .withH5pId('h5p3')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('response')
+        .withServerTimestamp(100000000002)
+        .withClientTimestamp(100000000002)
+      const xapiRecordInvalid2 = xapiEventInvalid2.build()
+
+      // Invalid => H5pId missing
+      const xapiEventInvalid3 = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId('user2')
+        .withH5pId(undefined)
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore({ min: 0, max: 2, raw: 1 })
+        .withResponse('response')
+        .withServerTimestamp(100000000002)
+        .withClientTimestamp(100000000002)
+      const xapiRecordInvalid3 = xapiEventInvalid3.build()
+
+      // Semi Invalid => Score + Response Missing
+      // creates a UserContentScore, but not an Answer
+      const xapiEventSemiValid = new XApiRecordBuilder()
+        .withRoomId('room1')
+        .withUserId('user1')
+        .withH5pId('h5p7')
+        .withH5pSubId(undefined)
+        .withH5pName('h5pName')
+        .withH5pType('h5pType')
+        .withScore(undefined)
+        .withResponse(undefined)
+        .withServerTimestamp(100000000004)
+        .withClientTimestamp(100000000004)
+      const xapiRecordSemiValid = xapiEventSemiValid.build()
 
       before(async () => {
         // delete stream from redis
@@ -361,11 +395,13 @@ describe.only('Event-driven Worker', () => {
 
         // push events to a new stream that gets created automatically
         const events = [
-          xapiRecord,
-          xapiRecord1,
-          xapiRecord2,
-          xapiRecord3,
-          xapiRecord4,
+          xapiRecordValid1, // room + score + answer
+          xapiRecordValid2, // room + score + answer
+          xapiRecordValid3, // room + score + answer
+          xapiRecordInvalid1, // no room
+          xapiRecordInvalid2, // no room
+          xapiRecordInvalid3, // no room
+          xapiRecordSemiValid, // room + score, but no answer
         ].map((record) => ({
           data: JSON.stringify(record),
         }))
@@ -395,7 +431,16 @@ describe.only('Event-driven Worker', () => {
         await xClient.deleteGroup(streamName, groupName)
       })
 
-      it('Idempotently processes the duplicate events and finds a single answer record', async () => {
+      it('creates userContentScores given valid index triplet (roomId, userId, ActivityId)', async () => {
+        let room = await entityManager.findOne(Room, 'room1', {})
+        const userContentScores = await room?.scores
+
+        expect(room).to.not.be.undefined
+        expect(userContentScores).to.not.be.undefined
+        expect(userContentScores!.length).to.equal(4)
+      })
+
+      it('creates Answers only for events that have a valid Score or Response', async () => {
         let room = await entityManager.findOne(Room, 'room1', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
@@ -407,8 +452,7 @@ describe.only('Event-driven Worker', () => {
         ).flat()
 
         expect(room).to.not.be.undefined
-        expect(userContentScores.length).to.equal(1)
-        expect(answers.length).to.equal(1)
+        expect(answers.length).to.equal(3)
         const answer = answers[0]
         expect(answer).to.contain({
           roomId: 'room1',
@@ -939,15 +983,6 @@ describe.only('Event-driven Worker', () => {
           await Promise.all(
             rooms.map(async (room) => {
               const userXscores = (await room?.scores) || []
-              // console.log(
-              //   `${room.roomId} userXscores.length: ${userXscores.length}`,
-              // )
-              // console.log(
-              //   `${room.roomId} userXscores:`,
-              //   userXscores
-              //     .map((x) => `${x.studentId}:${x.contentKey}`)
-              //     .join(' + '),
-              // )
               return userXscores
             }),
           )
