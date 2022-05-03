@@ -65,15 +65,13 @@ export default class RoomResolver {
 
       // merge existing scores calculated from xapi events
       // and new scores calculated from the materials or lesson plan
-      const existingScores = (await room.scores) || []
-      console.warn('existingScores', existingScores.length)
+      const existingScores = await room.scores // xapi events derived scores (+ cached getMaterials scores)
       const newScores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
         [], // attendances
         context.encodedAuthenticationToken,
-      )
-      console.warn('newScores', newScores.length)
+      ) // getMaterials derived scores
       logger.debug(
         `existingScores num: ${existingScores.length}, newScores num: ${newScores.length}`,
       )
@@ -87,7 +85,6 @@ export default class RoomResolver {
               t.contentKey === val.contentKey,
           ),
       )
-      console.warn('allScores', allScores.length)
       logger.debug(`allScores num: ${allScores.length}`)
 
       if (existingScores.length !== allScores.length) {

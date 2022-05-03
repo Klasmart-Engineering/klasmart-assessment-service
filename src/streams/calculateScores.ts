@@ -311,6 +311,7 @@ export class RoomScoresTemplateProvider2 {
               h5pName,
               h5pParentId,
             )
+            userContentScore.seen = true
             await this.assessmentDB.save(UserContentScore, userContentScore)
             room.scores = Promise.resolve([
               ...(await room.scores),
