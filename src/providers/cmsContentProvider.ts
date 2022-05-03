@@ -69,6 +69,9 @@ export class CmsContentProvider {
     )
     const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
 
+    // TODO: Add caching functionality here
+    // await this.cache.setLessonPlanMaterials(lessonMaterials)
+
     return lessonMaterials
   }
 }

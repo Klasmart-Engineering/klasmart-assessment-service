@@ -7,7 +7,6 @@ export type IoRedisClientType = Redis | Cluster
 export type RedisMode = 'NODE' | 'CLUSTER'
 
 const logger = withLogger('RedisCache')
-const decoratorlogger = withLogger('RedisErrorRecovery')
 
 export class RedisError extends Error {
   constructor(message: string) {
@@ -81,6 +80,7 @@ export const RedisErrorRecovery =
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>,
   ): TypedPropertyDescriptor<any> => {
+    const decoratorlogger = withLogger('RedisErrorRecovery')
     const originalMethod = descriptor.value
     // important => don't use an arrow function because we're passing `this`
     descriptor.value = async function (...args: any[]) {
@@ -88,10 +88,14 @@ export const RedisErrorRecovery =
         const result = await originalMethod.apply(this, args)
         return result
       } catch (error) {
-        decoratorlogger.debug('Redis Error Recovery:', error)
+        decoratorlogger.error(
+          `Redis Error Recovery (${originalMethod.name}):`,
+          String(error),
+        )
         if (error instanceof RedisError) {
           return undefined
         }
+        decoratorlogger.error('Cannot recover from Error: ', String(error))
         throw error
       }
     }
@@ -108,7 +112,7 @@ export class RedisCache implements ICache {
     const hit = await this.client.get(materialKey(contentId))
     logger.debug(
       `getLessonMaterial >> contentId: ${contentId}, ${
-        hit ? `HIT: ${hit.substr(0, 30)}...` : 'MISS'
+        hit ? `HIT: ${hit.substring(0, 30)}...` : 'MISS'
       }`,
     )
     if (hit) {
@@ -120,7 +124,7 @@ export class RedisCache implements ICache {
 
   @RedisErrorRecovery()
   public async setLessonMaterial(material: Content): Promise<void> {
-    logger.debug(`setLessonMaterial >> contentId: ${material.contentId}`)
+    logger.warn(`setLessonMaterial >> contentId: ${material.contentId}`)
     await this.client.set(
       materialKey(material.contentId),
       JSON.stringify(material),
@@ -129,16 +133,17 @@ export class RedisCache implements ICache {
 
   @RedisErrorRecovery()
   public async setLessonPlanMaterials(materials: Content[]): Promise<void> {
-    const materialMap: [string, string][] = materials.map((material) => [
-      materialKey(material.contentId),
-      JSON.stringify(material),
-    ])
-    logger.debug(
-      `setLessonPlanMaterials >> materials count: ${materialMap.length}`,
+    logger.warn(
+      `setLessonPlanMaterials >> materials count: ${materials.length}`,
     )
-    if (materialMap.length > 0) {
-      await this.client.multi().mset(materialMap).exec()
-    }
+    await Promise.all(
+      materials.map(async (material) =>
+        this.client.set(
+          materialKey(material.contentId),
+          JSON.stringify(material),
+        ),
+      ),
+    )
   }
 
   @RedisErrorRecovery()
