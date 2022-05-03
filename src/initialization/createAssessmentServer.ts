@@ -122,6 +122,7 @@ function createExpressApp(): Express {
           ENABLE_PAGE_DOCS: config.ENABLE_PAGE_DOCS,
           USE_ATTENDANCE_API_FLAG: config.USE_ATTENDANCE_API_FLAG,
           USE_XAPI_SQL_DATABASE_FLAG: config.USE_XAPI_SQL_DATABASE_FLAG,
+          REDIS_MODE: config.REDIS_MODE,
         },
         featureFlags,
       })

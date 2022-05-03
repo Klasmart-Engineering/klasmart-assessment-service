@@ -119,7 +119,7 @@ export class Configuration {
     logger.info(`- DYNAMODB_TABLE_NAME: ${this.DYNAMODB_TABLE_NAME}`)
     logger.info(`- REDIS_HOST is set: ${Boolean(this.REDIS_HOST)}`)
     logger.info(`- REDIS_PORT is set: ${Boolean(this.REDIS_PORT)}`)
-    logger.info(`- REDIS_MODE is set: ${Boolean(this.REDIS_MODE)}`)
+    logger.info(`- REDIS_MODE is set: ${this.REDIS_MODE}`)
     logger.info('-----------------')
   }
 

@@ -43,35 +43,23 @@ export default class RoomResolver {
     logger.debug(`Room >> roomId: ${roomId}`)
     try {
       let room = await this.assessmentDB.findOne(Room, roomId, {})
-      // return room || null
 
-      // const attendances = await this.roomAttendanceProvider.getAttendances(
-      //   roomId,
-      // )
-      // const attendanceCount = attendances.length
-      // if (room) {
-      //   const cachedAttendanceCount = room.attendanceCount
-      //   if (attendanceCount === cachedAttendanceCount) {
-      //     return room
-      //   }
-      // }
       if (!room) {
         room = new Room(roomId)
         logger.warn(`Room >> roomId: ${roomId} >> created new Room`)
       }
-      // if (attendanceCount === 0) {
-      //   return room
-      // }
 
-      // merge existing scores calculated from xapi events
-      // and new scores calculated from the materials or lesson plan
-      const existingScores = await room.scores // xapi events derived scores (+ cached getMaterials scores)
+      /**
+       * merge existing scores calculated from xapi events (+ cached getMaterials scores)
+       * and new scores calculated from the materials or lesson plan
+       */
+      const existingScores = await room.scores
       const newScores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
         [], // attendances
         context.encodedAuthenticationToken,
-      ) // getMaterials derived scores
+      )
       logger.debug(
         `existingScores num: ${existingScores.length}, newScores num: ${newScores.length}`,
       )
@@ -89,7 +77,6 @@ export default class RoomResolver {
 
       if (existingScores.length !== allScores.length) {
         room.scores = Promise.resolve(allScores)
-        // room.attendanceCount = attendanceCount
         await this.assessmentDB.save(room)
       }
 
@@ -110,7 +97,6 @@ export default class RoomResolver {
     const scoresByUser: Map<string, UserScores> = new Map()
 
     const allScores = await room.scores
-    logger.debug(`Room room_id: ${room.roomId} >> allScores: ${allScores}`)
     for (const userContentScore of allScores) {
       const userScores = scoresByUser.get(userContentScore.studentId)
       if (userScores) {
