@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.9](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.9..v2.0.0-alpha.8) (2022-05-03)
+
+
+### Bug Fixes
+
+* set seen=true when creating new userContentScores from xapi events ([61d5490](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/61d5490feb3cc2041caf70c9e9ed47266f3cc586))
+
 ## [2.0.0-alpha.8](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.8..v2.0.0-alpha.7) (2022-05-02)
 
 
