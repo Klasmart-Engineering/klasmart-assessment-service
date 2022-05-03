@@ -187,7 +187,6 @@ export class UserContentScore extends Base {
   }
 
   public async addReadyAnswer(answer: Answer): Promise<void> {
-    this.seen = true
     let answers = await this.answers
     if (!answers) {
       answers = [answer]

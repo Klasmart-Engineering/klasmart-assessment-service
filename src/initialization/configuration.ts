@@ -60,7 +60,9 @@ export class Configuration {
   public readonly CMS_API_URL: string
   public readonly USER_SERVICE_ENDPOINT: string
   //caching
-  public readonly REDIS_URL?: string = process.env.REDIS_URL
+  public readonly REDIS_HOST?: string = process.env.REDIS_HOST
+  public readonly REDIS_PORT?: string = process.env.REDIS_PORT
+  public readonly REDIS_MODE?: string = process.env.REDIS_MODE
   // storage
   public readonly ASSESSMENT_DATABASE_URL: string
   public readonly ATTENDANCE_DATABASE_URL?: string =
@@ -115,7 +117,9 @@ export class Configuration {
     logger.info(`- USER_SERVICE_ENDPOINT: ${this.USER_SERVICE_ENDPOINT}`)
     logger.info('📘 Storage:')
     logger.info(`- DYNAMODB_TABLE_NAME: ${this.DYNAMODB_TABLE_NAME}`)
-    logger.info(`- REDIS_URL is set: ${Boolean(this.REDIS_URL)}`)
+    logger.info(`- REDIS_HOST is set: ${Boolean(this.REDIS_HOST)}`)
+    logger.info(`- REDIS_PORT is set: ${Boolean(this.REDIS_PORT)}`)
+    logger.info(`- REDIS_MODE is set: ${Boolean(this.REDIS_MODE)}`)
     logger.info('-----------------')
   }
 
