@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-alpha.10](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.10..v2.0.0-alpha.9) (2022-05-03)
+
+
+### Bug Fixes
+
+* vanilla redis MSET not supported in cluster mode, replace with SETs ([52b49ce](https://bitbucket.org/calmisland/kidsloop-assessment-service/commits/52b49ce3597bd79d5941d06d01b835715e25e86f))
+
 ## [2.0.0-alpha.9](https://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v2.0.0-alpha.9..v2.0.0-alpha.8) (2022-05-03)
 
 
