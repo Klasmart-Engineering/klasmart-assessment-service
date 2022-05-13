@@ -28,7 +28,6 @@ import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
 import { Container as MutableContainer } from 'typedi'
 import DiKeys from '../../src/initialization/diKeys'
-import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
 import { ApolloError } from 'apollo-server-core'
 
 /**
@@ -49,16 +48,12 @@ describe('teacherCommentResolver.setComment', () => {
     it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
       const comment = 'great job!'
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       // Act
       const fn = () =>
@@ -81,14 +76,10 @@ describe('teacherCommentResolver.setComment', () => {
     it(TestTitle.ScheduleNotFound.throwsError, async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
       const comment = 'great job!'
       const room = await new RoomBuilder().buildAndPersist()
       const endUser = new EndUserBuilder().authenticate().build()
       const student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider
@@ -125,12 +116,8 @@ describe('teacherCommentResolver.setComment', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
@@ -215,13 +202,9 @@ describe('teacherCommentResolver.setComment', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const room = await new RoomBuilder().withRoomId(roomId).buildAndPersist()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
@@ -306,20 +289,10 @@ describe('teacherCommentResolver.setComment', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
         someOtherStudent = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(
-            generateBatchFetchUserRepsonse([
-              endUser,
-              student,
-              someOtherStudent,
-            ]),
-          )
 
         const room = await new RoomBuilder()
           .withRoomId(roomId)
@@ -426,13 +399,9 @@ describe('teacherCommentResolver.setComment', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const room = await new RoomBuilder()
           .withRoomId(roomId)

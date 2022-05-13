@@ -32,7 +32,6 @@ import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { Container as MutableContainer } from 'typedi'
 import { throwExpression } from '../../src/helpers/throwExpression'
 import DiKeys from '../../src/initialization/diKeys'
-import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
 
 /**
  * - throws when not authenticated
@@ -51,14 +50,10 @@ describe('teacherScoreResolver.setScore', function () {
     it(TestTitle.Authentication.throwsError, async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const roomId = 'room1'
       const lessonMaterial = new LessonMaterialBuilder().build()
@@ -87,13 +82,9 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const roomId = 'room1'
         const providedRoomId = 'room2'
@@ -142,20 +133,10 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         const endUser = new EndUserBuilder().authenticate().build()
         const someOtherStudent = new UserBuilder().build()
         const student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(
-            generateBatchFetchUserRepsonse([
-              endUser,
-              student,
-              someOtherStudent,
-            ]),
-          )
 
         const roomId = 'room1'
         const lessonMaterial = new LessonMaterialBuilder().build()
@@ -204,13 +185,9 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const roomId = 'room1'
         const lessonMaterial = new LessonMaterialBuilder().build()
@@ -260,13 +237,9 @@ describe('teacherScoreResolver.setScore', function () {
       it('throws unknown UserContentScore error', async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         const endUser = new EndUserBuilder().authenticate().build()
         const student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const roomId = 'room1'
         const providedContentId = v4()
@@ -316,13 +289,9 @@ describe('teacherScoreResolver.setScore', function () {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { userApi } = createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const userContentScore = await new UserContentScoreBuilder()
@@ -442,13 +411,9 @@ describe('teacherScoreResolver.setScore', function () {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const userContentScore = await new UserContentScoreBuilder()
@@ -554,13 +519,9 @@ describe('teacherScoreResolver.setScore', function () {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       lessonMaterial = new LessonMaterialBuilder()
         .withSubcontentId(v4())

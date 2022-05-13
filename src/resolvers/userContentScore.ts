@@ -7,7 +7,6 @@ import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import getContent from '../helpers/getContent'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
-import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
 const logger = withLogger('UserContentScoreResolver')
@@ -15,10 +14,7 @@ const logger = withLogger('UserContentScoreResolver')
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
-  constructor(
-    private readonly userProvider: UserProvider,
-    private readonly cmsContentProvider: CmsContentProvider,
-  ) {}
+  constructor(private readonly cmsContentProvider: CmsContentProvider) {}
 
   @FieldResolver(() => User, { nullable: true })
   public user(@Root() source: UserContentScore): User {

@@ -18,7 +18,6 @@ import { TeacherComment } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
-import { UserProvider } from '../providers/userProvider'
 import { User } from '../web/user'
 
 const logger = withLogger('TeacherCommentResolver')
@@ -27,7 +26,6 @@ const logger = withLogger('TeacherCommentResolver')
 @Resolver(() => TeacherComment)
 export default class TeacherCommentResolver {
   constructor(
-    private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly scheduleProvider: CmsScheduleProvider,
@@ -78,14 +76,6 @@ export default class TeacherCommentResolver {
       )
       if (!schedule) {
         throw new UserInputError(ErrorMessage.scheduleNotFound(roomId))
-      }
-
-      const student = await this.userProvider.getUser(
-        studentId,
-        context.encodedAuthenticationToken,
-      )
-      if (!student) {
-        throw new UserInputError(ErrorMessage.unknownUser(studentId))
       }
 
       const teacherComment =

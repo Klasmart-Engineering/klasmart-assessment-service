@@ -20,7 +20,6 @@ import { Content } from '../db/cms/entities/content'
 import getContent from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { UserProvider } from '../providers/userProvider'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { User } from '../web/user'
 
@@ -30,7 +29,6 @@ const logger = withLogger('TeacherScoreResolver')
 @Resolver(() => TeacherScore)
 export default class TeacherScoreResolver {
   constructor(
-    private readonly userProvider: UserProvider,
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
     private readonly cmsContentProvider: CmsContentProvider,

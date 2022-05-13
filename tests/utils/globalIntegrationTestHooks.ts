@@ -13,7 +13,7 @@ import createAssessmentServer from '../../src/initialization/createAssessmentSer
 import { ICache, InMemoryCache } from '../../src/cache'
 import { IXApiRepository } from '../../src/db/xapi'
 import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
-import { AttendanceApi, UserApi } from '../../src/web'
+import { AttendanceApi } from '../../src/web'
 import DiKeys from '../../src/initialization/diKeys'
 
 export let connections: Connection[]
@@ -81,15 +81,12 @@ export const createSubstitutesToExpectedInjectableServices = () => {
     'RoomAttendanceProvider',
     new RoomAttendanceApiProvider(attendanceApi),
   )
-  const userApi = Substitute.for<UserApi>()
-  MutableContainer.set(UserApi, userApi)
   const xapiRepository = Substitute.for<IXApiRepository>()
   MutableContainer.set(DiKeys.IXApiRepository, xapiRepository)
   const cache: ICache = new InMemoryCache()
   MutableContainer.set(DiKeys.ICache, cache)
   return {
     attendanceApi,
-    userApi,
     xapiRepository,
     cache,
   }

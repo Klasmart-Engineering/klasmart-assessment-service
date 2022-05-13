@@ -59,7 +59,6 @@ import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
 import { User } from '../../src/web/user'
 import DiKeys from '../../src/initialization/diKeys'
-import { generateBatchFetchUserRepsonse } from '../utils/batchedResponses'
 
 /**
  * - scores 0 the first time
@@ -96,11 +95,7 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().dontAuthenticate().build()
-      userApi
-        .batchFetchUsers([endUser.userId], Arg.any())
-        .resolves(generateBatchFetchUserRepsonse([endUser]))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -119,11 +114,7 @@ describe('roomResolver.Room', () => {
       createSubstitutesToExpectedInjectableServices()
 
       const roomId = 'room1'
-      const { userApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().expiredToken().build()
-      userApi
-        .batchFetchUsers([endUser.userId], endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser]))
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -144,12 +135,9 @@ describe('roomResolver.Room', () => {
         MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
         const roomId = 'room1'
-        const { userApi, attendanceApi } =
+        const { attendanceApi } =
           createSubstitutesToExpectedInjectableServices()
         const endUser = new EndUserBuilder().authenticate().build()
-        userApi
-          .batchFetchUsers([endUser.userId], endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser]))
 
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
@@ -190,12 +178,8 @@ describe('roomResolver.Room', () => {
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
-      const { userApi, attendanceApi } =
-        createSubstitutesToExpectedInjectableServices()
+      const { attendanceApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
-      userApi
-        .batchFetchUsers([endUser.userId], endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser]))
 
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider
@@ -272,15 +256,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      // can't pass a list of multiple user_ids as mocked Arg because Substitute expects a primitive value
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -498,14 +478,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -745,14 +722,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -968,14 +942,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -1165,14 +1136,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -1586,14 +1554,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -1826,14 +1791,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -2178,14 +2140,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -2428,14 +2387,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -2625,15 +2581,12 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student1 = new UserBuilder().build()
       student2 = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student1, student2]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -2926,14 +2879,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -3111,14 +3061,11 @@ describe('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, userApi, xapiRepository } =
+      const { attendanceApi, xapiRepository } =
         createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-      userApi
-        .batchFetchUsers(Arg.any(), endUser.token)
-        .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
       const endUserAttendance = new AttendanceBuilder()
         .withroomId(roomId)
@@ -3305,14 +3252,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -3651,14 +3595,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -3932,14 +3873,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)
@@ -4191,14 +4129,11 @@ describe('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, userApi, xapiRepository } =
+        const { attendanceApi, xapiRepository } =
           createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-        userApi
-          .batchFetchUsers(Arg.any(), endUser.token)
-          .resolves(generateBatchFetchUserRepsonse([endUser, student]))
 
         const endUserAttendance = new AttendanceBuilder()
           .withroomId(roomId)

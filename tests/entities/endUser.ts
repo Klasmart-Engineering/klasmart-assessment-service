@@ -1,7 +1,6 @@
-import { UserClass } from '../../src/web'
+import { User } from '../../src/web/user/user'
 
-export default class EndUser extends UserClass {
-  public email?: string
+export default class EndUser extends User {
   private _token?: string
 
   get token(): string | undefined {

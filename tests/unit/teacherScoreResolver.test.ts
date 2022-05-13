@@ -2,7 +2,6 @@ import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { EntityManager } from 'typeorm'
 import { UserContentScore } from '../../src/db/assessments/entities'
-import { UserProvider } from '../../src/providers/userProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import TeacherScoreResolver from '../../src/resolvers/teacherScore'
 import {
@@ -22,7 +21,6 @@ describe('teacherScoreResolver.content', () => {
         .build()
       const teacherScore = new TeacherScoreBuilder(userContentScore).build()
 
-      const userProvider = Substitute.for<UserProvider>()
       const assessmentDB = Substitute.for<EntityManager>()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
 
@@ -39,11 +37,7 @@ describe('teacherScoreResolver.content', () => {
         .getLessonMaterial(content.contentId, undefined)
         .resolves(content)
 
-      const sut = new TeacherScoreResolver(
-        userProvider,
-        assessmentDB,
-        cmsContentProvider,
-      )
+      const sut = new TeacherScoreResolver(assessmentDB, cmsContentProvider)
 
       // Act
       const resultContent = await sut.content(teacherScore, {})
