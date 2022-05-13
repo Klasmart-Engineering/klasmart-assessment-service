@@ -177,7 +177,7 @@ describe('Event-driven Worker', () => {
     })
 
     it('processed events are found in the database', async () => {
-      let room = await entityManager.findOne(Room, 'room1', {})
+      const room = await entityManager.findOne(Room, 'room1', {})
       const userContentScores = (await room?.scores) || []
       const answers = (
         await Promise.all(
@@ -256,7 +256,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('Idempotently processes the duplicate events and finds a single answer record', async () => {
-        let room = await entityManager.findOne(Room, 'room1', {})
+        const room = await entityManager.findOne(Room, 'room1', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
@@ -432,7 +432,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('creates userContentScores given valid index triplet (roomId, userId, ActivityId)', async () => {
-        let room = await entityManager.findOne(Room, 'room1', {})
+        const room = await entityManager.findOne(Room, 'room1', {})
         const userContentScores = await room?.scores
 
         expect(room).to.not.be.undefined
@@ -441,7 +441,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('creates Answers only for events that have a valid Score or Response', async () => {
-        let room = await entityManager.findOne(Room, 'room1', {})
+        const room = await entityManager.findOne(Room, 'room1', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
@@ -536,16 +536,19 @@ describe('Event-driven Worker', () => {
         const results = await redisClient.xrevrange(streamName, '+', '-')
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(10)
-        expect(results.map((x) => x[0])).to.have.members(entryIds)
-        const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
+        expect(results.map((x: any[]) => x[0])).to.have.members(entryIds)
+        const parseJsonDataFn = () =>
+          results.map((x: string[][]) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
-        const parsedXapiEvents = parseJsonDataFn().map((x) => parseRawEvent(x))
+        const parsedXapiEvents = parseJsonDataFn().map(
+          (x: XApiRecord | undefined) => parseRawEvent(x),
+        )
         expect(parsedXapiEvents.length).to.be.equal(10)
-        expect(parsedXapiEvents.every((x) => x !== null)).to.be.true
+        expect(parsedXapiEvents.every((x: null) => x !== null)).to.be.true
       })
 
       it('processed events are found in the database', async () => {
-        let room = await entityManager.findOne(Room, '_test1_room0', {})
+        const room = await entityManager.findOne(Room, '_test1_room0', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
@@ -629,15 +632,18 @@ describe('Event-driven Worker', () => {
         const results = await redisClient.xrevrange(streamName, '+', '-')
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(80)
-        expect(results.map((x) => x[0])).to.have.members(entryIds)
-        const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
+        expect(results.map((x: any[]) => x[0])).to.have.members(entryIds)
+        const parseJsonDataFn = () =>
+          results.map((x: string[][]) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
-        const parsedXapiEvents = parseJsonDataFn().map((x) => parseRawEvent(x))
+        const parsedXapiEvents = parseJsonDataFn().map(
+          (x: XApiRecord | undefined) => parseRawEvent(x),
+        )
         expect(parsedXapiEvents.length).to.be.equal(80)
       })
 
       it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        let room0 = await entityManager.findOne(Room, '_test2_room0', {})
+        const room0 = await entityManager.findOne(Room, '_test2_room0', {})
         const userContentScores0 = (await room0?.scores) || []
         const answers0 = (
           await Promise.all(
@@ -652,7 +658,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('room1 and its UsercontentScores and Answers are found in the database', async () => {
-        let room1 = await entityManager.findOne(Room, '_test2_room1', {})
+        const room1 = await entityManager.findOne(Room, '_test2_room1', {})
         const userContentScores1 = (await room1?.scores) || []
         const answers1 = (
           await Promise.all(
@@ -755,14 +761,14 @@ describe('Event-driven Worker', () => {
         const results = await redisClient.xrevrange(streamName, '+', '-')
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(10)
-        expect(results.map((x) => x[0])).to.have.members([
+        expect(results.map((x: any[]) => x[0])).to.have.members([
           ...entryIdsBatch1,
           ...entryIdsBatch2,
         ])
       })
 
       it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        let room = await entityManager.findOne(Room, '_test3_room0', {})
+        const room = await entityManager.findOne(Room, '_test3_room0', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
@@ -873,7 +879,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        let room = await entityManager.findOne(Room, '_test4_room0', {})
+        const room = await entityManager.findOne(Room, '_test4_room0', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
@@ -888,7 +894,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('room1 and its UsercontentScores and Answers are found in the database', async () => {
-        let room = await entityManager.findOne(Room, '_test4_room1', {})
+        const room = await entityManager.findOne(Room, '_test4_room1', {})
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(

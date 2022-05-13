@@ -74,10 +74,10 @@ describe('xApi SQL database interface', () => {
       const studentTwoId = v4()
       const lessonMaterialH5pId = v4()
 
-      let roomOneStart = new Date('01 Jan 2022 13:00:00 UTC')
-      let roomOneEnd = new Date('01 Jan 2022 14:00:00 UTC')
-      let roomTwoStart = new Date('01 Jan 2022 15:00:00 UTC')
-      let roomTwoEnd = new Date('01 Jan 2022 16:00:00 UTC')
+      const roomOneStart = new Date('01 Jan 2022 13:00:00 UTC')
+      const roomOneEnd = new Date('01 Jan 2022 14:00:00 UTC')
+      const roomTwoStart = new Date('01 Jan 2022 15:00:00 UTC')
+      const roomTwoEnd = new Date('01 Jan 2022 16:00:00 UTC')
 
       before(async () => {
         // Arrange
@@ -293,10 +293,10 @@ describe('xApi SQL database interface', () => {
     const studentTwoId = v4()
     const lessonMaterialH5pId = v4()
 
-    let roomOneStart = new Date('01 Jan 2022 13:00:00 UTC')
-    let roomOneEnd = new Date('01 Jan 2022 14:00:00 UTC')
-    let roomTwoStart = new Date('01 Jan 2022 12:00:00 UTC')
-    let roomTwoEnd = new Date('01 Jan 2022 16:00:00 UTC')
+    const roomOneStart = new Date('01 Jan 2022 13:00:00 UTC')
+    const roomOneEnd = new Date('01 Jan 2022 14:00:00 UTC')
+    const roomTwoStart = new Date('01 Jan 2022 12:00:00 UTC')
+    const roomTwoEnd = new Date('01 Jan 2022 16:00:00 UTC')
 
     before(async () => {
       // Arrange

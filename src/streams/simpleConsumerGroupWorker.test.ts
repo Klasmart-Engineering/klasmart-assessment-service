@@ -19,7 +19,7 @@ const produce = async (
   xClient: RedisStreams,
   stream: string,
   xapiEvents: any[],
-  delayMs: number = 100,
+  delayMs = 100,
 ) => {
   for (const xapiEvent of xapiEvents) {
     await delay(delayMs)

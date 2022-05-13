@@ -71,7 +71,7 @@ export class RedisStreams {
   ): Promise<StreamMessageReply[] | null> {
     logger.debug(`read >> stream: ${stream}`)
     const { count, block, streamKey } = options
-    let entries = await (count
+    const entries = await (count
       ? this.client.xread(
           'COUNT',
           count,
@@ -92,8 +92,7 @@ export class RedisStreams {
       return null
     }
     if (entries.length > 0 && entries[0].length > 1) {
-      // @ts-ignore
-      const streamEntries = entries[0][1].map((val) => {
+      const streamEntries = entries[0][1].map((val: any) => {
         const entryId = val[0]
         const message = val[1]
 
@@ -124,13 +123,11 @@ export class RedisStreams {
   // XINFO STREAM mystream
   @RedisErrorRecovery()
   public async infoStream(stream: string): Promise<any[]> {
-    // @ts-ignore
     return this.client.xinfo('STREAM', stream)
   }
 
   @RedisErrorRecovery()
   public async infoGroups(stream: string): Promise<any[]> {
-    // @ts-ignore
     return this.client.xinfo('GROUPS', stream)
   }
 
@@ -193,7 +190,6 @@ export class RedisStreams {
       'GROUP',
       groupName,
       consumerName,
-      // @ts-ignore
       ...args,
     )) as ReadStreamReply | null
     if (!entries) {

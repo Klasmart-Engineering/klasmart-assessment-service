@@ -46,6 +46,7 @@ export const simpleConsumerGroupWorker = async (
     delays: 0,
   }
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await simpleConsumerGroupWorkerLoop(
       xClient,
@@ -139,8 +140,9 @@ export const simpleConsumerGroupWorkerLoop = async (
 
   // retry mechanism
   let attempt = 1
-  let MAX_ATTEMPS = 3
-  let EXP_DELAY = 1000 // milliseconds
+  const MAX_ATTEMPS = 3
+  const EXP_DELAY = 1000 // milliseconds
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await calculator.process(events, xClient, stream, errorStream, group)
