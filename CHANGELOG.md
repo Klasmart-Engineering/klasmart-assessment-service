@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.21.3](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.3..v1.21.2) (2022-05-16)
+
+
+### Bug Fixes
+
+* **DAS-352:** the AdvancedBlanks activity is scored differently ([7c52f8a](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/7c52f8a76c4215a107f2e636e520401e65cc6316))
+
 ### [1.21.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.2..v1.21.1) (2022-05-16)
 
 
