@@ -1,10 +1,10 @@
 import { expect } from 'chai'
 import { v4 } from 'uuid'
-import { MultipleHotspotUserContentScore } from '../../src/db/assessments/entities/multipleHotspotUserContentScore'
+import { ScoreAggregatorUserContentScore } from '../../src/db/assessments/entities/scoreAggregatorUserContentScore'
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import { AnswerBuilder } from '../builders'
 
-describe('multipleHotspotUserContentScore', () => {
+describe('ScoreAggregatorUserContentScore', () => {
   context('1 answer with undefined score', () => {
     it('updates the score of the existing answer to be 1', async () => {
       const roomId = v4()
@@ -17,7 +17,7 @@ describe('multipleHotspotUserContentScore', () => {
         verb: 'answered',
         score: { min: 0, max: 5, raw: 1 },
       }
-      const sut = new MultipleHotspotUserContentScore(
+      const sut = new ScoreAggregatorUserContentScore(
         roomId,
         studentId,
         contentKey,
@@ -47,7 +47,7 @@ describe('multipleHotspotUserContentScore', () => {
         verb: 'interacted',
         score: undefined,
       }
-      const sut = new MultipleHotspotUserContentScore(
+      const sut = new ScoreAggregatorUserContentScore(
         roomId,
         studentId,
         contentKey,

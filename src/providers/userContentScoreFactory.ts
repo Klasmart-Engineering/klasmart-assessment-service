@@ -1,6 +1,6 @@
 import { Service } from 'typedi'
 import { UserContentScore } from '../db/assessments/entities'
-import { MultipleHotspotUserContentScore } from '../db/assessments/entities/multipleHotspotUserContentScore'
+import { ScoreAggregatorUserContentScore } from '../db/assessments/entities/scoreAggregatorUserContentScore'
 
 @Service()
 export class UserContentScoreFactory {
@@ -13,8 +13,9 @@ export class UserContentScoreFactory {
     contentParentId?: string,
   ): UserContentScore {
     switch (contentType) {
+      case 'AdvancedBlanks':
       case 'ImageMultipleHotspotQuestion': {
-        const result = new MultipleHotspotUserContentScore(
+        const result = new ScoreAggregatorUserContentScore(
           roomId,
           studentId,
           contentKey,

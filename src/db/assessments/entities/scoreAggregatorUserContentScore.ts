@@ -2,7 +2,14 @@ import { Answer } from './answer'
 import { UserContentScore } from './userContentScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 
-export class MultipleHotspotUserContentScore extends UserContentScore {
+/**
+ * This class makes up for activities that are scored differently than
+ * all the others. These activities report "score so far" after each step
+ * in the activity. In other words, there's no submit button. We use
+ * the "attempted" verb as a demarcation between actual attempts. So
+ * instead of always adding new answers, we update the last one.
+ */
+export class ScoreAggregatorUserContentScore extends UserContentScore {
   private newAttemptSignalReceived = false
 
   public async applyEvent(xapiEvent: ParsedXapiEvent): Promise<void> {
@@ -11,6 +18,7 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
       return
     }
     const score = xapiEvent.score?.raw
+    const reponse = xapiEvent.response
     if (score == null) {
       return
     }
@@ -25,7 +33,7 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
       this.newAttemptSignalReceived = false
       await super.applyEvent(xapiEvent)
     } else {
-      this.updateAnswer(score, answers[answers.length - 1])
+      this.updateAnswer(score, reponse, answers[answers.length - 1])
     }
   }
 
@@ -33,7 +41,12 @@ export class MultipleHotspotUserContentScore extends UserContentScore {
     this.newAttemptSignalReceived = true
   }
 
-  private updateAnswer(score: number, answer: Answer) {
+  private updateAnswer(
+    score: number,
+    response: string | undefined,
+    answer: Answer,
+  ) {
     answer.score = score
+    answer.answer = response
   }
 }
