@@ -70,8 +70,8 @@ const defaultOptions = {
   minEvents: 0,
   maxDelays: 0,
   retryWhenFailed: false,
-  count: 1000,
-  block: 10000,
+  count: 1000, // Maximum number of items to retrieve from the stream
+  block: 10000, // Maximum timeout awaiting a new value in the stream
 }
 
 export const simpleConsumerGroupWorkerLoop = async (

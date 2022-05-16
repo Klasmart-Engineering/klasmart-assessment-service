@@ -111,6 +111,19 @@ docker exec -it kl_redis sh
 redis-cli
 ```
 
+Create a Redis cluster:
+
+```sh
+docker run -it -d \
+  --name redis_cluster \
+  -e "IP=0.0.0.0" \
+  -e "MASTERS=3" \
+  -e "SLAVES_PER_MASTER=1" \
+  -e "INITIAL_PORT=7000" \
+  -p 7000-7005:7000-7005 \
+  grokzen/redis-cluster:latest
+```
+
 ### Running
 
 Ensure [AWS credentials are configured](https://aws.amazon.com/blogs/security/aws-single-sign-on-now-enables-command-line-interface-access-for-aws-accounts-using-corporate-credentials/) (for access to DynamoDB)

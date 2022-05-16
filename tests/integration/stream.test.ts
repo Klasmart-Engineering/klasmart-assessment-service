@@ -460,6 +460,8 @@ describe('Event-driven Worker', () => {
           contentKey: 'h5p1',
         })
       })
+
+      // TODO: check if invalid events were put into error stream
     },
   )
 

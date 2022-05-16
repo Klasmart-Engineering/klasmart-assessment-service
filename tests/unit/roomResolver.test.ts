@@ -11,119 +11,58 @@ import {
   UserContentScoreBuilder,
 } from '../builders'
 import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
+import { Attendance } from '../../src/web/attendance'
 
-describe('roomResolver', () => {
+describe.only('roomResolver', () => {
   describe('Room', () => {
-    context(
-      'queried room exists in database; room.attendanceCount is 1; ' +
-        'room.attendanceCount matches actual attendance count',
-      () => {
-        it('returns room with calculated scores', async () => {
-          // Arrange
-          const roomId = 'room1'
-          const teacherId = 'teacher1'
-          const authenticationToken = undefined
-          const scores = [
-            new UserContentScoreBuilder().withroomId(roomId).build(),
-          ]
-          const attendance = new AttendanceBuilder().build()
-          const attendances = [attendance]
-          const room: Room = new Room(roomId)
-          room.scores = Promise.resolve(scores)
-          room.attendanceCount = 1
-          room.teacherComments = Promise.resolve([])
+    context('queried room exists in database', () => {
+      it('returns room with calculated scores', async () => {
+        // Arrange
+        const roomId = 'room1'
+        const teacherId = 'teacher1'
+        const authenticationToken = undefined
+        const scores = [
+          new UserContentScoreBuilder().withroomId(roomId).build(),
+        ]
+        const attendances: Attendance[] = []
+        const room: Room = new Room(roomId)
+        room.scores = Promise.resolve(scores)
+        // room.attendanceCount = 1
+        room.teacherComments = Promise.resolve([])
 
-          const assessmentDB = Substitute.for<EntityManager>()
-          const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-          const roomAttendanceProvider =
-            Substitute.for<RoomAttendanceProvider>()
+        const assessmentDB = Substitute.for<EntityManager>()
+        const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
+        const roomAttendanceProvider = Substitute.for<RoomAttendanceProvider>()
 
-          assessmentDB.findOne(Room, roomId, {}).resolves(room)
-          roomScoresCalculator
-            .calculate(roomId, teacherId, attendances, authenticationToken)
-            .resolves(scores)
-          roomAttendanceProvider.getAttendances(roomId).resolves(attendances)
+        assessmentDB.findOne(Room, roomId, {}).resolves(room)
+        roomScoresCalculator
+          .calculate(roomId, teacherId, attendances, authenticationToken)
+          .resolves(scores)
+        // roomAttendanceProvider.getAttendances(roomId).resolves(attendances)
 
-          const sut = new RoomResolver(
-            assessmentDB,
-            roomScoresCalculator,
-            roomAttendanceProvider,
-          )
+        const sut = new RoomResolver(
+          assessmentDB,
+          roomScoresCalculator,
+          roomAttendanceProvider,
+        )
 
-          // Act
-          const resultRoom = await sut.Room(roomId, teacherId, {})
+        // Act
+        const resultRoom = await sut.Room(roomId, teacherId, {})
 
-          // Assert
-          assessmentDB.received(1).findOne(Room, roomId, {})
-          roomScoresCalculator
-            .received(0)
-            .calculate(roomId, teacherId, attendances)
-          assessmentDB.received(0).save(room)
-          const resultScores = await resultRoom.scores
+        // Assert
+        assessmentDB.received(1).findOne(Room, roomId, {})
+        roomScoresCalculator
+          .received(1)
+          .calculate(roomId, teacherId, attendances, undefined)
+        assessmentDB.received(0).save(room)
+        const resultScores = await resultRoom.scores
 
-          expect(resultScores).to.have.lengthOf(1)
-          expect(resultRoom.attendanceCount).to.equal(1)
-          expect(resultRoom.roomId).to.equal(roomId)
-        })
-      },
-    )
+        expect(resultScores).to.have.lengthOf(1)
+        expect(resultRoom.roomId).to.equal(roomId)
+      })
+    })
 
-    context(
-      'queried room exists in database; room.attendanceCount is 0; ' +
-        'room.attendanceCount does not match actual attendance count',
-      () => {
-        it('returns room with calculated scores', async () => {
-          // Arrange
-          const roomId = 'room1'
-          const teacherId = 'teacher1'
-          const authenticationToken = undefined
-          const scores = [
-            new UserContentScoreBuilder().withroomId(roomId).build(),
-          ]
-          const attendance = new AttendanceBuilder().build()
-          const attendances = [attendance]
-          const room: Room = new Room(roomId)
-          room.scores = Promise.resolve(scores)
-          room.attendanceCount = 0
-          room.teacherComments = Promise.resolve([])
-
-          const assessmentDB = Substitute.for<EntityManager>()
-          const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-          const roomAttendanceProvider =
-            Substitute.for<RoomAttendanceProvider>()
-
-          assessmentDB.findOne(Room, roomId, {}).resolves(room)
-          roomScoresCalculator
-            .calculate(roomId, teacherId, attendances, authenticationToken)
-            .resolves(scores)
-          roomAttendanceProvider.getAttendances(roomId).resolves(attendances)
-
-          const sut = new RoomResolver(
-            assessmentDB,
-            roomScoresCalculator,
-            roomAttendanceProvider,
-          )
-
-          // Act
-          const resultRoom = await sut.Room(roomId, teacherId, {})
-
-          // Assert
-          assessmentDB.received(1).findOne(Room, roomId, {})
-          roomScoresCalculator
-            .received(1)
-            .calculate(roomId, teacherId, attendances, authenticationToken)
-          assessmentDB.received(1).save(room)
-          const resultScores = await resultRoom.scores
-
-          expect(resultScores).to.have.lengthOf(1)
-          expect(resultRoom.attendanceCount).to.equal(1)
-          expect(resultRoom.roomId).to.equal(roomId)
-          expect(resultRoom.attendanceCount).to.equal(1)
-        })
-      },
-    )
-
-    context('queried room does not exist in database', () => {
+    context.only('queried room does not exist in database', () => {
       it('returns room with calculated scores', async () => {
         // Arrange
         const roomId = 'room1'
@@ -132,8 +71,7 @@ describe('roomResolver', () => {
         const contentId = 'content1'
         const authenticationToken = undefined
         const scores = [new UserContentScore(roomId, studentId, contentId)]
-        const attendance = new AttendanceBuilder().build()
-        const attendances = [attendance]
+        const attendances: Attendance[] = []
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
@@ -143,7 +81,6 @@ describe('roomResolver', () => {
         roomScoresCalculator
           .calculate(roomId, teacherId, attendances, authenticationToken)
           .resolves(scores)
-        roomAttendanceProvider.getAttendances(roomId).resolves(attendances)
 
         const resolver = new RoomResolver(
           assessmentDB,

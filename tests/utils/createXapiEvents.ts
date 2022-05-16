@@ -10,6 +10,7 @@ type CreateXapiEventsOptions = {
   withInvalidProbability?: number
 }
 
+// generates xapi events as cartesian product of combinations
 export const createXapiEvents = ({
   rooms: numRooms = 2,
   users: numUsers = 2,
