@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.21.2](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.2..v1.21.1) (2022-05-16)
+
+
+### Refactor
+
+* **DAS-360:** remove unused user service code ([53beabf](http://bitbucket.org/calmisland/kidsloop-assessment-service/commits/53beabfed68dfc802526943b38b882717972c2f1))
+
 ### [1.21.1](http://bitbucket.org/calmisland/kidsloop-assessment-service/compare/v1.21.1..v1.21.0) (2022-04-26)
 
 
