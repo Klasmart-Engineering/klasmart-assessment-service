@@ -1,5 +1,5 @@
 import { XApiRecord } from '../db/xapi'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { Answer, Room, UserContentScore } from '../db/assessments/entities'

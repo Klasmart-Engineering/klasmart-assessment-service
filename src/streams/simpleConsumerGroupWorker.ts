@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { XApiRecord } from '../db/xapi'
 import { delay } from '../helpers/delay'
