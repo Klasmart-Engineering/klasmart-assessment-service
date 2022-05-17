@@ -1,5 +1,5 @@
 import { MiddlewareFn } from 'type-graphql'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 const logger = withLogger('benchmarkMiddleware')
 

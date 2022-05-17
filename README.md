@@ -87,7 +87,7 @@ Other optional environment variables include:
 Create Postgres container
 
 ```
-docker run -d --name=assessments-postgres -p 5442:5432 -e POSTGRES_PASSWORD=assessments -e POSTGRES_DB=test_assessment_db postgres
+docker run -d --name=assessments-postgres -p 5432:5432 -e POSTGRES_PASSWORD=assessments -e POSTGRES_DB=test_assessment_db postgres
 ```
 
 Create assessment database

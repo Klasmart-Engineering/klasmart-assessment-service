@@ -1,0 +1,63 @@
+name: Run Tests (job)
+
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: true
+
+jobs:
+  test:
+    name: ⚡ Run tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: test_assessment_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: assessments
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+      localstack:
+        image: localstack/localstack
+        env:
+          SERVICES: dynamodb
+          AWS_DEFAULT_REGION: ap-northeast-2
+        ports:
+          - 4566:4566
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Find node_modules cache
+        id: cache-node_modules
+        uses: actions/cache@v3
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Unit & integration tests
+        run: npm run test:coverage
+      - name: Upload unit & integration test coverage to Codecov
+        if: github.ref == 'refs/heads/main'
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          files: ./coverage_unit/lcov.info

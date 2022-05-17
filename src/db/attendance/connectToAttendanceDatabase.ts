@@ -1,6 +1,6 @@
 import path from 'path'
 import { Connection, ConnectionOptions, createConnection } from 'typeorm'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 const logger = withLogger('connectToAttendanceDatabase')
 

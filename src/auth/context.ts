@@ -1,5 +1,5 @@
 import { createParamDecorator } from 'type-graphql'
-import { KidsloopAuthenticationToken } from 'kidsloop-token-validation'
+import { KidsloopAuthenticationToken } from '@kl-engineering/kidsloop-token-validation'
 
 export interface Context {
   authenticationToken?: KidsloopAuthenticationToken

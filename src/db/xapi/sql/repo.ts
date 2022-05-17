@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { XApiRecord } from '..'
 import { IXApiRepository } from '../repo'
 import {

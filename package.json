@@ -83,6 +83,8 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.43.0",
     "@aws-sdk/util-dynamodb": "^3.43.0",
+    "@kl-engineering/kidsloop-nodejs-logger": "^0.4.0",
+    "@kl-engineering/kidsloop-token-validation": "^1.6.1",
     "@newrelic/apollo-server-plugin": "^1.0.2",
     "apollo-server-express": "^3.5.0",
     "class-validator": "^0.13.1",
@@ -96,8 +98,6 @@
     "jsonwebtoken": "^8.5.1",
     "jstransformer-highlight": "^2.0.0",
     "jstransformer-markdown-it": "^2.1.0",
-    "kidsloop-nodejs-logger": "bitbucket:calmisland/kidsloop-nodejs-logger#v0.2.14",
-    "kidsloop-token-validation": "bitbucket:calmisland/kidsloop-token-validation",
     "mysql2": "^2.2.5",
     "newrelic": "^8.4.0",
     "node-fetch": "^2.6.6",

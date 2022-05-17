@@ -2,7 +2,7 @@ import { Container as MutableContainer } from 'typedi'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import {
   connectToRedisCache,

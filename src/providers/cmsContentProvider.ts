@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Inject, Service } from 'typedi'
 import { ICache } from '../cache/interface'
 import { Content } from '../db/cms/entities/content'

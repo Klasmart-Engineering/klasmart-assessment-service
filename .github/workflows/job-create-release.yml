@@ -1,0 +1,101 @@
+name: Create Release (job)
+
+on:
+  workflow_call:
+    inputs:
+      prerelease:
+        required: true
+        type: string
+      release_as:
+        # https://github.com/conventional-changelog/standard-version#release-as-a-target-type-imperatively-npm-version-like
+        required: true
+        type: string
+        description: auto, major, minor, or patch
+      ecr_repository:
+        required: true
+        type: string
+    secrets:
+      ECR_AWS_ACCESS_KEY_ID:
+        required: true
+      ECR_AWS_SECRET_ACCESS_KEY:
+        required: true
+
+env:
+  ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION_TAG: ${{ steps.version-bump.outputs.VERSION_TAG }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Find node_modules cache
+        id: cache-node_modules
+        uses: actions/cache@v3
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Set up git config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+
+      - name: Build
+        run: |
+          npm run build
+
+      - name: Version bump
+        run: npm run release -- 
+          ${{ inputs.prerelease != '' && format('--prerelease {0}', inputs.prerelease) || '' }}
+          ${{ inputs.release_as != 'auto' && format('--release-as {0}', inputs.release_as) || '' }}
+
+      - name: Docker build
+        run: |
+          npm prune --production
+          docker build -t $ECR_REPOSITORY .
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: |
+          export VERSION_TAG=$(git describe --tags --abbrev=0)
+          echo "::set-output name=VERSION_TAG::$VERSION_TAG"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Tag and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VERSION_TAG: ${{ steps.get-latest-tag.outputs.VERSION_TAG }}
+        run: |
+          export BRANCH_TAG=$(echo "${GITHUB_REF_NAME}" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
+          export COMMIT_TAG=${GITHUB_SHA::7}
+          docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION_TAG
+          docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:alpha
+          docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$BRANCH_TAG-$COMMIT_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:alpha
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BRANCH_TAG-$COMMIT_TAG
+
+      - name: Commit changes
+        env:
+          VERSION_TAG: ${{ steps.get-latest-tag.outputs.VERSION_TAG }}
+        run: |
+          git push origin $VERSION_TAG
+          git push origin main

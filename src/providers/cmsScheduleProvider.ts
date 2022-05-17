@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import { Schedule } from '../db/cms/entities/schedule'
 import { throwExpression } from '../helpers/throwExpression'

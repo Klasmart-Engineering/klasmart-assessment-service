@@ -11,7 +11,7 @@ import {
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Context, UserID } from '../auth/context'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'

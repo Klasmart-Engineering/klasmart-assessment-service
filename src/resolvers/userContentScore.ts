@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Ctx, FieldResolver, Resolver, Root } from 'type-graphql'
 import { Service } from 'typedi'
 

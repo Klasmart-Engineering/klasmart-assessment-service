@@ -1,5 +1,5 @@
 import { Inject, Service } from 'typedi'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import ScheduleResponse, {
   ScheduleDto,
   StudentListResponse,

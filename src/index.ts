@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import 'newrelic'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import createAssessmentServer from './initialization/createAssessmentServer'
 import registerAndConnectToDataSources from './initialization/registerAndConnectToDataSources'

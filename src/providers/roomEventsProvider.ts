@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Inject, Service } from 'typedi'
 
 import { XApiRecord } from '../db/xapi'

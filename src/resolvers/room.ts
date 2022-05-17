@@ -10,7 +10,7 @@ import {
 import { Inject, Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'

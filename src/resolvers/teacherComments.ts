@@ -11,7 +11,7 @@ import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { UserInputError } from 'apollo-server-express'
 import { InjectManager } from 'typeorm-typedi-extensions'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Context, UserID } from '../auth/context'
 import { TeacherComment } from '../db/assessments/entities'

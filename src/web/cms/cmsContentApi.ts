@@ -1,5 +1,5 @@
 import { Inject, Service } from 'typedi'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import ContentResponse, { ContentDto } from './contentResponse'
 import { FetchWrapper } from '../fetchWrapper'
 import DiKeys from '../../initialization/diKeys'

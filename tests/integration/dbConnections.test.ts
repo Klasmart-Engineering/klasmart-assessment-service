@@ -19,7 +19,7 @@ import {
 
 describe('connectToDatabases', () => {
   const host = process.env.LOCALHOST || 'localhost'
-  const postgresDbPort = Number(process.env.TEST_POSTGRES_PORT) || 5442
+  const postgresDbPort = Number(process.env.TEST_POSTGRES_PORT) || 5432
   const asessmentDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_assessment_db`
   const attendanceDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_attendance_db`
   const xapiSqlDbUrl = `postgres://postgres:assessments@${host}:${postgresDbPort}/test_xapi_db`

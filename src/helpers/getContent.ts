@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Content } from '../db/cms/entities/content'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 import ContentKey from './contentKey'

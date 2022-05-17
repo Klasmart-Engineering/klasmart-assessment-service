@@ -1,6 +1,6 @@
 import { Resolver, FieldResolver, Root, Ctx } from 'type-graphql'
 import { Service } from 'typedi'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Content } from '../db/cms/entities'
 import getContent from '../helpers/getContent'

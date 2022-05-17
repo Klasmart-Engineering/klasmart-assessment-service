@@ -1,6 +1,6 @@
 import { gql, request } from 'graphql-request'
 import { Service } from 'typedi'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { getConfig, Configuration } from '../../initialization/configuration'
 
 const logger = withLogger('AttendanceApi')

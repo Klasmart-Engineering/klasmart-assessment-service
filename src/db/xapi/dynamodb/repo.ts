@@ -7,7 +7,7 @@ import {
   DescribeTableCommandOutput,
 } from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { XApiRecord } from '../interfaces'
 import { IXApiRepository } from '../repo'
 
