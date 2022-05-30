@@ -5,7 +5,6 @@ import { LessonMaterialBuilder, UserContentScoreBuilder } from '../builders'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { RoomScoresTemplateProvider } from '../../src/providers/roomScoresTemplateProvider'
 import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
-import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
 import { StudentContentsResult } from '../../src/providers/cmsContentProvider'
@@ -26,7 +25,6 @@ describe('roomScoresTemplateProvider', () => {
           // Arrange
           const roomId = 'room1'
           const userId = 'user1'
-          const teacherId = 'teacher1'
           const h5pRoot = 'h5pRoot'
           const h5pSub1 = 'h5pSub1' // child of h5pRoot
           const h5pSub2 = 'h5pSub2' // child of h5pSub1
@@ -58,14 +56,6 @@ describe('roomScoresTemplateProvider', () => {
               { studentId: userId, contentIds: [material.contentId] },
             ],
           }
-          const xapiEvent: ParsedXapiEvent = {
-            h5pId: h5pRoot,
-            h5pSubId: h5pSub2,
-            h5pParentId: h5pSub1,
-            timestamp: 123,
-            userId: userId,
-          }
-          const xapiEvents = [xapiEvent]
 
           const userContentScoreRepository =
             Substitute.for<Repository<UserContentScore>>()
@@ -88,12 +78,7 @@ describe('roomScoresTemplateProvider', () => {
           )
 
           // Act
-          const result = await sut.getTemplate(
-            roomId,
-            teacherId,
-            materials,
-            xapiEvents,
-          )
+          const result = await sut.getTemplate(roomId, materials)
           expect(result).to.have.lengthOf(3)
         })
       },

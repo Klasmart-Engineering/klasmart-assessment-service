@@ -11,9 +11,6 @@ import {
 } from './testConnection'
 import createAssessmentServer from '../../src/initialization/createAssessmentServer'
 import { ICache, InMemoryCache } from '../../src/cache'
-import { IXApiRepository } from '../../src/db/xapi'
-import { RoomAttendanceApiProvider } from '../../src/providers/roomAttendanceProvider'
-import { AttendanceApi } from '../../src/web'
 import DiKeys from '../../src/initialization/diKeys'
 
 export let connections: Connection[]
@@ -75,19 +72,9 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
 }
 
 export const createSubstitutesToExpectedInjectableServices = () => {
-  const attendanceApi = Substitute.for<AttendanceApi>()
-  MutableContainer.set(AttendanceApi, attendanceApi)
-  MutableContainer.set(
-    'RoomAttendanceProvider',
-    new RoomAttendanceApiProvider(attendanceApi),
-  )
-  const xapiRepository = Substitute.for<IXApiRepository>()
-  MutableContainer.set(DiKeys.IXApiRepository, xapiRepository)
   const cache: ICache = new InMemoryCache()
   MutableContainer.set(DiKeys.ICache, cache)
   return {
-    attendanceApi,
-    xapiRepository,
     cache,
   }
 }

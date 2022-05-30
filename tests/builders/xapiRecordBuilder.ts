@@ -1,7 +1,4 @@
-import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
-import { XApiRecordSql } from '../../src/db/xapi/sql/entities'
-import { XAPI_CONNECTION_NAME } from '../../src/db/xapi/sql/connectToXApiDatabase'
 import { XApiRecord } from '../../src/db/xapi'
 
 export default class XApiRecordBuilder {

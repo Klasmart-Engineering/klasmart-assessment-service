@@ -5,13 +5,7 @@ import { EntityManager } from 'typeorm'
 import { Room } from '../../src/db/assessments/entities/room'
 import { UserContentScore } from '../../src/db/assessments/entities/userContentScore'
 import { RoomScoresCalculator } from '../../src/providers/roomScoresCalculator'
-import {
-  AttendanceBuilder,
-  TeacherCommentBuilder,
-  UserContentScoreBuilder,
-} from '../builders'
-import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
-import { Attendance } from '../../src/web/attendance'
+import { TeacherCommentBuilder, UserContentScoreBuilder } from '../builders'
 
 describe('roomResolver', () => {
   describe('Room', () => {
@@ -24,36 +18,26 @@ describe('roomResolver', () => {
         const scores = [
           new UserContentScoreBuilder().withroomId(roomId).build(),
         ]
-        const attendances: Attendance[] = []
         const room: Room = new Room(roomId)
         room.scores = Promise.resolve(scores)
-        // room.attendanceCount = 1
         room.teacherComments = Promise.resolve([])
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-        const roomAttendanceProvider = Substitute.for<RoomAttendanceProvider>()
 
         assessmentDB.findOne(Room, roomId, {}).resolves(room)
         roomScoresCalculator
-          .calculate(roomId, teacherId, attendances, authenticationToken)
+          .calculate(roomId, authenticationToken)
           .resolves(scores)
-        // roomAttendanceProvider.getAttendances(roomId).resolves(attendances)
 
-        const sut = new RoomResolver(
-          assessmentDB,
-          roomScoresCalculator,
-          roomAttendanceProvider,
-        )
+        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
-        const resultRoom = await sut.Room(roomId, teacherId, {})
+        const resultRoom = await sut.Room(roomId, {})
 
         // Assert
         assessmentDB.received(1).findOne(Room, roomId, {})
-        roomScoresCalculator
-          .received(1)
-          .calculate(roomId, teacherId, attendances, undefined)
+        roomScoresCalculator.received(1).calculate(roomId, undefined)
         assessmentDB.received(0).save(room)
         const resultScores = await resultRoom.scores
 
@@ -71,31 +55,23 @@ describe('roomResolver', () => {
         const contentId = 'content1'
         const authenticationToken = undefined
         const scores = [new UserContentScore(roomId, studentId, contentId)]
-        const attendances: Attendance[] = []
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-        const roomAttendanceProvider = Substitute.for<RoomAttendanceProvider>()
 
         assessmentDB.findOne(Room, roomId, {}).resolves(undefined)
         roomScoresCalculator
-          .calculate(roomId, teacherId, attendances, authenticationToken)
+          .calculate(roomId, authenticationToken)
           .resolves(scores)
 
-        const resolver = new RoomResolver(
-          assessmentDB,
-          roomScoresCalculator,
-          roomAttendanceProvider,
-        )
+        const resolver = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
-        const resultRoom = await resolver.Room(roomId, teacherId, {})
+        const resultRoom = await resolver.Room(roomId, {})
 
         // Assert
         assessmentDB.received(1).findOne(Room, roomId, {})
-        roomScoresCalculator
-          .received(1)
-          .calculate(roomId, teacherId, attendances, authenticationToken)
+        roomScoresCalculator.received(1).calculate(roomId, authenticationToken)
         assessmentDB.received(1).save(resultRoom)
         const resultScores = await resultRoom.scores
 
@@ -127,13 +103,8 @@ describe('roomResolver', () => {
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-        const roomAttendanceProvider = Substitute.for<RoomAttendanceProvider>()
 
-        const sut = new RoomResolver(
-          assessmentDB,
-          roomScoresCalculator,
-          roomAttendanceProvider,
-        )
+        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
         const results = await sut.teacherCommentsByStudent(room)
@@ -170,13 +141,8 @@ describe('roomResolver', () => {
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-        const roomAttendanceProvider = Substitute.for<RoomAttendanceProvider>()
 
-        const sut = new RoomResolver(
-          assessmentDB,
-          roomScoresCalculator,
-          roomAttendanceProvider,
-        )
+        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
         const results = await sut.scoresByUser(room)
@@ -212,13 +178,8 @@ describe('roomResolver', () => {
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-        const roomAttendanceProvider = Substitute.for<RoomAttendanceProvider>()
 
-        const sut = new RoomResolver(
-          assessmentDB,
-          roomScoresCalculator,
-          roomAttendanceProvider,
-        )
+        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
 
         // Act
         const results = await sut.scoresByContent(room)
@@ -267,14 +228,8 @@ describe('roomResolver', () => {
 
           const assessmentDB = Substitute.for<EntityManager>()
           const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-          const roomAttendanceProvider =
-            Substitute.for<RoomAttendanceProvider>()
 
-          const sut = new RoomResolver(
-            assessmentDB,
-            roomScoresCalculator,
-            roomAttendanceProvider,
-          )
+          const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
 
           // Act
           const results = await sut.scoresByContent(room)

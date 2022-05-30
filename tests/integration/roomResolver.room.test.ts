@@ -33,7 +33,6 @@ import {
 } from '../queriesAndMutations/roomOps'
 import {
   AnswerBuilder,
-  AttendanceBuilder,
   EndUserBuilder,
   LessonMaterialBuilder,
   LessonPlanBuilder,
@@ -135,8 +134,6 @@ describe.skip('roomResolver.Room', () => {
         MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
         const roomId = 'room1'
-        const { attendanceApi } =
-          createSubstitutesToExpectedInjectableServices()
         const endUser = new EndUserBuilder().authenticate().build()
 
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
@@ -150,12 +147,6 @@ describe.skip('roomResolver.Room', () => {
           .getLessonMaterials(roomId, endUser.token)
           .rejects(ErrorMessage.scheduleNotFound(roomId))
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
-
-        const attendance = new AttendanceBuilder()
-          .withUserId(endUser.userId)
-          .withroomId(roomId)
-          .build()
-        attendanceApi.getRoomAttendances(roomId).resolves([attendance])
 
         // Act
         const fn = () =>
@@ -178,7 +169,6 @@ describe.skip('roomResolver.Room', () => {
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
       const roomId = 'room1'
-      const { attendanceApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
 
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
@@ -192,12 +182,6 @@ describe.skip('roomResolver.Room', () => {
         .getLessonMaterials(roomId, endUser.token)
         .rejects(ErrorMessage.scheduleNotFound(roomId))
       MutableContainer.set(CmsContentProvider, cmsContentProvider)
-
-      const attendance = new AttendanceBuilder()
-        .withUserId(endUser.userId)
-        .withroomId(roomId)
-        .build()
-      attendanceApi.getRoomAttendances(roomId).resolves([attendance])
 
       // Act
       const fn = () => roomQuery(roomId, endUser, false)
@@ -221,9 +205,7 @@ describe.skip('roomResolver.Room', () => {
       createSubstitutesToExpectedInjectableServices()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
 
-      const { attendanceApi } = createSubstitutesToExpectedInjectableServices()
       const endUser = new EndUserBuilder().authenticate().build()
-      attendanceApi.getRoomAttendances(roomId).resolves([])
 
       gqlRoom = await roomQuery(roomId, endUser)
     })
@@ -256,23 +238,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -290,16 +258,6 @@ describe.skip('roomResolver.Room', () => {
         .withScore(score)
         .withResponse(undefined)
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -478,23 +436,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -512,16 +456,6 @@ describe.skip('roomResolver.Room', () => {
         .withScore(score)
         .withResponse(undefined)
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -722,23 +656,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -756,16 +676,6 @@ describe.skip('roomResolver.Room', () => {
         .withScore(undefined)
         .withResponse(response)
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -942,23 +852,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -977,16 +873,6 @@ describe.skip('roomResolver.Room', () => {
         .withScore(undefined)
         .withResponse(undefined)
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -1136,23 +1022,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -1178,16 +1050,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord1, xapiRecord2])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
           .getSchedule(roomId, endUser.token)
@@ -1554,23 +1416,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -1587,16 +1435,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
           .getSchedule(roomId, endUser.token)
@@ -1791,23 +1629,10 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
 
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
         lessonMaterial1 = new LessonMaterialBuilder()
           .withName(xapiContent1Name)
           .build()
@@ -1836,16 +1661,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pType(xapiContent2Type)
           .withScore({ min: 0, max: 15, raw: 15 })
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord2, xapiRecord1])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
           .getSchedule(roomId, endUser.token)
@@ -2140,23 +1955,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -2184,16 +1985,6 @@ describe.skip('roomResolver.Room', () => {
         .withClientTimestamp(xapiTimestamp1 + 1)
         .withScore({ raw: 2, min: 0, max: 3 })
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([xapiRecord, xapiRecord2])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -2387,23 +2178,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial1 = new LessonMaterialBuilder().build()
         lessonMaterial2 = new LessonMaterialBuilder().build()
@@ -2420,16 +2197,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pName(xapiContentName)
           .withH5pType(xapiContentType)
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord])
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
           .getSchedule(roomId, endUser.token)
@@ -2581,28 +2348,10 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student1 = new UserBuilder().build()
       student2 = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const student1Attendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student1.userId)
-        .build()
-      const student2Attendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student2.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, student1Attendance, student2Attendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -2619,19 +2368,6 @@ describe.skip('roomResolver.Room', () => {
         .withH5pType(xapiContentType)
         .withScore({ min: 0, max: 2, raw: 1 })
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student1.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student2.userId, Arg.any(), Arg.any())
-        .resolves([xapiRecord])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -2879,23 +2615,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder().build()
       const lessonPlan = new LessonPlanBuilder()
@@ -2905,16 +2627,6 @@ describe.skip('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -3061,23 +2773,9 @@ describe.skip('roomResolver.Room', () => {
     before(async () => {
       // Arrange
       await dbConnect()
-      const { attendanceApi, xapiRepository } =
-        createSubstitutesToExpectedInjectableServices()
 
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
-
-      const endUserAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(endUser.userId)
-        .build()
-      const studentAttendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(student.userId)
-        .build()
-      attendanceApi
-        .getRoomAttendances(roomId)
-        .resolves([endUserAttendance, studentAttendance])
 
       lessonMaterial = new LessonMaterialBuilder()
         .withSource(FileType.Audio)
@@ -3089,16 +2787,6 @@ describe.skip('roomResolver.Room', () => {
         .withRoomId(roomId)
         .withLessonPlanId(lessonPlan.contentId)
         .build()
-      xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-      xapiRepository
-        .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-        .resolves([])
-      xapiRepository
-        .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-        .resolves([])
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
       MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
@@ -3252,23 +2940,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -3285,16 +2959,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord])
         const room = await new RoomBuilder()
           .withRoomId(roomId)
           .buildAndPersist()
@@ -3594,23 +3258,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -3648,16 +3298,6 @@ describe.skip('roomResolver.Room', () => {
             .withClientTimestamp(scoreTimestamp3)
             .build(),
         ]
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves(xapiRecords)
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
         cmsScheduleProvider
           .getSchedule(roomId, endUser.token)
@@ -3872,23 +3512,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -3905,16 +3531,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord])
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)
@@ -4128,23 +3744,9 @@ describe.skip('roomResolver.Room', () => {
       before(async () => {
         // Arrange
         await dbConnect()
-        const { attendanceApi, xapiRepository } =
-          createSubstitutesToExpectedInjectableServices()
 
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
-
-        const endUserAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(endUser.userId)
-          .build()
-        const studentAttendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(student.userId)
-          .build()
-        attendanceApi
-          .getRoomAttendances(roomId)
-          .resolves([endUserAttendance, studentAttendance])
 
         lessonMaterial = new LessonMaterialBuilder().build()
         const lessonPlan = new LessonPlanBuilder()
@@ -4184,16 +3786,6 @@ describe.skip('roomResolver.Room', () => {
           .withH5pType(xapiContentType)
           .withScore({ min: 0, max: 2, raw: 1 })
           .build()
-        xapiRepository.searchXapiEventsWithRoomId(Arg.any()).resolves([])
-        xapiRepository
-          .groupSearchXApiEventsForUsers(Arg.any(), Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(endUser.userId, Arg.any(), Arg.any())
-          .resolves([])
-        xapiRepository
-          .searchXApiEventsForUser(student.userId, Arg.any(), Arg.any())
-          .resolves([xapiRecord1])
 
         gqlRoom = await roomQuery(roomId, endUser)
       })

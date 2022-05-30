@@ -1,16 +1,10 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
-import { Arg, Substitute } from '@fluffy-spoon/substitute'
+import { Substitute } from '@fluffy-spoon/substitute'
 import { RoomScoresCalculator } from '../../src/providers/roomScoresCalculator'
-import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
 import { RoomMaterialsProvider } from '../../src/providers/roomMaterialsProvider'
-import { RoomEventsProvider } from '../../src/providers/roomEventsProvider'
 import { RoomScoresTemplateProvider } from '../../src/providers/roomScoresTemplateProvider'
-import {
-  AttendanceBuilder,
-  LessonMaterialBuilder,
-  UserContentScoreBuilder,
-} from '../builders'
+import { LessonMaterialBuilder, UserContentScoreBuilder } from '../builders'
 import { ParsedXapiEvent } from '../../src/helpers/parsedXapiEvent'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { v4 } from 'uuid'
@@ -24,15 +18,10 @@ describe('roomScoresCalculator', () => {
     it('returns 1 UserContentScore', async () => {
       // Arrange
       const roomId = 'room1'
-      const teacherId = 'teacher1'
       const studentId = 'student1'
       const h5pId = v4()
       const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
 
-      const attendance = new AttendanceBuilder()
-        .withroomId(roomId)
-        .withUserId(studentId)
-        .build()
       const material = new LessonMaterialBuilder()
         .withSource(FileType.H5P, h5pId)
         .build()
@@ -58,13 +47,10 @@ describe('roomScoresCalculator', () => {
       )
       const authenticationToken = undefined
 
-      const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
-      const eventsProvider = Substitute.for<RoomEventsProvider>()
       const materialsProvider = Substitute.for<RoomMaterialsProvider>()
       const scoresTemplateProvider =
         Substitute.for<RoomScoresTemplateProvider>()
 
-      attendanceProvider.getAttendances(roomId).resolves([attendance])
       const studentContentsResult: StudentContentsResult = {
         contents: new Map([[material.contentId, material]]),
         studentContentMap: [{ studentId, contentIds: [material.contentId] }],
@@ -72,12 +58,6 @@ describe('roomScoresCalculator', () => {
       materialsProvider
         .getMaterials(roomId, authenticationToken)
         .resolves(studentContentsResult)
-      const h5pIdToContentIdMap = new Map<string, string>([
-        [h5pId, material.contentId],
-      ])
-      eventsProvider
-        .getEvents(roomId, [attendance], h5pIdToContentIdMap)
-        .resolves([xapiRecord])
       scoresTemplateProvider
         .getCompatContentKey(
           roomId,
@@ -88,11 +68,10 @@ describe('roomScoresCalculator', () => {
         )
         .resolves(material.contentId)
       scoresTemplateProvider
-        .getTemplate(roomId, teacherId, studentContentsResult, Arg.any())
+        .getTemplate(roomId, studentContentsResult)
         .resolves(mapKeyToUserContentScoreMap)
 
       const roomsScoresCalculator = new RoomScoresCalculator(
-        eventsProvider,
         materialsProvider,
         scoresTemplateProvider,
       )
@@ -100,8 +79,6 @@ describe('roomScoresCalculator', () => {
       // Act
       const resultScores = await roomsScoresCalculator.calculate(
         roomId,
-        teacherId,
-        [attendance],
         authenticationToken,
       )
 
@@ -130,16 +107,11 @@ describe('roomScoresCalculator', () => {
       it('returns 1 UserContentScore with no answers', async () => {
         // Arrange
         const roomId = 'room1'
-        const teacherId = 'teacher1'
         const studentId = 'student1'
         const idOfSomeOtherUser = v4()
         const h5pId = v4()
         const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
 
-        const attendance = new AttendanceBuilder()
-          .withroomId(roomId)
-          .withUserId(studentId)
-          .build()
         const material = new LessonMaterialBuilder()
           .withSource(FileType.H5P, h5pId)
           .build()
@@ -165,13 +137,10 @@ describe('roomScoresCalculator', () => {
         )
         const authenticationToken = undefined
 
-        const attendanceProvider = Substitute.for<RoomAttendanceProvider>()
-        const eventsProvider = Substitute.for<RoomEventsProvider>()
         const materialsProvider = Substitute.for<RoomMaterialsProvider>()
         const roomScoresTemplateProvider =
           Substitute.for<RoomScoresTemplateProvider>()
 
-        attendanceProvider.getAttendances(roomId).resolves([attendance])
         const studentContentsResult: StudentContentsResult = {
           contents: new Map([[material.contentId, material]]),
           studentContentMap: [{ studentId, contentIds: [material.contentId] }],
@@ -179,12 +148,6 @@ describe('roomScoresCalculator', () => {
         materialsProvider
           .getMaterials(roomId, authenticationToken)
           .resolves(studentContentsResult)
-        const h5pIdToContentIdMap = new Map<string, string>([
-          [h5pId, material.contentId],
-        ])
-        eventsProvider
-          .getEvents(roomId, [attendance], h5pIdToContentIdMap)
-          .resolves([xapiRecord])
         roomScoresTemplateProvider
           .getCompatContentKey(
             roomId,
@@ -195,11 +158,10 @@ describe('roomScoresCalculator', () => {
           )
           .resolves(material.contentId)
         roomScoresTemplateProvider
-          .getTemplate(roomId, teacherId, studentContentsResult, Arg.any())
+          .getTemplate(roomId, studentContentsResult)
           .resolves(mapKeyToUserContentScoreMap)
 
         const roomsScoresCalculator = new RoomScoresCalculator(
-          eventsProvider,
           materialsProvider,
           roomScoresTemplateProvider,
         )
@@ -207,8 +169,6 @@ describe('roomScoresCalculator', () => {
         // Act
         const resultScores = await roomsScoresCalculator.calculate(
           roomId,
-          teacherId,
-          [attendance],
           authenticationToken,
         )
 

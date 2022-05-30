@@ -7,7 +7,7 @@ import {
   Authorized,
   Ctx,
 } from 'type-graphql'
-import { Inject, Service } from 'typedi'
+import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
@@ -16,8 +16,7 @@ import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
-import { Context, UserID } from '../auth/context'
-import { RoomAttendanceProvider } from '../providers/roomAttendanceProvider'
+import { Context } from '../auth/context'
 
 const logger = withLogger('RoomResolver')
 
@@ -28,8 +27,6 @@ export default class RoomResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
     private readonly roomScoresCalculator: RoomScoresCalculator,
-    @Inject('RoomAttendanceProvider')
-    private readonly roomAttendanceProvider: RoomAttendanceProvider,
   ) {}
 
   @Authorized()
@@ -37,7 +34,6 @@ export default class RoomResolver {
   public async Room(
     // TODO: This shouldn't be nullable.
     @Arg('room_id', { nullable: true }) roomId: string,
-    @UserID() teacherId: string,
     @Ctx() context: Context,
   ): Promise<Room> {
     logger.debug(`Room >> roomId: ${roomId}`)
@@ -56,8 +52,6 @@ export default class RoomResolver {
       const existingScores = (await room.scores) ?? []
       const newScores = await this.roomScoresCalculator.calculate(
         roomId,
-        teacherId,
-        [], // attendances
         context.encodedAuthenticationToken,
       )
       logger.debug(
