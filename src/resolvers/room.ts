@@ -53,7 +53,7 @@ export default class RoomResolver {
        * merge existing scores calculated from xapi events (+ cached getMaterials scores)
        * and new scores calculated from the materials or lesson plan
        */
-      const existingScores = await room.scores
+      const existingScores = (await room.scores) ?? []
       const newScores = await this.roomScoresCalculator.calculate(
         roomId,
         teacherId,
@@ -64,14 +64,15 @@ export default class RoomResolver {
         `existingScores num: ${existingScores.length}, newScores num: ${newScores.length}`,
       )
       const allScores = [...existingScores, ...newScores].filter(
-        (val, idx, self) =>
-          idx ===
-          self.findIndex(
+        (val, idx, self) => {
+          const index = self.findIndex(
             (t) =>
               t.roomId === val.roomId &&
               t.studentId === val.studentId &&
               t.contentKey === val.contentKey,
-          ),
+          )
+          return idx === index
+        },
       )
       logger.debug(`allScores num: ${allScores.length}`)
 

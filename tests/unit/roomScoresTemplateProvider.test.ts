@@ -12,7 +12,8 @@ import { StudentContentsResult } from '../../src/providers/cmsContentProvider'
 
 describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {
-    context(
+    // TODO: This logic is no longer done here. It's done in the worker.
+    context.skip(
       "1 student, 1 h5p material with 'h5pSub1' sub-activity; 'h5pSub1' has 'h5pSub2' sub-activity; only 1 xAPI event which is for 'h5pSub2'; h5pRoot->h5pSub1->h5pSub2",
       () => {
         // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.

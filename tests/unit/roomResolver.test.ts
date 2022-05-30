@@ -13,7 +13,7 @@ import {
 import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
 import { Attendance } from '../../src/web/attendance'
 
-describe.only('roomResolver', () => {
+describe('roomResolver', () => {
   describe('Room', () => {
     context('queried room exists in database', () => {
       it('returns room with calculated scores', async () => {
@@ -62,7 +62,7 @@ describe.only('roomResolver', () => {
       })
     })
 
-    context.only('queried room does not exist in database', () => {
+    context('queried room does not exist in database', () => {
       it('returns room with calculated scores', async () => {
         // Arrange
         const roomId = 'room1'
@@ -100,7 +100,6 @@ describe.only('roomResolver', () => {
         const resultScores = await resultRoom.scores
 
         expect(resultScores).to.have.lengthOf(1)
-        expect(resultRoom.attendanceCount).to.equal(1)
         expect(resultRoom.roomId).to.equal(roomId)
       })
     })

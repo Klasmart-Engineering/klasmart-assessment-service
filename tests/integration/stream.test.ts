@@ -73,6 +73,278 @@ describe('Event-driven Worker', () => {
     await dbConnection?.close()
   })
 
+  context(
+    "1 student, 1 h5p material with 'h5pSub1' sub-activity; " +
+      "'h5pSub1' has 'h5pSub2' sub-activity; " +
+      "only 1 xAPI event which is for 'h5pSub2'; h5pRoot->h5pSub1->h5pSub2",
+    () => {
+      const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
+      const groupName = 'group1'
+      before(async () => {
+        const roomId = 'room1'
+        const userId = 'user1'
+        const h5pRoot = 'h5pRoot'
+        const h5pSub1 = 'h5pSub1' // child of h5pRoot
+        const h5pSub2 = 'h5pSub2' // child of h5pSub1
+
+        const xapiEvent = new XApiRecordBuilder()
+          .withRoomId(roomId)
+          .withUserId(userId)
+          .withH5pId(h5pRoot)
+          .withH5pSubId(h5pSub2)
+          .withH5pParentId(h5pSub1)
+          .withH5pName('h5pName')
+          .withH5pType('h5pType')
+          .withScore({ min: 0, max: 2, raw: 1 })
+          .withResponse(undefined)
+          .withServerTimestamp(100000000000)
+          .withClientTimestamp(100000000000)
+          .build()
+
+        // delete stream from redis
+        await redisClient.del(streamName)
+        // create redis consumer group after the stream gets created
+        const onlyLatest = false
+        await xClient.createGroup(streamName, groupName, onlyLatest)
+        // push events to a new stream that gets created automatically
+        const event = {
+          data: JSON.stringify(xapiEvent),
+        }
+        await xClient.add(streamName, event)
+
+        const state = {
+          i: 0,
+          delays: 0,
+        }
+        await simpleConsumerGroupWorkerLoop(
+          xClient,
+          streamName,
+          errorStreamName,
+          groupName,
+          'consumer1',
+          roomScoreProviderWorker,
+          state,
+        )
+      })
+
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+        await dbConnection.synchronize(true)
+      })
+
+      // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
+      // Because without a subcontent API, we can't know about it.
+      // But now we use the fact that an xAPI event will include a parent ID if the activity
+      // that generated the event is a sub-activity. So we now use that parent ID to generate a
+      // UserContentScore for that parent, even though the parent may not emit an event.
+      // Before the fix, this test returned 1 instead of 2.
+      it('returns 2 UserContentScores', async () => {
+        // Arrange
+        const room = await entityManager.findOne(Room, 'room1', {})
+        const userContentScores = (await room?.scores) || []
+        const answers = (
+          await Promise.all(
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
+          )
+        ).flat()
+
+        expect(room).to.not.be.undefined
+        expect(userContentScores.length).to.equal(2)
+        expect(answers.length).to.equal(1)
+        const answer = answers[0]
+        expect(answer).to.contain({
+          roomId: 'room1',
+          studentId: 'user1',
+          contentKey: 'h5pRoot|h5pSub2',
+        })
+      })
+    },
+  )
+
+  context(
+    '1 attendance, 2 xapi events. ' +
+      'event1: h5p1; event2: h5p1.subA' +
+      'h5p.h5pType = Flashcards; h5p1.subA.h5pType = undefined',
+    () => {
+      const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
+      const groupName = 'group1'
+      before(async () => {
+        const roomId = 'room1'
+        const userId = 'user1'
+        const h5pRoot = 'h5pRoot'
+        const h5pSub1 = 'h5pSub1' // child of h5pRoot
+
+        const xapiEventBuilder = new XApiRecordBuilder()
+          .withRoomId(roomId)
+          .withUserId(userId)
+          .withH5pId(h5pRoot)
+          .withH5pName('My Flashcard Activity')
+          .withH5pType('Flashcards')
+          .withScore({ min: 0, max: 2, raw: 1 })
+          .withResponse(undefined)
+          .withServerTimestamp(100000000000)
+          .withClientTimestamp(100000000000)
+        const xapiEvent1 = xapiEventBuilder.build()
+        const xapiEvent2 = xapiEventBuilder
+          .withH5pType(undefined)
+          .withH5pSubId(h5pSub1)
+          .build()
+
+        // delete stream from redis
+        await redisClient.del(streamName)
+        // create redis consumer group after the stream gets created
+        const onlyLatest = false
+        await xClient.createGroup(streamName, groupName, onlyLatest)
+        // push events to a new stream that gets created automatically
+        const event1 = {
+          data: JSON.stringify(xapiEvent1),
+        }
+        const event2 = {
+          data: JSON.stringify(xapiEvent2),
+        }
+        await xClient.add(streamName, event1)
+        await xClient.add(streamName, event2)
+
+        const state = {
+          i: 0,
+          delays: 0,
+        }
+        await simpleConsumerGroupWorkerLoop(
+          xClient,
+          streamName,
+          errorStreamName,
+          groupName,
+          'consumer1',
+          roomScoreProviderWorker,
+          state,
+        )
+      })
+
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+        await dbConnection.synchronize(true)
+      })
+
+      it('returns 2 UserContentScores', async () => {
+        // Arrange
+        const room = await entityManager.findOne(Room, 'room1', {})
+        const userContentScores = (await room?.scores) || []
+        const answers = (
+          await Promise.all(
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
+          )
+        ).flat()
+
+        expect(userContentScores).to.have.lengthOf(2)
+        expect(userContentScores[0].contentType).to.equal('Flashcards')
+        expect(userContentScores[1].contentType).to.equal('Flashcards')
+        expect(answers.length).to.equal(2)
+      })
+    },
+  )
+
+  context(
+    '1 attendance, 3 xapi events. ' +
+      'event1: h5p1; event2: h5p1.subA; event3: h5p1.subA.subB' +
+      'h5p.h5pType = Flashcards; h5p1.subA.h5pType = undefined; h5p1.subA.subB.h5pType = undefined',
+    () => {
+      const streamName = 'stream1'
+      const errorStreamName = 'errorstream1'
+      const groupName = 'group1'
+      before(async () => {
+        const roomId = 'room1'
+        const userId = 'user1'
+        const h5pRoot = 'h5pRoot'
+        const h5pSub1 = 'h5pSub1' // child of h5pRoot
+        const h5pSub2 = 'h5pSub2' // child of h5pSub1
+
+        const xapiEventBuilder = new XApiRecordBuilder()
+          .withRoomId(roomId)
+          .withUserId(userId)
+          .withH5pId(h5pRoot)
+          .withH5pName('My Flashcard Activity')
+          .withH5pType('Flashcards')
+          .withScore({ min: 0, max: 2, raw: 1 })
+          .withResponse(undefined)
+          .withServerTimestamp(100000000000)
+          .withClientTimestamp(100000000000)
+        const xapiEvent1 = xapiEventBuilder.build()
+        const xapiEvent2 = xapiEventBuilder
+          .withH5pType(undefined)
+          .withH5pSubId(h5pSub1)
+          .build()
+        const xapiEvent3 = xapiEventBuilder
+          .withH5pType(undefined)
+          .withH5pSubId(h5pSub2)
+          .withH5pParentId(h5pSub1)
+          .build()
+
+        // delete stream from redis
+        await redisClient.del(streamName)
+        // create redis consumer group after the stream gets created
+        const onlyLatest = false
+        await xClient.createGroup(streamName, groupName, onlyLatest)
+        // push events to a new stream that gets created automatically
+        const event1 = {
+          data: JSON.stringify(xapiEvent1),
+        }
+        const event2 = {
+          data: JSON.stringify(xapiEvent2),
+        }
+        const event3 = {
+          data: JSON.stringify(xapiEvent3),
+        }
+        await xClient.add(streamName, event1)
+        await xClient.add(streamName, event2)
+        await xClient.add(streamName, event3)
+
+        const state = {
+          i: 0,
+          delays: 0,
+        }
+        await simpleConsumerGroupWorkerLoop(
+          xClient,
+          streamName,
+          errorStreamName,
+          groupName,
+          'consumer1',
+          roomScoreProviderWorker,
+          state,
+        )
+      })
+
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+        await dbConnection.synchronize(true)
+      })
+
+      it('returns 3 UserContentScores', async () => {
+        // Arrange
+        const room = await entityManager.findOne(Room, 'room1', {})
+        const userContentScores = (await room?.scores) || []
+        const answers = (
+          await Promise.all(
+            userContentScores.map(
+              async (userX) => (await userX.getAnswers()) || [],
+            ),
+          )
+        ).flat()
+
+        expect(userContentScores).to.have.lengthOf(3)
+        expect(userContentScores[0].contentType).to.equal('Flashcards')
+        expect(userContentScores[1].contentType).to.equal('Flashcards')
+        expect(userContentScores[2].contentType).to.equal('Flashcards')
+        expect(answers.length).to.equal(3)
+      })
+    },
+  )
+
   context('Pushing 1 event to a Redis stream with 1 Consumer', () => {
     const streamName = 'stream1'
     const errorStreamName = 'errorstream1'
@@ -123,7 +395,7 @@ describe('Event-driven Worker', () => {
     })
 
     it('stream has been created', async () => {
-      const info = await xClient.infoStream(streamName)
+      const info = (await xClient.infoStream(streamName)) as any
       expect(info).to.not.be.null
       expect(info).to.not.be.undefined
       expect(info!.length).to.not.be.null
@@ -132,7 +404,7 @@ describe('Event-driven Worker', () => {
     })
 
     it('consumer group has been created', async () => {
-      const info = await xClient.infoGroups(streamName)
+      const info = (await xClient.infoGroups(streamName)) as any
       expect(info).to.be.lengthOf(1)
       expect(info![0][1]).to.be.equal(groupName)
     })
@@ -539,14 +811,13 @@ describe('Event-driven Worker', () => {
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(10)
         expect(results.map((x: any[]) => x[0])).to.have.members(entryIds)
-        const parseJsonDataFn = () =>
-          results.map((x: string[][]) => JSON.parse(x[1][1]))
+        const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvents = parseJsonDataFn().map(
           (x: XApiRecord | undefined) => parseRawEvent(x),
         )
         expect(parsedXapiEvents.length).to.be.equal(10)
-        expect(parsedXapiEvents.every((x: null) => x !== null)).to.be.true
+        expect(parsedXapiEvents.every((x) => x !== null)).to.be.true
       })
 
       it('processed events are found in the database', async () => {
@@ -635,8 +906,7 @@ describe('Event-driven Worker', () => {
         expect(results).to.not.be.null
         expect(results?.length).to.be.equal(80)
         expect(results.map((x: any[]) => x[0])).to.have.members(entryIds)
-        const parseJsonDataFn = () =>
-          results.map((x: string[][]) => JSON.parse(x[1][1]))
+        const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvents = parseJsonDataFn().map(
           (x: XApiRecord | undefined) => parseRawEvent(x),
@@ -700,7 +970,7 @@ describe('Event-driven Worker', () => {
         const onlyLatest = false
         await xClient.createGroup(streamName, groupName, onlyLatest)
 
-        // push fir st 5 events to a new stream that gets created automatically
+        // push first 5 events to a new stream that gets created automatically
         entryIdsBatch1 = await Promise.all(
           xapiRecords.slice(0, 5).map(async (xapiRecord) => {
             const event = {
@@ -774,9 +1044,7 @@ describe('Event-driven Worker', () => {
         const userContentScores = (await room?.scores) || []
         const answers = (
           await Promise.all(
-            userContentScores.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
+            userContentScores.map((userX) => userX.getAnswers() || []),
           )
         ).flat()
 

@@ -3333,7 +3333,6 @@ describe.skip('roomResolver.Room', () => {
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
         gqlRoom = await roomQuery(roomId, endUser)
-        console.log(gqlRoom)
       })
 
       after(async () => await dbDisconnect())

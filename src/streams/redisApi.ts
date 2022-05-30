@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import { RedisErrorRecovery, IoRedisClientType } from '../cache/redis'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
+import { RedisValue } from 'ioredis'
 
 const logger = withLogger('RedisStreams')
 
@@ -122,12 +123,12 @@ export class RedisStreams {
 
   // XINFO STREAM mystream
   @RedisErrorRecovery()
-  public async infoStream(stream: string): Promise<any[]> {
+  public async infoStream(stream: string) {
     return this.client.xinfo('STREAM', stream)
   }
 
   @RedisErrorRecovery()
-  public async infoGroups(stream: string): Promise<any[]> {
+  public async infoGroups(stream: string) {
     return this.client.xinfo('GROUPS', stream)
   }
 
@@ -177,21 +178,54 @@ export class RedisStreams {
     opts: { count?: number; block?: number; streamKey?: string },
   ): Promise<StreamMessageReply[] | null> {
     const { count, block, streamKey } = opts
-    const args = []
-    if (count) {
-      args.push('COUNT', count)
-    }
-    if (block) {
-      args.push('BLOCK', block)
-    }
-    args.push('STREAMS', stream, streamKey || '>')
 
-    const entries = (await this.client.xreadgroup(
-      'GROUP',
-      groupName,
-      consumerName,
-      ...args,
-    )) as ReadStreamReply | null
+    let entries: ReadStreamReply | null
+    if (count && block) {
+      entries = (await this.client.xreadgroup(
+        'GROUP',
+        groupName,
+        consumerName,
+        'COUNT',
+        count,
+        'BLOCK',
+        block,
+        'STREAMS',
+        stream,
+        streamKey || '>',
+      )) as ReadStreamReply | null
+    } else if (count) {
+      entries = (await this.client.xreadgroup(
+        'GROUP',
+        groupName,
+        consumerName,
+        'COUNT',
+        count,
+        'STREAMS',
+        stream,
+        streamKey || '>',
+      )) as ReadStreamReply | null
+    } else if (block) {
+      entries = (await this.client.xreadgroup(
+        'GROUP',
+        groupName,
+        consumerName,
+        'BLOCK',
+        block,
+        'STREAMS',
+        stream,
+        streamKey || '>',
+      )) as ReadStreamReply | null
+    } else {
+      entries = (await this.client.xreadgroup(
+        'GROUP',
+        groupName,
+        consumerName,
+        'STREAMS',
+        stream,
+        streamKey || '>',
+      )) as ReadStreamReply | null
+    }
+
     if (!entries) {
       return null
     }

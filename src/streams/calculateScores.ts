@@ -209,10 +209,15 @@ export class RoomScoresTemplateProvider2 {
       const invalidEventsIds = invalidXapiEvents.map((x) => x.id)
       await xClient.ack(stream, group, invalidEventsIds)
       logger.info(
-        `process >> ${invalidXapiEvents.length} invalid events aknowledged` +
+        `process >> ${invalidXapiEvents.length} invalid events acknowledged` +
           ` and pushed to error strea(${errorStream})`,
       )
     }
+
+    // Special case handling ******************************************
+    addDummyEventsToAccountForActivitiesWithNoEvents(validXapiEvents)
+    populateUndefinedH5pTypesWithParentType(validXapiEvents)
+    // ****************************************************************
 
     // 2. Group by Room
     const xapiEventsGroupedByRoom = groupBy(
@@ -319,58 +324,104 @@ export class RoomScoresTemplateProvider2 {
             ])
           }
 
-          // 5. Filter out events that don't have a score or a response
-          const xapiEventsWithAnswers = xapiEvents.filter(
-            (xapiEvent) =>
-              !(
-                xapiEvent.score === undefined &&
-                xapiEvent.response === undefined
-              ),
-          )
-
-          if (xapiEventsWithAnswers.length < xapiEvents.length) {
-            logger.warn(
-              `process >> (${roomId}:${userId}:${contentKey}) >> ` +
-                `${xapiEvents.length - xapiEventsWithAnswers.length}/` +
-                `${xapiEvents.length} events don't have a score and response fields ` +
-                `>> are filtered out`,
-            )
-          }
-
-          // 6. Create new Answer records
-          const newAnswers = xapiEventsWithAnswers.map((xapiEvent) => {
-            const answer = Answer.new(
-              userContentScore!,
-              new Date(xapiEvent.timestamp),
-              xapiEvent.response,
-              // TODO: Maybe pass whole score object, instead.
-              xapiEvent.score?.raw,
-              xapiEvent.score?.min,
-              xapiEvent.score?.max,
-            )
-            return answer
-          })
-
-          logger.info(`process >> total new Answers: ${newAnswers.length}`)
-          await Promise.all(
-            newAnswers.map(async (a) => {
-              await this.assessmentDB.save(Answer, a)
-              await userContentScore!.addReadyAnswer(a)
+          await Promise.all([
+            xapiEvents.map((a) => {
+              return userContentScore!.applyEvent(a)
             }),
-          )
+          ])
+          await this.assessmentDB.save(Answer, await userContentScore.answers)
 
-          // 7. Acknolewdge
+          // 7. Acknowledge
           logger.info(
             `process >> Redis acknolewdge processed events: ${xapiEvents.length}`,
           )
-          await xClient.ack(
-            stream,
-            group,
-            xapiEvents.map((x) => x.entryId),
-          )
+          const nonDummyEvents = xapiEvents.filter((x) => x.entryId !== '-1')
+          if (nonDummyEvents.length > 0) {
+            await xClient.ack(
+              stream,
+              group,
+              nonDummyEvents.map((x) => x.entryId),
+            )
+          }
         }
       }
       await this.assessmentDB.save(room)
+    }
+  }
+}
+
+// https://calmisland.atlassian.net/browse/KLA-252
+function addDummyEventsToAccountForActivitiesWithNoEvents(
+  xapiEvents: XApiRecordEvent[],
+) {
+  const contentKeyHash = new Set<string>()
+  for (const x of xapiEvents) {
+    if (!x.h5pSubId) continue
+    const contentKey = ContentKey.construct(x.h5pId, x.h5pSubId)
+    if (contentKeyHash.has(contentKey)) continue
+    contentKeyHash.add(contentKey)
+
+    // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
+    // Because without a subcontent API, we can't know about it.
+    // But now we use the fact that an xAPI event will include a parent ID if the activity
+    // that generated the event is a sub-activity. So we now use that parent ID to generate a
+    // UserContentScore for that parent, even though the parent may not emit an event.
+    if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
+      xapiEvents.push({
+        entryId: '-1',
+        h5pId: x.h5pId,
+        roomId: x.roomId,
+        timestamp: x.timestamp,
+        userId: x.userId,
+        h5pSubId: x.h5pParentId,
+        h5pParentId: x.h5pId,
+      })
+    }
+  }
+}
+
+// https://calmisland.atlassian.net/browse/DAS-353
+function populateUndefinedH5pTypesWithParentType(
+  xapiEvents: ReadonlyArray<ParsedXapiEvent>,
+) {
+  const h5pWithChildren = new Set<string>()
+  for (const x of xapiEvents) {
+    if (x.h5pParentId != null) {
+      h5pWithChildren.add(x.h5pParentId)
+    }
+  }
+  const parentKeyToEventMap = new Map<string, ParsedXapiEvent>()
+  for (const x of xapiEvents) {
+    if (
+      !x.h5pSubId &&
+      h5pWithChildren.has(x.h5pId) &&
+      !parentKeyToEventMap.has(x.h5pId)
+    ) {
+      parentKeyToEventMap.set(x.h5pId, x)
+    }
+    if (
+      x.h5pSubId &&
+      h5pWithChildren.has(x.h5pSubId) &&
+      !parentKeyToEventMap.has(`${x.h5pId}|${x.h5pSubId}`)
+    ) {
+      parentKeyToEventMap.set(`${x.h5pId}|${x.h5pSubId}`, x)
+    }
+  }
+  for (const x of xapiEvents) {
+    if (x.h5pSubId == null) {
+      continue
+    }
+    let current: ParsedXapiEvent | undefined = x
+    while (current != null && current.h5pType == null) {
+      const key =
+        current.h5pParentId === current.h5pId
+          ? current.h5pId
+          : `${current.h5pId}|${current.h5pParentId}`
+      const parent = parentKeyToEventMap.get(key)
+      current.h5pType = parent?.h5pType
+      if (current.h5pType == null) {
+        current = parent
+      }
     }
   }
 }

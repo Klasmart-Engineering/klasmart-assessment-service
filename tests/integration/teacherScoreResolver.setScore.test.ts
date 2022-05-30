@@ -7,11 +7,7 @@ import {
   UserBuilder,
   UserContentScoreBuilder,
 } from '../builders'
-import {
-  dbConnect,
-  dbDisconnect,
-  createSubstitutesToExpectedInjectableServices,
-} from '../utils/globalIntegrationTestHooks'
+import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
 import { setTeacherScoreMutation } from '../queriesAndMutations/teacherScoreOps'
 import {
   GqlContent,
@@ -27,11 +23,12 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../../src/db/assessments/connectToA
 import { TestTitle } from '../utils/testTitles'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import ContentKey from '../../src/helpers/contentKey'
-import Substitute, { Arg } from '@fluffy-spoon/substitute'
+import Substitute from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { Container as MutableContainer } from 'typedi'
 import { throwExpression } from '../../src/helpers/throwExpression'
 import DiKeys from '../../src/initialization/diKeys'
+import { InMemoryCache } from '../../src/cache'
 
 /**
  * - throws when not authenticated
@@ -51,6 +48,7 @@ describe('teacherScoreResolver.setScore', function () {
       // Arrange
       await dbConnect()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
+      MutableContainer.set(DiKeys.ICache, new InMemoryCache())
 
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()

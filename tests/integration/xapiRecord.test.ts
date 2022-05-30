@@ -244,12 +244,6 @@ describe('xApi SQL database interface', () => {
       })
 
       it('roomEventsProvider.getEvents returns the right events ', async () => {
-        console.log(
-          JSON.stringify(xapiRecordsWithEventProviderRoomOne, null, 2),
-        )
-        console.log(
-          JSON.stringify(xapiRecordsWithEventProviderRoomTwo, null, 2),
-        )
         const e11 = xapiRecordsWithEventProviderRoomOne[0]
         const e12 = xapiRecordsWithEventProviderRoomOne[1]
         const e21 = xapiRecordsWithEventProviderRoomTwo[0]
@@ -438,8 +432,6 @@ describe('xApi SQL database interface', () => {
     })
 
     it('roomEventsProvider.getEvents returns the right events ', async () => {
-      console.log(JSON.stringify(xapiRecordsWithEventProviderRoomOne, null, 2))
-      console.log(JSON.stringify(xapiRecordsWithEventProviderRoomTwo, null, 2))
       const e11 = xapiRecordsWithEventProviderRoomOne[0]
       const e12 = xapiRecordsWithEventProviderRoomOne[1]
       const e21 = xapiRecordsWithEventProviderRoomTwo[0]

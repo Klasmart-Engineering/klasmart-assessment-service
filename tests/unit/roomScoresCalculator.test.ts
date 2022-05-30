@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
-import { Substitute } from '@fluffy-spoon/substitute'
+import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { RoomScoresCalculator } from '../../src/providers/roomScoresCalculator'
 import { RoomAttendanceProvider } from '../../src/providers/roomAttendanceProvider'
 import { RoomMaterialsProvider } from '../../src/providers/roomMaterialsProvider'
@@ -19,7 +19,8 @@ import { FindConditions } from 'typeorm'
 import { StudentContentsResult } from '../../src/providers/cmsContentProvider'
 
 describe('roomScoresCalculator', () => {
-  context('1 attendance with 1 xapi event', () => {
+  // TODO: Scores are no longer calculated in roomScoresCalculator.
+  context.skip('1 attendance with 1 xapi event', () => {
     it('returns 1 UserContentScore', async () => {
       // Arrange
       const roomId = 'room1'
@@ -87,7 +88,7 @@ describe('roomScoresCalculator', () => {
         )
         .resolves(material.contentId)
       scoresTemplateProvider
-        .getTemplate(roomId, teacherId, studentContentsResult, [xapiRecord])
+        .getTemplate(roomId, teacherId, studentContentsResult, Arg.any())
         .resolves(mapKeyToUserContentScoreMap)
 
       const roomsScoresCalculator = new RoomScoresCalculator(
@@ -105,7 +106,7 @@ describe('roomScoresCalculator', () => {
       )
 
       // Assert
-      expect(resultScores).to.have.lengthOf(1)
+      expect(resultScores).to.have.lengthOf(1, 'resultScores')
 
       const expected: FindConditions<UserContentScore> = {
         roomId: roomId,
@@ -194,7 +195,7 @@ describe('roomScoresCalculator', () => {
           )
           .resolves(material.contentId)
         roomScoresTemplateProvider
-          .getTemplate(roomId, teacherId, studentContentsResult, [xapiRecord])
+          .getTemplate(roomId, teacherId, studentContentsResult, Arg.any())
           .resolves(mapKeyToUserContentScoreMap)
 
         const roomsScoresCalculator = new RoomScoresCalculator(
