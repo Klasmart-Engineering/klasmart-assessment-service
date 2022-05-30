@@ -98,4 +98,4 @@ jobs:
           VERSION_TAG: ${{ steps.get-latest-tag.outputs.VERSION_TAG }}
         run: |
           git push origin $VERSION_TAG
-          git push origin main
+          git push origin $GITHUB_REF_NAME
