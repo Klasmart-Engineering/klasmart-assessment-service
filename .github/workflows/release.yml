@@ -41,7 +41,7 @@ jobs:
       ECR_AWS_SECRET_ACCESS_KEY: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
 
   deploy-alpha:
-    needs: [npm-ci]
+    needs: [create-release]
     uses: ./.github/workflows/job-deploy-alpha.yml
     with:
       ecs_aws_service: assessment-many-cardinal
@@ -50,7 +50,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY_ALPHA_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_ALPHA_DEV }}
 
   deploy-landing-zone:
-    needs: [npm-ci]
+    needs: [create-release]
     uses: KL-Engineering/github-action-workflows/.github/workflows/deploy-kidskube-env.yml@v3.1.0
     with:
       region: all
