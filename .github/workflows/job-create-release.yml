@@ -47,14 +47,13 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
 
-      - name: Build
-        run: |
-          npm run build
-
       - name: Version bump
         run: npm run release -- 
           ${{ inputs.prerelease != '' && format('--prerelease {0}', inputs.prerelease) || '' }}
           ${{ inputs.release_as != 'auto' && format('--release-as {0}', inputs.release_as) || '' }}
+
+      - name: npm build
+        run: npm run build
 
       - name: Docker build
         run: |
