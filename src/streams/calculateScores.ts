@@ -199,7 +199,7 @@ export class RoomScoresTemplateProvider2 {
         ` ${invalidXapiEvents.length}/${events.length} INVALID`,
     )
 
-    // 1.1 Send the invalid events to the error queue and acknolewdge them
+    // 1.1 Send the invalid events to the error queue and acknowledge them
     if (invalidXapiEvents.length > 0) {
       await Promise.all(
         invalidXapiEvents.map(async (event) => {
@@ -333,7 +333,7 @@ export class RoomScoresTemplateProvider2 {
 
           // 7. Acknowledge
           logger.info(
-            `process >> Redis acknolewdge processed events: ${xapiEvents.length}`,
+            `process >> Redis acknowledge processed events: ${xapiEvents.length}`,
           )
           const nonDummyEvents = xapiEvents.filter((x) => x.entryId !== '-1')
           if (nonDummyEvents.length > 0) {
@@ -366,7 +366,7 @@ function addDummyEventsToAccountForActivitiesWithNoEvents(
     // But now we use the fact that an xAPI event will include a parent ID if the activity
     // that generated the event is a sub-activity. So we now use that parent ID to generate a
     // UserContentScore for that parent, even though the parent may not emit an event.
-    if (x.h5pParentId && x.h5pParentId !== x.h5pId) {
+    if (x.h5pParentId && x.h5pParentId.toString() !== x.h5pId.toString()) {
       xapiEvents.push({
         entryId: '-1',
         h5pId: x.h5pId,
@@ -414,7 +414,7 @@ function populateUndefinedH5pTypesWithParentType(
     let current: ParsedXapiEvent | undefined = x
     while (current != null && current.h5pType == null) {
       const key =
-        current.h5pParentId === current.h5pId
+        current.h5pParentId?.toString() === current.h5pId.toString()
           ? current.h5pId
           : `${current.h5pId}|${current.h5pParentId}`
       const parent = parentKeyToEventMap.get(key)

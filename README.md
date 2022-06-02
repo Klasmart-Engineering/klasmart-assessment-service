@@ -2,27 +2,18 @@
 
 [![codecov](https://codecov.io/bb/calmisland/kidsloop-assessment-service/branch/master/graph/badge.svg?token=HMADF4LC8H)](https://codecov.io/bb/calmisland/kidsloop-assessment-service) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-
-[TOC]
-
----
-
 ## Remarks
 
 Consumed by the [cms-backend-service](https://bitbucket.org/calmisland/cms-backend-service/src/ee26db558f8d624d045262d4b28f2daee2ce1591/external/h5p_room_score.go?at=dev%2Fglobal%2Falpha#lines-139), which is then consumed by the cms frontend (link needed).
 
-Branching model: merge into `master` and a new version gets automatically released, tagged with a version tag e.g. `1.5.2`.
+Branching model: merge into `main`
 
 📢 Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md) 📢
 
 ### External KidsLoop dependencies
 
-- [User Service](https://bitbucket.org/calmisland/kidsloop-user-service) GraphQL API to get basic user information
 - [CMS Service](https://bitbucket.org/calmisland/cms-backend-service/) API to query data such as the content library and class schedules
-- [Attendance Service](https://bitbucket.org/calmisland/kidsloop-attendance-service) API to get the list of attendanees of a given room
-- DynamoDB XAPI table ([H5P library](https://bitbucket.org/calmisland/kidsloop-h5p-library/src/3d34fbc7f25c13b4b42f40bc3fb7c6726019aee1/src/xapi-uploader.ts?at=feature%2Fdocker-token) sends XAPI events, via the [uploader](https://bitbucket.org/calmisland/h5p-xapi-uploader), to the [XAPI server](https://bitbucket.org/calmisland/h5p-xapi-server), which in turn sends them to DynamoDB for us to be able to query here)
-- XAPI database deployed in Postgres in the case where the environment variable `USE_XAPI_SQL_DATABASE_FLAG` is set to `true` or `1`
-- Redis Cache instance (optional)
+- [H5P Service](https://github.com/KL-Engineering/kidsloop-h5p-library) API to get a list of H5P content information, including sub-contents
 
 ---
 
@@ -32,15 +23,14 @@ Branching model: merge into `master` and a new version gets automatically releas
 
 #### Installation
 
-- Node v14.x.x or higher, Node v16.x.x is preferred
+- Node v16.x.x
 - Npm v6.x.x or higher
-- Docker (for Postgres and MySQL)
+- Docker (for Postgres and Redis)
 
 Install the packages and husky git hooks:
 
 ```
 npm install
-npm run bootstrap
 ```
 
 #### Configuration
@@ -52,26 +42,9 @@ Necessary evironment variables:
 - `DOMAIN`
 - `ASSESSMENT_DATABASE_URL`
 - `CMS_API_URL`
-- `USER_SERVICE_ENDPOINT`
+- `H5P_API_URL`
 
 Some environment variables must be specified depending on how the service is configured.
-
-If you want to use the Attendance API, make sure to set the following:
-- `USE_ATTENDANCE_API = 1`
-- `ATTENDANCE_SERVICE_ENDPOINT`
-
-Alternatively, you can access the Attendance database directly and set:
-- `USE_ATTENDANCE_API = 0` (optional)
-- `ATTENDANCE_DATABASE_URL`
-
-Similarly, if you want to set the service to read XApi data from a DynamoDB table, make sure to set the following:
-- `USE_XAPI_SQL_DATABASE_FLAG = 0` (optional)
-- `DYNAMODB_TABLE_NAME`
-- `AWS_REGION` as well as the AWS credentials (Note: in an AWS environment, `AWS_REGION` and AWS credentials are set automatically, so there's no need to pass them manually)
-
-Alternatively, if you opt for reading XApi data from a Postgres database, set it to:
-- `USE_XAPI_SQL_DATABASE_FLAG = 1`
-- `XAPI_DATABASE_URL`
 
 The service will cache some of the results in either local Memory or Redis. To use Redis specify its url:
 - `REDIS_URL`
@@ -125,8 +98,6 @@ docker run -it -d \
 ```
 
 ### Running
-
-Ensure [AWS credentials are configured](https://aws.amazon.com/blogs/security/aws-single-sign-on-now-enables-command-line-interface-access-for-aws-accounts-using-corporate-credentials/) (for access to DynamoDB)
 
 Ensure all dependencies are installed
 
@@ -190,8 +161,6 @@ docker run --rm -it \
   --env-file .env \
   --env PORT=8080 \
   --env ASSESSMENT_DATABASE_URL=postgres://postgres:assessments@kl_postgres:5432/assessment_db \
-  --env USE_XAPI_SQL_DATABASE_FLAG=1 \
-  --env XAPI_DATABASE_URL=postgres://kidsloop:T5YjUyskt3YcC4NpKfuNAEkFcWzIaYrn@host.docker.internal:15434/kidsloop_alpha_xapidb \
   --env REDIS_URL=redis://kl_redis:6379 \
   --env REDIS_HOST=host.docker.internal \
   --env REDIS_CONSUMER_GROUP=evgeny-local \
@@ -256,46 +225,18 @@ _Tip: when debugging or focusing on a particular test or group of tests, append 
 
 ---
 
-## Deployment
-
-We use the [Bitbucket Deployments](https://bitbucket.org/blog/introducing-bitbucket-deployments) feature for a nice overview of deployment history. The quality of the Jira integration depends on ticket IDs being included in commit messages, so it's important to make an effort to do so.
-
-- The [Bitbucket view](https://bitbucket.org/calmisland/kidsloop-assessment-service/addon/pipelines/deployments) can be accessed from the sidebar via the Deployments tab.
-- The [Jira view](https://calmisland.atlassian.net/jira/software/c/projects/DAS/deployments?startDate=-3m&endDate=now) can be accessed from the sidebar of Jira via the Deployments tab.
-
-Everytime a PR is merged into `master`, the Bitbucket pipeline runs the stadard-release process, which pushes a new commit to `master` and tags with the new version. This new commit triggers another pipeline that builds and pushes a new docker image to the _Kidsloop Infra_ account. Making the actual deployment requires another step, which differs between alpha and production.
-
-### Alpha
-
-1. Head over to the [ECS service](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/assessment-many-cardinal/details) in the _Kidsloop Dev_ account.
-2. Click "Update" in the top right corner.
-3. Check the "Force new deployment" checkbox.
-4. Click "Skip to review"
-5. Click "Update service.
-
-### Production
-
-Make a PR in the [kidsloop-infra](https://bitbucket.org/calmisland/kidsloop-infra/src/main/) repository, using [this merged PR](https://bitbucket.org/calmisland/kidsloop-infra/pull-requests/148) as a template.
-
 ### Alpha info
 
-- Account name: Kidsloop Dev
+- Account name: kl-alpha-dev
 - Cluster: kidsloop-alpha
 - Service: kidsloop-alpha-xapi
 - Region: ap-northeast-2
-- DynamoDB table: kidsloop-alpha-xapi-ace-ray
 
 _Where can I find the environment variable values for the alpha environment?_
 
 Once you're granted access to the above account, head to the [service task list](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/assessment-many-cardinal/tasks), and you'll find the values specified in the latest task definition.
 
 ---
-
-## Recommended VS Code extensions
-
-- [Jira and Bitbucket](https://marketplace.visualstudio.com/items?itemName=Atlassian.atlascode)
-- [Mocha Test Explorer](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-mocha-test-adapter)
-
 
 ## Migrations
 
