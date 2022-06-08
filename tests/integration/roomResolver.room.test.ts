@@ -264,7 +264,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -462,7 +467,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -682,7 +692,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -879,7 +894,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -1058,7 +1078,12 @@ describe.skip('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,
@@ -1443,7 +1468,12 @@ describe.skip('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,
@@ -1670,8 +1700,14 @@ describe.skip('roomResolver.Room', () => {
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
           contents: new Map([
-            [lessonMaterial1.contentId, lessonMaterial1],
-            [lessonMaterial2.contentId, lessonMaterial2],
+            [
+              lessonMaterial1.contentId,
+              { content: lessonMaterial1, subContents: [] },
+            ],
+            [
+              lessonMaterial2.contentId,
+              { content: lessonMaterial2, subContents: [] },
+            ],
           ]),
           studentContentMap: [
             {
@@ -1991,7 +2027,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -2205,7 +2246,12 @@ describe.skip('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial2.contentId, lessonMaterial2]]),
+          contents: new Map([
+            [
+              lessonMaterial2.contentId,
+              { content: lessonMaterial2, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,
@@ -2374,7 +2420,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           {
             studentId: student1.userId,
@@ -2633,7 +2684,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -2793,7 +2849,12 @@ describe.skip('roomResolver.Room', () => {
 
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
       cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+        contents: new Map([
+          [
+            lessonMaterial.contentId,
+            { content: lessonMaterial, subContents: [] },
+          ],
+        ]),
         studentContentMap: [
           { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
         ],
@@ -2983,7 +3044,12 @@ describe.skip('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,
@@ -3306,7 +3372,12 @@ describe.skip('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,
@@ -3546,7 +3617,12 @@ describe.skip('roomResolver.Room', () => {
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,
@@ -3754,7 +3830,12 @@ describe.skip('roomResolver.Room', () => {
           .build()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-          contents: new Map([[lessonMaterial.contentId, lessonMaterial]]),
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
           studentContentMap: [
             {
               studentId: student.userId,

@@ -42,15 +42,19 @@ describe('cmsContentProvider', () => {
           // Assert
           expect(studentContentMap).to.have.lengthOf(0)
           expect(contents).to.have.lengthOf(1)
-          expect(contents.get(content1.contentId)).to.deep.equal(content1)
+          expect(contents.get(content1.contentId)).to.deep.equal({
+            content: content1,
+            subContents: [],
+          })
           cmsContentApi.received(1).getLessonMaterials(Arg.all())
-          cache
-            .received(1)
-            .setLessonPlanMaterials(
-              Arg.is(
-                (x) => x.length === 1 && x[0].contentId === contentDto1.id,
-              ),
-            )
+          // TODO: Update when caching is reinstated.
+          // cache
+          //   .received(1)
+          //   .setLessonPlanMaterials(
+          //     Arg.is(
+          //       (x) => x.length === 1 && x[0].contentId === contentDto1.id,
+          //     ),
+          //   )
         })
       },
     )
@@ -83,15 +87,19 @@ describe('cmsContentProvider', () => {
           expect(studentContentMap).to.have.lengthOf(1)
           expect(studentContentMap[0].studentId).to.equal(studentId)
           expect(contents).to.have.lengthOf(1)
-          expect(contents.get(content1.contentId)).to.deep.equal(content1)
+          expect(contents.get(content1.contentId)).to.deep.equal({
+            content: content1,
+            subContents: [],
+          })
           cmsContentApi.received(1).getLessonMaterials(Arg.all())
-          cache
-            .received(1)
-            .setLessonPlanMaterials(
-              Arg.is(
-                (x) => x.length === 1 && x[0].contentId === contentDto1.id,
-              ),
-            )
+          // TODO: Update when caching is reinstated.
+          // cache
+          //   .received(1)
+          //   .setLessonPlanMaterials(
+          //     Arg.is(
+          //       (x) => x.length === 1 && x[0].contentId === contentDto1.id,
+          //     ),
+          //   )
         })
       },
     )
@@ -179,7 +187,8 @@ describe('cmsContentProvider', () => {
       },
     )
 
-    context(
+    // TODO: Update when caching is reinstated.
+    context.skip(
       '1 matching lesson material exists; called right after fetching by roomId; within cache duration',
       () => {
         it('returns matching lesson material; cache hit', async () => {

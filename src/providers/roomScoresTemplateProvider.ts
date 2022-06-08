@@ -15,13 +15,11 @@ const logger = withLogger('RoomScoresTemplateProvider')
 /**
  * Creates a list of empty UserContentScores for every user-material combination, including subcontent.
  * For each user, the UserContentScores will be in the order defined in the lesson plan.
- * Subcontents aren't defined in lesson plans so the order of those will be based on event timestamps,
- * but will all be grouped together right after the parent item.
  * The user of this class should populate the generated "template" with actual results.
  */
 @Service()
 export class RoomScoresTemplateProvider {
-  private roomIdToContentKeyUsesH5pIdMap = new Map<string, boolean>()
+  private roomIdToContentKeyUsesContentIdMap = new Map<string, boolean>()
 
   constructor(
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
@@ -43,25 +41,30 @@ export class RoomScoresTemplateProvider {
   ): Promise<ReadonlyMap<string, UserContentScore>> {
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
 
-    // Populate mapKeyToUserContentScoreMap with an empty UserContentScore for every user-material combination.
-    // const emptySet = new Set<string>()
     for (const student of studentContentsResult.studentContentMap) {
-      // First the root activity.
       for (const contentId of student.contentIds) {
         const material = studentContentsResult.contents.get(contentId)
         if (!material) {
-          throw new Error(
-            'getTemplate >> student contentId not included in content list. ' +
-              `student contentId: ${contentId}`,
+          logger.error(
+            'getTemplate >> contentId not included in CMS provided content list.',
+            { roomId, studentId: student.studentId, contentId },
           )
+          continue
         }
         await this.addUserContentScoreToMap(
           roomId,
           student.studentId,
-          material,
-          undefined,
+          material.content,
           mapKeyToUserContentScoreMap,
         )
+        for (const subContent of material.subContents) {
+          await this.addUserContentScoreToMap(
+            roomId,
+            student.studentId,
+            subContent,
+            mapKeyToUserContentScoreMap,
+          )
+        }
       }
     }
     return mapKeyToUserContentScoreMap
@@ -71,47 +74,43 @@ export class RoomScoresTemplateProvider {
     roomId: string,
     userId: string,
     material: Content,
-    subcontentId: string | undefined,
     mapKeyToUserContentScoreMap: Map<string, UserContentScore>,
   ) {
-    // TODO: Replace the call to getCompatContentKey with the commented out line, below, after the content_id migration.
-    //const contentKey = ContentKey.construct(material.contentId)
     const contentKey = await this.getCompatContentKey(
       roomId,
       userId,
       material.contentId,
       material.h5pId,
-      subcontentId,
+      material.subcontentId,
     )
     const mapKey = RoomScoresTemplateProvider.getMapKey(
       roomId,
       userId,
       contentKey,
     )
-    let h5pType: string | undefined
-    let h5pName: string | undefined
-    let h5pParentId: string | undefined
-    if (material.h5pId) {
-      if (subcontentId != null && h5pParentId == null) {
-        // subcontent.parentId is always non-null if the parent is another subcontent.
-        // In this case, h5pParentId is null so the parent must be the root h5p id.
-        h5pParentId = material.h5pId
-      }
-    }
     mapKeyToUserContentScoreMap.set(
       mapKey,
       this.userContentScoreFactory.create(
         roomId,
         userId,
         contentKey,
-        h5pType,
-        h5pName,
-        h5pParentId,
+        material.type ?? undefined,
+        material.name,
+        material.parentId ?? undefined,
       ),
     )
   }
 
-  // TODO: Delete this method after the content_id migration.
+  /**
+   * The content_id database column has been inconsistent in terms of how it's constructed.
+   * There have been two variations but luckily the format has always been the same:
+   * `${rootId}` if not a subcontent, otherwise `${rootId}|${subContentId}`
+   * One variation uses the CMS content ID as rootId. The other uses the H5P id as rootId.
+   * In v2 of this service (the event-driven architecture), H5P ID takes precedence.
+   * So this method will only use the CMS content ID if
+   * 1) The content is a non-H5P lesson material.
+   * 2) The target room already contains database entries using the CMS content ID.
+   */
   public async getCompatContentKey(
     roomId: string,
     studentId: string,
@@ -122,26 +121,26 @@ export class RoomScoresTemplateProvider {
     if (!h5pId) {
       return ContentKey.construct(contentId, h5pSubId)
     }
-    let contentKey = ContentKey.construct(h5pId, h5pSubId)
-    const contentKeyUsesH5pId = this.roomIdToContentKeyUsesH5pIdMap.get(roomId)
-    if (contentKeyUsesH5pId === true) {
+    let contentKey = ContentKey.construct(contentId, h5pSubId)
+    const contentKeyUsesContentId =
+      this.roomIdToContentKeyUsesContentIdMap.get(roomId)
+    if (contentKeyUsesContentId === true) {
       return contentKey
-    } else if (contentKeyUsesH5pId === false) {
-      return ContentKey.construct(contentId, h5pSubId)
+    } else if (contentKeyUsesContentId === false) {
+      return ContentKey.construct(h5pId, h5pSubId)
     }
-    // If we find a content_id entry that's still using the h5pId, it means we haven't
-    // run the migration script yet. So keep using the h5pId, for now.
-    const userContentScoreUsingH5pId =
+
+    const userContentScoreUsingContentId =
       (await this.userContentScoreRepository.manager.query(
         `SELECT EXISTS(SELECT * FROM assessment_xapi_user_content_score WHERE room_id = $1 AND student_id = $2 AND content_id = $3)`,
         [roomId, studentId, contentKey],
       )) as [{ exists: boolean }]
 
-    if (userContentScoreUsingH5pId[0].exists === true) {
-      this.roomIdToContentKeyUsesH5pIdMap.set(roomId, true)
+    if (userContentScoreUsingContentId[0].exists === true) {
+      this.roomIdToContentKeyUsesContentIdMap.set(roomId, true)
     } else {
-      this.roomIdToContentKeyUsesH5pIdMap.set(roomId, false)
-      contentKey = ContentKey.construct(contentId, h5pSubId)
+      this.roomIdToContentKeyUsesContentIdMap.set(roomId, false)
+      contentKey = ContentKey.construct(h5pId, h5pSubId)
     }
     return contentKey
   }

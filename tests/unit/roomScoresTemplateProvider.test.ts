@@ -51,7 +51,9 @@ describe('roomScoresTemplateProvider', () => {
             .withSource(FileType.H5P, h5pRoot)
             .build()
           const materials: StudentContentsResult = {
-            contents: new Map([[material.contentId, material]]),
+            contents: new Map([
+              [material.contentId, { content: material, subContents: [] }],
+            ]),
             studentContentMap: [
               { studentId: userId, contentIds: [material.contentId] },
             ],

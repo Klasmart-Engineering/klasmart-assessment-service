@@ -52,7 +52,9 @@ describe('roomScoresCalculator', () => {
         Substitute.for<RoomScoresTemplateProvider>()
 
       const studentContentsResult: StudentContentsResult = {
-        contents: new Map([[material.contentId, material]]),
+        contents: new Map([
+          [material.contentId, { content: material, subContents: [] }],
+        ]),
         studentContentMap: [{ studentId, contentIds: [material.contentId] }],
       }
       materialsProvider
@@ -142,7 +144,9 @@ describe('roomScoresCalculator', () => {
           Substitute.for<RoomScoresTemplateProvider>()
 
         const studentContentsResult: StudentContentsResult = {
-          contents: new Map([[material.contentId, material]]),
+          contents: new Map([
+            [material.contentId, { content: material, subContents: [] }],
+          ]),
           studentContentMap: [{ studentId, contentIds: [material.contentId] }],
         }
         materialsProvider

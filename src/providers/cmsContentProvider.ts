@@ -28,9 +28,9 @@ export class CmsContentProvider {
       authenticationToken,
     )
     const studentContentMap = responseToStudentContentsResult(response)
-    await this.cache.setLessonPlanMaterials([
-      ...studentContentMap.contents.values(),
-    ])
+    // await this.cache.setLessonPlanMaterials([
+    //   ...studentContentMap.contents.values(),
+    // ])
 
     return studentContentMap
   }
@@ -80,7 +80,7 @@ function responseToStudentContentsResult(
   response: ContentResponse,
 ): StudentContentsResult {
   const contents = new Map(
-    response.list.map((x) => [x.id as string, contentDtoToEntity(x)]),
+    response.list.map((x) => [x.id as string, contentDtoToCompositeEntity(x)]),
   )
   const studentContentMap =
     response.student_content_map?.map(studentContentMapEntryDtoToEntity) ?? []
@@ -100,7 +100,15 @@ function studentContentMapEntryDtoToEntity(
   }
 }
 
-function contentDtoToEntity(dto: ContentDto) {
+function contentDtoToCompositeEntity(dto: ContentDto): CompositeContent {
+  const content = contentDtoToEntity(dto)
+  return {
+    content,
+    subContents: [],
+  }
+}
+
+function contentDtoToEntity(dto: ContentDto): Content {
   return new Content(
     dto.id ?? throwExpression('content.id is undefined'),
     dto.author_id ?? throwExpression('content.author_id is undefined'),
@@ -118,7 +126,12 @@ export type StudentContentMapEntry = {
   contentIds: ReadonlyArray<string>
 }
 
+export type CompositeContent = {
+  content: Content
+  subContents: Content[]
+}
+
 export type StudentContentsResult = {
-  contents: ReadonlyMap<string, Content>
+  contents: ReadonlyMap<string, CompositeContent>
   studentContentMap: ReadonlyArray<StudentContentMapEntry>
 }
