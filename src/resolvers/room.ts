@@ -17,6 +17,7 @@ import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessme
 import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context } from '../auth/context'
+import { RoomScoresTemplateProvider } from '../providers/roomScoresTemplateProvider'
 
 const logger = withLogger('RoomResolver')
 
@@ -56,25 +57,40 @@ export default class RoomResolver {
       logger.debug(
         `existingScores num: ${existingScores.length}, newScores num: ${newScores.length}`,
       )
-      const allScores = [...existingScores, ...newScores].filter(
-        (val, idx, self) => {
-          const index = self.findIndex(
-            (t) =>
-              t.roomId === val.roomId &&
-              t.studentId === val.studentId &&
-              t.contentKey === val.contentKey,
+      const mapKeyToNewScoreMap = new Map(
+        newScores.map((x) => {
+          const mapKey = RoomScoresTemplateProvider.getMapKey(
+            roomId,
+            x.studentId,
+            x.contentKey,
           )
-          return idx === index
-        },
+          return [mapKey, x]
+        }),
       )
-      logger.debug(`allScores num: ${allScores.length}`)
-
-      if (existingScores.length !== allScores.length) {
-        room.scores = Promise.resolve(allScores)
-        await this.assessmentDB.save(room)
+      // Start with newScores because these are in lesson plan order.
+      const scoresToUpsert = [...newScores]
+      for (const existingScore of existingScores) {
+        const mapKey = RoomScoresTemplateProvider.getMapKey(
+          roomId,
+          existingScore.studentId,
+          existingScore.contentKey,
+        )
+        const newScore = mapKeyToNewScoreMap.get(mapKey)
+        if (!newScore) {
+          logger.error(
+            "Received event for room but the material isn't part of the lesson plan.",
+            { roomId, contentKey: existingScore.contentKey },
+          )
+          continue
+        }
+        newScore.seen = existingScore.seen
+        newScore.answers = existingScore.answers
+        newScore.teacherScores = existingScore.teacherScores
       }
 
-      logger.debug(`Room >> roomId: ${roomId} >> updated Room`)
+      room.scores = Promise.resolve(scoresToUpsert)
+      await this.assessmentDB.save(room)
+
       return room
     } catch (e) {
       logger.error(e)

@@ -103,10 +103,6 @@ export const parseRawEvent = (
   }
 }
 
-function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
-  return value !== null && value !== undefined
-}
-
 function groupBy<K, V>(
   list: Array<V>,
   keyGetter: (input: V) => K,
@@ -213,11 +209,6 @@ export class RoomScoresTemplateProvider2 {
           ` and pushed to error strea(${errorStream})`,
       )
     }
-
-    // Special case handling ******************************************
-    addDummyEventsToAccountForActivitiesWithNoEvents(validXapiEvents)
-    populateUndefinedH5pTypesWithParentType(validXapiEvents)
-    // ****************************************************************
 
     // 2. Group by Room
     const xapiEventsGroupedByRoom = groupBy(
@@ -335,93 +326,14 @@ export class RoomScoresTemplateProvider2 {
           logger.info(
             `process >> Redis acknowledge processed events: ${xapiEvents.length}`,
           )
-          const nonDummyEvents = xapiEvents.filter((x) => x.entryId !== '-1')
-          if (nonDummyEvents.length > 0) {
-            await xClient.ack(
-              stream,
-              group,
-              nonDummyEvents.map((x) => x.entryId),
-            )
-          }
+          await xClient.ack(
+            stream,
+            group,
+            xapiEvents.map((x) => x.entryId),
+          )
         }
       }
       await this.assessmentDB.save(room)
-    }
-  }
-}
-
-// https://calmisland.atlassian.net/browse/KLA-252
-function addDummyEventsToAccountForActivitiesWithNoEvents(
-  xapiEvents: XApiRecordEvent[],
-) {
-  const contentKeyHash = new Set<string>()
-  for (const x of xapiEvents) {
-    if (!x.h5pSubId) continue
-    const contentKey = ContentKey.construct(x.h5pId, x.h5pSubId)
-    if (contentKeyHash.has(contentKey)) continue
-    contentKeyHash.add(contentKey)
-
-    // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
-    // Because without a subcontent API, we can't know about it.
-    // But now we use the fact that an xAPI event will include a parent ID if the activity
-    // that generated the event is a sub-activity. So we now use that parent ID to generate a
-    // UserContentScore for that parent, even though the parent may not emit an event.
-    if (x.h5pParentId && x.h5pParentId.toString() !== x.h5pId.toString()) {
-      xapiEvents.push({
-        entryId: '-1',
-        h5pId: x.h5pId,
-        roomId: x.roomId,
-        timestamp: x.timestamp,
-        userId: x.userId,
-        h5pSubId: x.h5pParentId,
-        h5pParentId: x.h5pId,
-      })
-    }
-  }
-}
-
-// https://calmisland.atlassian.net/browse/DAS-353
-function populateUndefinedH5pTypesWithParentType(
-  xapiEvents: ReadonlyArray<ParsedXapiEvent>,
-) {
-  const h5pWithChildren = new Set<string>()
-  for (const x of xapiEvents) {
-    if (x.h5pParentId != null) {
-      h5pWithChildren.add(x.h5pParentId)
-    }
-  }
-  const parentKeyToEventMap = new Map<string, ParsedXapiEvent>()
-  for (const x of xapiEvents) {
-    if (
-      !x.h5pSubId &&
-      h5pWithChildren.has(x.h5pId) &&
-      !parentKeyToEventMap.has(x.h5pId)
-    ) {
-      parentKeyToEventMap.set(x.h5pId, x)
-    }
-    if (
-      x.h5pSubId &&
-      h5pWithChildren.has(x.h5pSubId) &&
-      !parentKeyToEventMap.has(`${x.h5pId}|${x.h5pSubId}`)
-    ) {
-      parentKeyToEventMap.set(`${x.h5pId}|${x.h5pSubId}`, x)
-    }
-  }
-  for (const x of xapiEvents) {
-    if (x.h5pSubId == null) {
-      continue
-    }
-    let current: ParsedXapiEvent | undefined = x
-    while (current != null && current.h5pType == null) {
-      const key =
-        current.h5pParentId?.toString() === current.h5pId.toString()
-          ? current.h5pId
-          : `${current.h5pId}|${current.h5pParentId}`
-      const parent = parentKeyToEventMap.get(key)
-      current.h5pType = parent?.h5pType
-      if (current.h5pType == null) {
-        current = parent
-      }
     }
   }
 }
