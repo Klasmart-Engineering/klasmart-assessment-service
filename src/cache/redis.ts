@@ -137,7 +137,7 @@ export class RedisCache implements ICache {
       `setLessonPlanMaterials >> materials count: ${materials.length}`,
     )
     await Promise.all(
-      materials.map(async (material) =>
+      materials.map((material) =>
         this.client.set(
           materialKey(material.contentId),
           JSON.stringify(material),

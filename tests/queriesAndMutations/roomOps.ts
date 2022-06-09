@@ -51,7 +51,7 @@ export async function roomQueryWithCookie(
 }
 
 export const ROOM = `
-query Room($roomId: String) {
+query Room($roomId: String!) {
   Room(room_id: $roomId) {
     room_id
     ${CONTENT_SCORES}

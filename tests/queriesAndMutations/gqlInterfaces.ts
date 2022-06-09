@@ -67,7 +67,7 @@ answers {
 }
 `
 export interface GqlAnswer {
-  date: Date | null
+  date: number | null
   answer: string | null
   score: number | null
   minimumPossibleScore?: number | null

@@ -5,5 +5,6 @@ export type H5PInfoResponse = {
 export type H5pInfoDto = {
   id: string
   type: string
+  name: string
   subContents?: H5pInfoDto[]
 }

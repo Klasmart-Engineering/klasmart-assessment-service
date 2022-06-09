@@ -28,7 +28,6 @@ import {
   parseRawEvent,
   RoomScoresTemplateProvider2,
 } from '../../src/streams/calculateScores'
-import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
 import { XApiRecord } from '../../src/db/xapi'
 
 describe('Event-driven Worker', () => {
@@ -60,7 +59,6 @@ describe('Event-driven Worker', () => {
     redisClient = await connectToIoRedis(redisMode, redisHost, redisPort)
     xClient = new RedisStreams(redisClient)
     roomScoreProviderWorker = new RoomScoresTemplateProvider2(
-      new UserContentScoreFactory(),
       roomRepo,
       userContentScoresRepo,
       answerRepo,

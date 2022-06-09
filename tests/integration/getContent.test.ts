@@ -3,9 +3,7 @@ import { LessonMaterialBuilder } from '../builders'
 import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
 import { v4 } from 'uuid'
 import { FileType } from '../../src/db/cms/enums'
-import getContent, {
-  h5pIdToCmsContentIdCache,
-} from '../../src/helpers/getContent'
+import ContentProvider from '../../src/helpers/getContent'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
@@ -29,14 +27,14 @@ describe('getContent', function () {
         cmsContentProvider
           .getLessonMaterialsWithSourceId(contentKey, authenticationToken)
           .resolves([])
+        const sut = new ContentProvider(cmsContentProvider)
 
         // Act
-        const result = await getContent(
+        const result = await sut.getContent(
           contentKey,
           contentType,
           contentName,
           contentParentId,
-          cmsContentProvider,
         )
 
         // Assert
@@ -59,6 +57,7 @@ describe('getContent', function () {
         const contentName = undefined
         const contentParentId = undefined
         const authenticationToken = undefined
+        const h5pIdToCmsContentIdCache = new Map<string, string>()
         h5pIdToCmsContentIdCache.set(contentKey, contentId)
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
@@ -67,14 +66,17 @@ describe('getContent', function () {
         cmsContentProvider
           .getLessonMaterial(contentId, authenticationToken)
           .resolves(undefined)
+        const sut = new ContentProvider(
+          cmsContentProvider,
+          h5pIdToCmsContentIdCache,
+        )
 
         // Act
-        const result = await getContent(
+        const result = await sut.getContent(
           contentKey,
           contentType,
           contentName,
           contentParentId,
-          cmsContentProvider,
         )
 
         // Assert
@@ -110,14 +112,14 @@ describe('getContent', function () {
             authenticationToken,
           )
           .resolves([material])
+        const sut = new ContentProvider(cmsContentProvider)
 
         // Act
-        const result = await getContent(
+        const result = await sut.getContent(
           contentKey,
           contentType,
           contentName,
           contentParentId,
-          cmsContentProvider,
         )
 
         // Assert

@@ -16,6 +16,7 @@ import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 import { ASSESSMENTS_CONNECTION_NAME } from '../connectToAssessmentDatabase'
+import { Content } from '../../cms/entities/content'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -46,8 +47,9 @@ export class UserContentScore extends Base {
     { name: 'content_id', referencedColumnName: 'content_id' },
   ])
   @TypeormLoader()
-  public answers: Promise<Answer[]>
+  public answers!: Promise<Answer[]>
 
+  // TODO: Is this only being used by tests?
   public async getAnswers(): Promise<Answer[]> {
     return getRepository(Answer, ASSESSMENTS_CONNECTION_NAME).find({
       where: {
@@ -90,6 +92,36 @@ export class UserContentScore extends Base {
   @Column({ type: 'varchar', nullable: true })
   public contentParentId?: string | null
 
+  public content: Content | null = null
+
+  constructor(roomId: string, studentId: string, contentKey: string) {
+    super()
+    this.roomId = roomId
+    this.studentId = studentId
+    this.contentKey = contentKey
+    this.seen = false
+    if (roomId == null) {
+      // typeorm is making the call, so don't overwrite answers.
+      return
+    }
+    this.answers = Promise.resolve([])
+  }
+
+  public static new(
+    roomId: string,
+    studentId: string,
+    contentKey: string,
+    content?: Content,
+  ): UserContentScore {
+    const userContentScore = new UserContentScore(roomId, studentId, contentKey)
+    userContentScore.content = content ?? null
+    userContentScore.contentType = content?.type
+    userContentScore.contentName = content?.name
+    userContentScore.contentParentId = content?.parentId
+
+    return userContentScore
+  }
+
   public async applyEvent(
     xapiEvent: ParsedXapiEvent,
   ): Promise<Answer | undefined> {
@@ -103,45 +135,6 @@ export class UserContentScore extends Base {
     return await this.addAnswer(xapiEvent)
   }
 
-  public async applyEvents(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
-    this.seen = true
-    const filteredXapiEvents = xapiEvents.filter(
-      (xapiEvent) =>
-        xapiEvent.score !== undefined && xapiEvent.response !== undefined,
-    )
-    return await this.addAnswers(filteredXapiEvents)
-  }
-
-  constructor(roomId: string, studentId: string, contentKey: string) {
-    super()
-    this.roomId = roomId
-    this.studentId = studentId
-    this.contentKey = contentKey
-    this.seen = false
-    this.answers = Promise.resolve([])
-    if (roomId == null) {
-      // typeorm is making the call, so don't overwrite answers.
-      return
-    }
-    this.answers = Promise.resolve([])
-  }
-
-  public static new(
-    roomId: string,
-    studentId: string,
-    contentKey: string,
-    contentType: string | undefined,
-    contentName?: string,
-    contentParentId?: string | null,
-  ): UserContentScore {
-    const userContentScore = new UserContentScore(roomId, studentId, contentKey)
-    userContentScore.contentType = contentType
-    userContentScore.contentName = contentName
-    userContentScore.contentParentId = contentParentId
-
-    return userContentScore
-  }
-
   protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<Answer> {
     let answers = await this.answers
     if (!answers) {
@@ -152,48 +145,11 @@ export class UserContentScore extends Base {
       this,
       new Date(xapiEvent.timestamp),
       xapiEvent.response,
-      // TODO: Maybe pass whole score object, instead.
       xapiEvent.score?.raw,
       xapiEvent.score?.min,
       xapiEvent.score?.max,
     )
     answers.push(answer)
     return answer
-  }
-
-  protected async addAnswers(xapiEvents: ParsedXapiEvent[]): Promise<Answer[]> {
-    let answers = await this.answers
-    if (!answers) {
-      answers = []
-      this.answers = Promise.resolve(answers)
-    }
-    const newAnswers = xapiEvents.map((xapiEvent) =>
-      Answer.new(
-        this,
-        new Date(xapiEvent.timestamp),
-        xapiEvent.response,
-        // TODO: Maybe pass whole score object, instead.
-        xapiEvent.score?.raw,
-        xapiEvent.score?.min,
-        xapiEvent.score?.max,
-      ),
-    )
-    console.log(
-      `pushing newAnswers ${newAnswers.length} to existing ${answers.length} answers`,
-    )
-    answers.push(...newAnswers)
-    console.log(`now there are ${answers.length} answers`)
-    return answers
-  }
-
-  public async addReadyAnswer(answer: Answer): Promise<void> {
-    let answers = await this.answers
-    if (!answers) {
-      answers = [answer]
-      this.answers = Promise.resolve(answers)
-    } else {
-      answers.push(answer)
-    }
-    return
   }
 }

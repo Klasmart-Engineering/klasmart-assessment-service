@@ -53,10 +53,10 @@ export default class UserContentScoreBuilder {
       this.roomId,
       this.studentId,
       this.contentKey,
-      this.contentType,
-      this.contentName,
-      this.contentParentId,
     )
+    entity.contentType = this.contentType
+    entity.contentName = this.contentName
+    entity.contentParentId = this.contentParentId
     entity.seen = this.seen
     return entity
   }

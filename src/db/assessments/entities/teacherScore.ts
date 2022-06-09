@@ -42,6 +42,7 @@ export class TeacherScore extends Base {
   )
   public userContentScore?: Promise<UserContentScore>
 
+  // TODO: Consider removing these feature flags since it's been fully integrated already.
   @Field()
   @CreateDateColumn({
     name: featureFlags.UseCreatedAtUpdatedAtVersionColumns

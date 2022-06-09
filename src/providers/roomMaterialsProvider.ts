@@ -81,18 +81,10 @@ export class RoomMaterialsProvider {
   }
 
   private createContent(baseline: Content, subContent: H5pSubContent) {
-    const content = new Content(
-      baseline.contentId,
-      baseline.author,
-      baseline.name,
-      baseline.contentType,
-      baseline.createdAt,
-      baseline.data,
-      baseline.publishStatus,
-    )
+    const content = Content.clone(baseline)
     content.type = subContent.type
     content.subcontentId = subContent.id
-    //content.name = subContent.name
+    content.name = subContent.name
     content.parentId = subContent.parentId
     return content
   }

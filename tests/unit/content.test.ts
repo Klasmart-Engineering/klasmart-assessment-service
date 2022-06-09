@@ -8,8 +8,8 @@ describe('content.populateH5pId', () => {
     it('h5pId has expected value', () => {
       const builder = new LessonMaterialBuilder().withSource(FileType.H5P)
       const material = builder.build()
-      material.h5pId = undefined
-      material['populateH5pId']()
+      //material.h5pId = undefined
+      //material['populateH5pId']()
       expect(material.h5pId).to.equal(builder['rawSourceId'])
     })
   })
@@ -20,7 +20,7 @@ describe('content.populateH5pId', () => {
         .withUndefinedData()
         .withUndefinedH5pId()
       const material = builder.build()
-      material['populateH5pId']()
+      //material['populateH5pId']()
       expect(material.h5pId).to.be.undefined
     })
   })
@@ -29,7 +29,7 @@ describe('content.populateH5pId', () => {
     it('h5pId is undefined', () => {
       const builder = new LessonMaterialBuilder().withSource(FileType.Audio)
       const material = builder.build()
-      material['populateH5pId']()
+      //material['populateH5pId']()
       expect(material.h5pId).to.be.undefined
     })
   })
@@ -38,7 +38,7 @@ describe('content.populateH5pId', () => {
     it('h5pId is undefined', () => {
       const builder = new LessonMaterialBuilder().withSource(FileType.Document)
       const material = builder.build()
-      material['populateH5pId']()
+      //material['populateH5pId']()
       expect(material.h5pId).to.be.undefined
     })
   })
@@ -47,7 +47,7 @@ describe('content.populateH5pId', () => {
     it('h5pId is undefined', () => {
       const builder = new LessonMaterialBuilder().withSource(FileType.Image)
       const material = builder.build()
-      material['populateH5pId']()
+      //material['populateH5pId']()
       expect(material.h5pId).to.be.undefined
     })
   })
@@ -56,7 +56,7 @@ describe('content.populateH5pId', () => {
     it('h5pId is undefined', () => {
       const builder = new LessonMaterialBuilder().withSource(FileType.Video)
       const material = builder.build()
-      material['populateH5pId']()
+      //material['populateH5pId']()
       expect(material.h5pId).to.be.undefined
     })
   })
@@ -67,7 +67,7 @@ describe('content.populateH5pId', () => {
         FileType.H5PExtension,
       )
       const material = builder.build()
-      material['populateH5pId']()
+      //material['populateH5pId']()
       expect(material.h5pId).to.be.undefined
     })
   })

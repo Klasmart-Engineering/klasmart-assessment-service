@@ -4,7 +4,6 @@ import { Repository } from 'typeorm'
 import { LessonMaterialBuilder, UserContentScoreBuilder } from '../builders'
 import { UserContentScore } from '../../src/db/assessments/entities'
 import { RoomScoresTemplateProvider } from '../../src/providers/roomScoresTemplateProvider'
-import { UserContentScoreFactory } from '../../src/providers/userContentScoreFactory'
 import ContentKey from '../../src/helpers/contentKey'
 import { FileType } from '../../src/db/cms/enums'
 import { StudentContentsResult } from '../../src/providers/cmsContentProvider'
@@ -50,6 +49,7 @@ describe('roomScoresTemplateProvider', () => {
           const material = new LessonMaterialBuilder()
             .withSource(FileType.H5P, h5pRoot)
             .build()
+          // TODO: This needs to be fixed to reflect the above content scores.
           const materials: StudentContentsResult = {
             contents: new Map([
               [material.contentId, { content: material, subContents: [] }],
@@ -61,23 +61,8 @@ describe('roomScoresTemplateProvider', () => {
 
           const userContentScoreRepository =
             Substitute.for<Repository<UserContentScore>>()
-          const userContentScoreFactory =
-            Substitute.for<UserContentScoreFactory>()
 
-          userContentScoreFactory
-            .create(roomId, userId, userContentScore1.contentKey)
-            .returns(userContentScore1)
-          userContentScoreFactory
-            .create(roomId, userId, userContentScore2.contentKey)
-            .returns(userContentScore2)
-          userContentScoreFactory
-            .create(roomId, userId, userContentScore3.contentKey)
-            .returns(userContentScore3)
-
-          const sut = new RoomScoresTemplateProvider(
-            userContentScoreRepository,
-            userContentScoreFactory,
-          )
+          const sut = new RoomScoresTemplateProvider(userContentScoreRepository)
 
           // Act
           const result = await sut.getTemplate(roomId, materials)

@@ -17,11 +17,11 @@ import { Context, UserID } from '../auth/context'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { Content } from '../db/cms/entities/content'
-import getContent from '../helpers/getContent'
+import ContentProvider from '../helpers/getContent'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { User } from '../web/user'
+import { CmsContentProvider } from '../providers/cmsContentProvider'
 
 const logger = withLogger('TeacherScoreResolver')
 
@@ -32,6 +32,7 @@ export default class TeacherScoreResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
     private readonly cmsContentProvider: CmsContentProvider,
+    private readonly contentProvider: ContentProvider,
   ) {}
 
   @Authorized()
@@ -100,12 +101,14 @@ export default class TeacherScoreResolver {
     }
   }
 
+  // TODO: Move to entity.
   @FieldResolver(() => User, { nullable: true })
   public teacher(@Root() source: TeacherScore): User {
     logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
     return { userId: source.teacherId }
   }
 
+  // TODO: Move to entity.
   @FieldResolver(() => User, { nullable: true })
   public student(@Root() source: TeacherScore): User {
     logger.debug(`TeacherScore { studentId: ${source.studentId} } >> student`)
@@ -121,22 +124,18 @@ export default class TeacherScoreResolver {
       `TeacherScore { roomId: ${source.roomId}, studentId: ${source.studentId}, ` +
         `contentKey: ${source.contentKey} } >> content`,
     )
-    const userContentScore = await this.assesmentDB.findOne(UserContentScore, {
-      where: {
-        roomId: source.roomId,
-        studentId: source.studentId,
-        contentKey: source.contentKey,
-      },
-    })
+    const userContentScore = await source.userContentScore
+    if (userContentScore?.content) {
+      return userContentScore.content
+    }
     const contentType = userContentScore?.contentType
     const contentName = userContentScore?.contentName
     const contentParentId = userContentScore?.contentParentId
-    return await getContent(
+    return await this.contentProvider.getContent(
       source.contentKey,
       contentType,
       contentName,
       contentParentId,
-      this.cmsContentProvider,
       context.encodedAuthenticationToken,
     )
   }

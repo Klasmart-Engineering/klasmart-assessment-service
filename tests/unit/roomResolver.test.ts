@@ -38,7 +38,7 @@ describe('roomResolver', () => {
         // Assert
         assessmentDB.received(1).findOne(Room, roomId, {})
         roomScoresCalculator.received(1).calculate(roomId, undefined)
-        assessmentDB.received(0).save(room)
+        assessmentDB.received(1).save(room)
         const resultScores = await resultRoom.scores
 
         expect(resultScores).to.have.lengthOf(1)

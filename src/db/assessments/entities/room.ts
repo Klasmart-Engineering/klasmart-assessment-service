@@ -37,7 +37,7 @@ export class Room extends Base {
   public endTime?: Date | null
 
   @Column({ type: 'smallint', name: 'attendance_count', nullable: true })
-  public attendanceCount?: number
+  public attendanceCount?: number | null
 
   @Column({ default: false })
   public recalculate!: boolean

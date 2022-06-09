@@ -1,14 +1,15 @@
-import { getRepository } from 'typeorm'
 import { v4 } from 'uuid'
 import { Content } from '../../src/db/cms/entities/content'
 import { FileType } from '../../src/db/cms/enums/fileType'
 import { Mutable } from '../utils/mutable'
 import ContentBuilder from './contentBuilder'
 
+// TODO: Merge this with ContentBuilder.
 export default class LessonMaterialBuilder extends ContentBuilder {
   private rawSourceId = v4()
   private sourceId? = v4()
   private fileType = FileType.H5P
+  private contentType: string | undefined
   private readonly sourceMap = new Map([
     [FileType.H5P, this.rawSourceId],
     [FileType.Image, `assets-${this.rawSourceId}.gif`],
@@ -29,8 +30,14 @@ export default class LessonMaterialBuilder extends ContentBuilder {
     return this
   }
 
+  public withContentType(value?: string): this {
+    this.contentType = value
+    return this
+  }
+
   public build(): Content {
     const entity = super.build()
+    entity.type = this.contentType
     const mutableEntity: Mutable<Content> = entity
     if (this.isDataDefined) {
       const data: unknown = {
@@ -38,8 +45,7 @@ export default class LessonMaterialBuilder extends ContentBuilder {
         file_type: this.fileType.valueOf(),
         input_source: 1,
       }
-      mutableEntity.data = data as JSON
-      entity['populateH5pId']()
+      entity['populateH5pId'](data as JSON)
     }
     return entity
   }

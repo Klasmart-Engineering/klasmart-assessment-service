@@ -6,6 +6,7 @@ import { FileType } from '../db/cms/enums'
 @Service()
 @Resolver(() => Content)
 export default class ContentResolver {
+  // TODO: Make this a normal property rather than a FieldResolver
   @FieldResolver(() => FileType, { nullable: true })
   fileType(@Root() content: Content): string | undefined {
     if (content.fileType !== undefined) {
@@ -13,6 +14,7 @@ export default class ContentResolver {
     }
   }
 
+  // TODO: Make this a normal property rather than a FieldResolver
   @FieldResolver({ nullable: true })
   type(@Root() content: Content): string | undefined {
     if (content.type) {

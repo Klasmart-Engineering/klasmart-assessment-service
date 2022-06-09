@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
-import { LessonPlanBuilder, LessonMaterialBuilder } from '../builders'
+import { LessonMaterialBuilder } from '../builders'
 import {
   RedisCache,
   IoRedisClientType,
@@ -28,6 +28,7 @@ describe('Redis caching and InMermory caching', () => {
     const lessonMaterial = new LessonMaterialBuilder()
       .withSubcontentId('')
       .withParentId('')
+      .withContentType('')
       .build()
 
     it('setLessonMaterials successfully', async () => {
@@ -65,9 +66,6 @@ describe('Redis caching and InMermory caching', () => {
   })
 
   context('LessonPlan with empty materials workflow: set, get, flush', () => {
-    const lessonPlan = new LessonPlanBuilder().build()
-    const cacheKey = `key:${lessonPlan.contentId}`
-
     it('setLessonMaterials successfully', async () => {
       await redisCache.setLessonPlanMaterials([])
       await inMemorycache.setLessonPlanMaterials([])
@@ -84,11 +82,6 @@ describe('Redis caching and InMermory caching', () => {
       .withSubcontentId('')
       .withParentId('')
       .build()
-    const lessonPlan = new LessonPlanBuilder()
-      .addMaterialId(lessonMaterial1.contentId)
-      .addMaterialId(lessonMaterial2.contentId)
-      .build()
-    const cacheKey = `key:${lessonPlan.contentId}`
     const lessonPlanMaterials = [lessonMaterial1, lessonMaterial2]
 
     it('setLessonMaterials successfully', async () => {

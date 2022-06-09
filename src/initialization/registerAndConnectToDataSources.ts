@@ -53,6 +53,7 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
     cache = new InMemoryCache()
   }
   MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)
+  MutableContainer.set(DiKeys.H5pUrl, config.H5P_API_URL)
   MutableContainer.set(DiKeys.ICache, cache)
   cache.setRecurringFlush(24 * 60 * 60 * 1000)
 

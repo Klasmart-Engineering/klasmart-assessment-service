@@ -8,7 +8,6 @@ import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import ContentKey from '../helpers/contentKey'
 import { StudentContentsResult } from './cmsContentProvider'
-import { UserContentScoreFactory } from './userContentScoreFactory'
 
 const logger = withLogger('RoomScoresTemplateProvider')
 
@@ -24,7 +23,6 @@ export class RoomScoresTemplateProvider {
   constructor(
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
     private readonly userContentScoreRepository: Repository<UserContentScore>,
-    private readonly userContentScoreFactory: UserContentScoreFactory,
   ) {}
 
   public static getMapKey(
@@ -90,14 +88,7 @@ export class RoomScoresTemplateProvider {
     )
     mapKeyToUserContentScoreMap.set(
       mapKey,
-      this.userContentScoreFactory.create(
-        roomId,
-        userId,
-        contentKey,
-        material.type ?? undefined,
-        material.name,
-        material.parentId ?? undefined,
-      ),
+      UserContentScore.new(roomId, userId, contentKey, material),
     )
   }
 

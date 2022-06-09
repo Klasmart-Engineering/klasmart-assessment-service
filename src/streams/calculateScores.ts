@@ -5,7 +5,6 @@ import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
 import { Answer, Room, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { EntityManager, Repository } from 'typeorm'
-import { UserContentScoreFactory } from '../providers/userContentScoreFactory'
 import ContentKey from '../helpers/contentKey'
 import { RedisStreams, StreamMessageReply } from './redisApi'
 
@@ -123,7 +122,6 @@ function groupBy<K, V>(
 @Service()
 export class RoomScoresTemplateProvider2 {
   constructor(
-    public readonly userContentScoreFactory: UserContentScoreFactory,
     @InjectRepository(Room, ASSESSMENTS_CONNECTION_NAME)
     private readonly roomRepository: Repository<Room>,
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
@@ -299,14 +297,7 @@ export class RoomScoresTemplateProvider2 {
             logger.debug(
               `process >> creating a new userContentScore(${roomId}:${userId}:${contentKey})`,
             )
-            userContentScore = this.userContentScoreFactory.create(
-              roomId,
-              userId,
-              contentKey,
-              h5pType,
-              h5pName,
-              h5pParentId,
-            )
+            userContentScore = UserContentScore.new(roomId, userId, contentKey)
             userContentScore.seen = true
             await this.assessmentDB.save(UserContentScore, userContentScore)
             room.scores = Promise.resolve([

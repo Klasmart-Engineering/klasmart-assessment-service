@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ObjectType, Field } from 'type-graphql'
-import { ContentType } from '../enums/contentType'
 import { FileType } from '../enums'
 
 @ObjectType()
@@ -24,33 +22,26 @@ export class Content {
   type?: string | null
 
   fileType?: FileType
-  readonly contentType!: ContentType
-  readonly author!: string
-  readonly data?: JSON
-  readonly createdAt!: number
   readonly publishStatus!: string
 
   constructor(
     contentId: string,
-    authorId: string,
     contentName: string,
-    contentType: ContentType,
-    createdAt: number,
-    data: JSON | undefined,
     publishStatus: string,
+    data: JSON | undefined,
   ) {
     this.contentId = contentId
-    this.author = authorId
     this.name = contentName
-    this.contentType = contentType
-    this.createdAt = createdAt
-    this.data = data
     this.publishStatus = publishStatus
-    this.populateH5pId()
+    this.populateH5pId(data)
   }
 
-  populateH5pId(): void {
-    const typedData = this.data as unknown as IMaterial
+  public static clone(content: Content): Content {
+    return { ...content, populateH5pId: content.populateH5pId }
+  }
+
+  populateH5pId(data: JSON | undefined): void {
+    const typedData = data as unknown as IMaterial
     if (typedData == null) {
       return
     }

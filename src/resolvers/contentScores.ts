@@ -3,9 +3,8 @@ import { Service } from 'typedi'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Content } from '../db/cms/entities'
-import getContent from '../helpers/getContent'
+import ContentProvider from '../helpers/getContent'
 import { ContentScores } from '../graphql/scoresByContent'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
 import { Context } from '../auth/context'
 
 const logger = withLogger('ContentScoresResolver')
@@ -13,7 +12,7 @@ const logger = withLogger('ContentScoresResolver')
 @Service()
 @Resolver(() => ContentScores)
 export default class ContentScoresResolver {
-  constructor(private readonly cmsContentProvider: CmsContentProvider) {}
+  constructor(private readonly contentProvider: ContentProvider) {}
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(
@@ -23,12 +22,15 @@ export default class ContentScoresResolver {
     logger.debug(
       `ContentScores { contentKey: ${source.contentKey} } >> content`,
     )
-    return await getContent(
+    const userContentScore = source.scores[0]
+    if (userContentScore.content) {
+      return userContentScore.content
+    }
+    return await this.contentProvider.getContent(
       source.contentKey,
       source.contentType,
       source.contentName,
       source.parentId,
-      this.cmsContentProvider,
       context.encodedAuthenticationToken,
     )
   }

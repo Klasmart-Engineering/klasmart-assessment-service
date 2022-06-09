@@ -291,7 +291,10 @@ describe('teacherScoreResolver.setScore', function () {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
 
-        lessonMaterial = new LessonMaterialBuilder().build()
+        lessonMaterial = new LessonMaterialBuilder()
+          .withContentType(xapiContentType)
+          .withName(xapiContentName)
+          .build()
         const userContentScore = await new UserContentScoreBuilder()
           .withroomId(roomId)
           .withStudentId(student.userId)

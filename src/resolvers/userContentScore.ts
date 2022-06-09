@@ -5,8 +5,7 @@ import { Service } from 'typedi'
 import { Context } from '../auth/context'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import getContent from '../helpers/getContent'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
+import ContentProvider from '../helpers/getContent'
 import { User } from '../web/user'
 
 const logger = withLogger('UserContentScoreResolver')
@@ -14,8 +13,9 @@ const logger = withLogger('UserContentScoreResolver')
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
-  constructor(private readonly cmsContentProvider: CmsContentProvider) {}
+  constructor(private readonly contentProvider: ContentProvider) {}
 
+  // TODO: Use field in UserContentScore rather than this FieldResolver.
   @FieldResolver(() => User, { nullable: true })
   public user(@Root() source: UserContentScore): User {
     logger.debug(
@@ -24,6 +24,7 @@ export default class UserContentScoreResolver {
     return { userId: source.studentId }
   }
 
+  // TODO: Use field in UserContentScore rather than this FieldResolver.
   @FieldResolver(() => Content, { nullable: true })
   public async content(
     @Root() source: UserContentScore,
@@ -32,12 +33,14 @@ export default class UserContentScoreResolver {
     logger.debug(
       `UserContentScore { contentKey: ${source.contentKey} } >> content`,
     )
-    return await getContent(
+    if (source.content) {
+      return source.content
+    }
+    return await this.contentProvider.getContent(
       source.contentKey,
       source.contentType,
       source.contentName,
       source.contentParentId,
-      this.cmsContentProvider,
       context.encodedAuthenticationToken,
     )
   }
