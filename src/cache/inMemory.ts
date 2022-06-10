@@ -1,47 +1,60 @@
-import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { ICache } from './interface'
-import { Content } from '../db/cms/entities/content'
-
-const logger = withLogger('InMemoryCache')
 
 export class InMemoryCache implements ICache {
-  private readonly lessonMaterialCache = new Map<string, Content>()
+  constructor(
+    private readonly clock: IClock,
+    private readonly cache = new Map<string, MemoryCacheRecord>(),
+  ) {}
 
-  public async getLessonMaterial(
-    contentId: string,
-  ): Promise<Content | undefined> {
-    const lessonMaterial = this.lessonMaterialCache.get(contentId)
-    logger.debug(
-      `getLessonMaterial >> contentId: ${contentId}, ${
-        lessonMaterial ? 'HIT' : 'MISS'
-      }`,
-    )
-    return lessonMaterial
-  }
-
-  public async setLessonMaterial(material: Content): Promise<void> {
-    logger.debug(`setLessonMaterial >> contentId: ${material.contentId}`)
-    this.lessonMaterialCache.set(material.contentId, material)
-  }
-
-  public async setLessonPlanMaterials(materials: Content[]): Promise<void> {
-    logger.debug(
-      `setLessonPlanMaterials >> materials count: ${materials.length}`,
-    )
-    for (const material of materials) {
-      this.lessonMaterialCache.set(material.contentId, material)
+  get(key: string): Promise<string | null> {
+    const record = this.cache.get(key)
+    if (record == null) {
+      return Promise.resolve(null)
     }
+    if (record.expirationMs && record.expirationMs < this.clock.now()) {
+      this.cache.delete(key)
+      return Promise.resolve(null)
+    }
+    return Promise.resolve(record.value)
   }
 
-  public async flush(): Promise<void> {
-    logger.debug(`flush >> keys found: ${this.lessonMaterialCache.size}`)
-    this.lessonMaterialCache.clear()
+  set(key: string, value: string, ttlSeconds: number): Promise<'OK' | null> {
+    const record = this.cache.get(key)
+    if (record && record.expirationMs >= this.clock.now()) {
+      return Promise.resolve(null)
+    }
+    this.cache.set(key, {
+      expirationMs: this.clock.now() + ttlSeconds * 1000,
+      value,
+    })
+    return Promise.resolve('OK')
   }
 
-  public setRecurringFlush(ms: number): NodeJS.Timeout {
-    logger.debug(`setRecurringFlush >> ms: ${ms}`)
-    return setInterval(() => this.flush(), ms)
+  delete(key: string): Promise<void> {
+    this.cache.delete(key)
+    return Promise.resolve()
+  }
+
+  prune() {
+    for (const [key, record] of this.cache) {
+      if (record.expirationMs && record.expirationMs < this.clock.now()) {
+        this.cache.delete(key)
+      }
+    }
   }
 }
 
-const removeNulls = <S>(value: S | undefined): value is S => value != null
+export type MemoryCacheRecord = {
+  value: string
+  expirationMs: number
+}
+
+export interface IClock {
+  now(): number
+}
+
+export class DateClock implements IClock {
+  now(): number {
+    return Date.now()
+  }
+}

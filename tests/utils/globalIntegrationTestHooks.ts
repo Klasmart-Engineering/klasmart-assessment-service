@@ -72,7 +72,7 @@ async function createAssessmentDbIfItDoesntExist(): Promise<void> {
 }
 
 export const createSubstitutesToExpectedInjectableServices = () => {
-  const cache: ICache = new InMemoryCache()
+  const cache: ICache = new InMemoryCache(Date)
   MutableContainer.set(DiKeys.ICache, cache)
   return {
     cache,

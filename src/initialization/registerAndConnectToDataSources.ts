@@ -21,7 +21,7 @@ const logger = withLogger('registerAndConnectToDataSources')
 export default async function registerAndConnectToDataSources(): Promise<void> {
   const config = getConfig()
 
-  const connectionPromises: Promise<any>[] = []
+  const connectionPromises: Promise<unknown>[] = []
 
   const assessmentDatabaseUrl = process.env.ASSESSMENT_DATABASE_URL
   if (!assessmentDatabaseUrl) {
@@ -50,12 +50,11 @@ export default async function registerAndConnectToDataSources(): Promise<void> {
       'CONFIG: To configure Redis please specify REDIS_HOST, REDIS_PORT and' +
         ' REDIS_MODE  environment variables',
     )
-    cache = new InMemoryCache()
+    cache = new InMemoryCache(Date)
   }
   MutableContainer.set(DiKeys.CmsApiUrl, config.CMS_API_URL)
   MutableContainer.set(DiKeys.H5pUrl, config.H5P_API_URL)
   MutableContainer.set(DiKeys.ICache, cache)
-  cache.setRecurringFlush(24 * 60 * 60 * 1000)
 
   await Promise.all(connectionPromises)
 }
