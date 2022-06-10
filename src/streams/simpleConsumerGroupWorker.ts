@@ -3,7 +3,6 @@ import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
-import { XApiRecord } from '../db/xapi'
 import { delay } from '../helpers/delay'
 import { RedisStreams } from './redisApi'
 import { RoomScoresTemplateProvider2 } from './calculateScores'
@@ -85,7 +84,7 @@ export const simpleConsumerGroupWorkerLoop = async (
   opts?: Options,
 ): Promise<void> => {
   opts = { ...defaultOptions, ...opts }
-  logger.info(
+  logger.silly(
     `${consumer} (${i}): reading stream(${stream}) with group(${group}), ` +
       `count: ${opts.count} + block: ${opts.block}| (loop: ${i}, delays: ${delays})...`,
   )
@@ -96,11 +95,11 @@ export const simpleConsumerGroupWorkerLoop = async (
       count: opts.count,
       streamKey: '0',
     })) || []
-  logger.info(`${consumer} (${i}): found ${events.length} pending events`)
+  logger.silly(`${consumer} (${i}): found ${events.length} pending events`)
 
   // if there are too few pending events, then fetch new ones
   if (events.length <= opts.minEvents) {
-    logger.info(
+    logger.silly(
       `${consumer} (${i}): very few or no pending messages, getting new ones...`,
     )
     const newEvents =
@@ -115,7 +114,7 @@ export const simpleConsumerGroupWorkerLoop = async (
   const tooFewEvents = events.length < opts.minEvents
   const hasNotExceededMaxDelays = delays < opts.maxDelays
   if (tooFewEvents && hasNotExceededMaxDelays) {
-    logger.debug(
+    logger.silly(
       `${consumer} (${i}): too few events found: ` +
         `${events.length}, need at least ${opts.minEvents}`,
     )
@@ -125,7 +124,7 @@ export const simpleConsumerGroupWorkerLoop = async (
 
   // if no events have been found, sleep for a few seconds and continue
   if (events.length === 0) {
-    logger.info(
+    logger.silly(
       `${consumer} (${i}): no events found: sleeping for 5 seconds...`,
     )
     await delay(5000)
@@ -133,7 +132,7 @@ export const simpleConsumerGroupWorkerLoop = async (
   }
 
   // Process events
-  logger.info(
+  logger.verbose(
     `${consumer} (${i}): total events found: ${events.length}, ` +
       `starting to process`,
   )
@@ -180,6 +179,6 @@ export const simpleConsumerGroupWorkerLoop = async (
   }
 
   delays = 0
-  logger.info(`${consumer} (${i}): FINISHED processing loop ${i}`)
+  logger.silly(`${consumer} (${i}): FINISHED processing loop ${i}`)
   return
 }

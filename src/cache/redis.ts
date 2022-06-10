@@ -85,13 +85,12 @@ export const RedisErrorRecovery =
         return result
       } catch (error) {
         decoratorlogger.error(
-          `Redis Error Recovery (${originalMethod.name}):`,
-          String(error),
+          `Redis Error Recovery (${originalMethod.name}): ${error.message}`,
         )
         if (error instanceof RedisError) {
           return undefined
         }
-        decoratorlogger.error('Cannot recover from Error: ', String(error))
+        decoratorlogger.error(`Cannot recover from Error: ${error.message}`)
         throw error
       }
     }

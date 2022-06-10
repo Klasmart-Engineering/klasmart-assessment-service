@@ -204,7 +204,7 @@ export class RoomScoresTemplateProvider2 {
       await xClient.ack(stream, group, invalidEventsIds)
       logger.info(
         `process >> ${invalidXapiEvents.length} invalid events acknowledged` +
-          ` and pushed to error strea(${errorStream})`,
+          ` and pushed to error stream(${errorStream})`,
       )
     }
 
