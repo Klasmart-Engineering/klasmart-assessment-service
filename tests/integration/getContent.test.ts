@@ -3,7 +3,7 @@ import { LessonMaterialBuilder } from '../builders'
 import { dbConnect, dbDisconnect } from '../utils/globalIntegrationTestHooks'
 import { v4 } from 'uuid'
 import { FileType } from '../../src/db/cms/enums'
-import ContentProvider from '../../src/helpers/getContent'
+import CustomizedContentProvider from '../../src/providers/customizedContentProvider'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import { throwExpression } from '../../src/helpers/throwExpression'
@@ -27,7 +27,7 @@ describe('getContent', function () {
         cmsContentProvider
           .getLessonMaterialsWithSourceId(contentKey, authenticationToken)
           .resolves([])
-        const sut = new ContentProvider(cmsContentProvider)
+        const sut = new CustomizedContentProvider(cmsContentProvider)
 
         // Act
         const result = await sut.getContent(
@@ -66,7 +66,7 @@ describe('getContent', function () {
         cmsContentProvider
           .getLessonMaterial(contentId, authenticationToken)
           .resolves(undefined)
-        const sut = new ContentProvider(
+        const sut = new CustomizedContentProvider(
           cmsContentProvider,
           h5pIdToCmsContentIdCache,
         )
@@ -112,7 +112,7 @@ describe('getContent', function () {
             authenticationToken,
           )
           .resolves([material])
-        const sut = new ContentProvider(cmsContentProvider)
+        const sut = new CustomizedContentProvider(cmsContentProvider)
 
         // Act
         const result = await sut.getContent(

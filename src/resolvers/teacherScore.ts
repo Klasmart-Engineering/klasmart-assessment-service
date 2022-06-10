@@ -17,7 +17,7 @@ import { Context, UserID } from '../auth/context'
 import { TeacherScore, UserContentScore } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { Content } from '../db/cms/entities/content'
-import ContentProvider from '../helpers/getContent'
+import CustomizedContentProvider from '../providers/customizedContentProvider'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { User } from '../web/user'
@@ -32,7 +32,7 @@ export default class TeacherScoreResolver {
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assesmentDB: EntityManager,
     private readonly cmsContentProvider: CmsContentProvider,
-    private readonly contentProvider: ContentProvider,
+    private readonly contentProvider: CustomizedContentProvider,
   ) {}
 
   @Authorized()

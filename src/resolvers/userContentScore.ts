@@ -5,7 +5,7 @@ import { Service } from 'typedi'
 import { Context } from '../auth/context'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import ContentProvider from '../helpers/getContent'
+import CustomizedContentProvider from '../providers/customizedContentProvider'
 import { User } from '../web/user'
 
 const logger = withLogger('UserContentScoreResolver')
@@ -13,7 +13,7 @@ const logger = withLogger('UserContentScoreResolver')
 @Service()
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
-  constructor(private readonly contentProvider: ContentProvider) {}
+  constructor(private readonly contentProvider: CustomizedContentProvider) {}
 
   // TODO: Use field in UserContentScore rather than this FieldResolver.
   @FieldResolver(() => User, { nullable: true })

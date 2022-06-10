@@ -1,7 +1,7 @@
 import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { EntityManager } from 'typeorm'
-import ContentProvider from '../../src/helpers/getContent'
+import CustomizedContentProvider from '../../src/providers/customizedContentProvider'
 import { CmsContentProvider } from '../../src/providers/cmsContentProvider'
 import TeacherScoreResolver from '../../src/resolvers/teacherScore'
 import {
@@ -23,7 +23,7 @@ describe('teacherScoreResolver.content', () => {
 
       const assessmentDB = Substitute.for<EntityManager>()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      const contentProvider = Substitute.for<ContentProvider>()
+      const contentProvider = Substitute.for<CustomizedContentProvider>()
 
       contentProvider
         .getContent(

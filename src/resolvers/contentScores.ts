@@ -3,7 +3,7 @@ import { Service } from 'typedi'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Content } from '../db/cms/entities'
-import ContentProvider from '../helpers/getContent'
+import CustomizedContentProvider from '../providers/customizedContentProvider'
 import { ContentScores } from '../graphql/scoresByContent'
 import { Context } from '../auth/context'
 
@@ -12,7 +12,7 @@ const logger = withLogger('ContentScoresResolver')
 @Service()
 @Resolver(() => ContentScores)
 export default class ContentScoresResolver {
-  constructor(private readonly contentProvider: ContentProvider) {}
+  constructor(private readonly contentProvider: CustomizedContentProvider) {}
 
   @FieldResolver(() => Content, { nullable: true })
   public async content(

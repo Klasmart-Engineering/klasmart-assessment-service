@@ -1,13 +1,13 @@
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import { Content } from '../db/cms/entities/content'
-import { CmsContentProvider } from '../providers/cmsContentProvider'
-import ContentKey from './contentKey'
+import { CmsContentProvider } from './cmsContentProvider'
+import ContentKey from '../helpers/contentKey'
 
 const logger = withLogger('ContentProvider')
 
 @Service()
-export default class ContentProvider {
+export default class CustomizedContentProvider {
   constructor(
     private readonly cmsContentProvider: CmsContentProvider,
     private readonly h5pIdToCmsContentIdCache = new Map<string, string>(),
