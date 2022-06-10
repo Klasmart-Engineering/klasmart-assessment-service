@@ -49,15 +49,15 @@ jobs:
       AWS_ACCESS_KEY_ID_ALPHA_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_ALPHA_DEV }}
       AWS_SECRET_ACCESS_KEY_ALPHA_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_ALPHA_DEV }}
 
-  deploy-landing-zone:
-    needs: [create-release]
-    uses: KL-Engineering/github-action-workflows/.github/workflows/deploy-kidskube-env.yml@v3.1.0
-    with:
-      region: all
-      environment: ci
-      argocd_app: uk-landingzone-assessment
-      argocd_app_chart_tag_path: assessment.tag
-    secrets:
-      ARGOCD_AUTH_USERNAME: ${{ secrets.ARGOCD_AUTH_USERNAME }}
-      ARGOCD_AUTH_PASSWORD: ${{ secrets.ARGOCD_AUTH_PASSWORD }}
-      TOOLS_KUBECONFIG_CONTENT_B64: ${{ secrets.TOOLS_KUBECONFIG_CONTENT_B64 }}
+  # deploy-landing-zone:
+  #   needs: [create-release]
+  #   uses: KL-Engineering/github-action-workflows/.github/workflows/deploy-kidskube-env.yml@v3.1.0
+  #   with:
+  #     region: all
+  #     environment: ci
+  #     argocd_app: uk-landingzone-assessment
+  #     argocd_app_chart_tag_path: assessment.tag
+  #   secrets:
+  #     ARGOCD_AUTH_USERNAME: ${{ secrets.ARGOCD_AUTH_USERNAME }}
+  #     ARGOCD_AUTH_PASSWORD: ${{ secrets.ARGOCD_AUTH_PASSWORD }}
+  #     TOOLS_KUBECONFIG_CONTENT_B64: ${{ secrets.TOOLS_KUBECONFIG_CONTENT_B64 }}
