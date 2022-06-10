@@ -132,7 +132,7 @@ export const simpleConsumerGroupWorkerLoop = async (
   }
 
   // Process events
-  logger.verbose(
+  logger.debug(
     `${consumer} (${i}): total events found: ${events.length}, ` +
       `starting to process`,
   )

@@ -167,7 +167,7 @@ export class RoomScoresTemplateProvider2 {
     errorStream: string,
     group: string,
   ): Promise<void> {
-    logger.info(`process >> events received: ${events.length}`)
+    logger.debug(`process >> events received: ${events.length}`)
 
     // 1. Separate VALID from the INVALID events
     const validXapiEvents: XApiRecordEvent[] = []
@@ -188,7 +188,7 @@ export class RoomScoresTemplateProvider2 {
         invalidXapiEvents.push({ id, message: { data, error: String(e) } })
       }
     })
-    logger.info(
+    logger.debug(
       `process >> events ${validXapiEvents.length}/${events.length} VALID +` +
         ` ${invalidXapiEvents.length}/${events.length} INVALID`,
     )
@@ -202,7 +202,7 @@ export class RoomScoresTemplateProvider2 {
       )
       const invalidEventsIds = invalidXapiEvents.map((x) => x.id)
       await xClient.ack(stream, group, invalidEventsIds)
-      logger.info(
+      logger.debug(
         `process >> ${invalidXapiEvents.length} invalid events acknowledged` +
           ` and pushed to error stream(${errorStream})`,
       )
@@ -213,13 +213,13 @@ export class RoomScoresTemplateProvider2 {
       validXapiEvents,
       (xapiEvent) => xapiEvent.roomId,
     )
-    logger.info(
+    logger.debug(
       `process >> valid events grouped by roomId,` +
         ` total groups: ${xapiEventsGroupedByRoom.size}`,
     )
 
     for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
-      logger.info(
+      logger.debug(
         `process >> roomId(${roomId}) >> events: ${xapiEvents.length}`,
       )
 
@@ -237,12 +237,12 @@ export class RoomScoresTemplateProvider2 {
         xapiEvents,
         (xapiEvent) => xapiEvent.userId,
       )
-      logger.info(
+      logger.debug(
         `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
       )
 
       for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
-        logger.info(
+        logger.debug(
           `process >> roomId(${roomId}) userId(${userId}) >>` +
             ` events: ${xapiEvents.length}`,
         )
@@ -251,7 +251,7 @@ export class RoomScoresTemplateProvider2 {
           (xapiEvent) =>
             ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // old way -> Material:content_id + xapiEvent:h5pSubId
         )
-        logger.info(
+        logger.debug(
           `process >> Grouped by contentKey, ` +
             `total groups: ${xapiEventsGroupedByContentKey.size}`,
         )
@@ -261,7 +261,7 @@ export class RoomScoresTemplateProvider2 {
           contentKey,
           xapiEvents,
         ] of xapiEventsGroupedByContentKey.entries()) {
-          logger.info(
+          logger.debug(
             `process >> roomId(${roomId}) userId(${userId}) ` +
               `contentKey(${contentKey}) >> events: ${xapiEvents.length}`,
           )
@@ -313,8 +313,13 @@ export class RoomScoresTemplateProvider2 {
           ])
           await this.assessmentDB.save(Answer, await userContentScore.answers)
 
-          // 7. Acknowledge
           logger.info(
+            `xAPI events with answers: ${xapiEvents.length}`,
+            xapiEvents,
+          )
+
+          // 7. Acknowledge
+          logger.debug(
             `process >> Redis acknowledge processed events: ${xapiEvents.length}`,
           )
           await xClient.ack(

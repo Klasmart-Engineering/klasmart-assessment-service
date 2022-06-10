@@ -129,7 +129,6 @@ export class UserContentScore extends Base {
     const score = xapiEvent.score?.raw
     const response = xapiEvent.response
     if (score === undefined && response === undefined) {
-      console.warn('applyEvent > xapiEvent does not have a response or score')
       return
     }
     return await this.addAnswer(xapiEvent)
