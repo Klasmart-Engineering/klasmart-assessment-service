@@ -2,13 +2,14 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import { Schedule } from '../db/cms/entities/schedule'
 import { throwExpression } from '../helpers/throwExpression'
-import { CmsScheduleApi, ScheduleDto } from '../web/cms'
+import { ScheduleDto } from '../web/cms'
+import { CachedCmsScheduleApi } from '../web/cms/cachedCmsScheduleApi'
 
 const logger = withLogger('CmsScheduleProvider')
 
 @Service()
 export class CmsScheduleProvider {
-  constructor(private readonly cmsScheduleApi: CmsScheduleApi) {}
+  constructor(private readonly cmsScheduleApi: CachedCmsScheduleApi) {}
 
   public async getSchedule(
     scheduleId: string,

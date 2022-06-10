@@ -1,9 +1,10 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
-import { CmsScheduleApi, ScheduleDto } from '../../src/web'
+import { ScheduleDto } from '../../src/web'
 import { Schedule } from '../../src/db/cms/entities'
 import { CmsScheduleProvider } from '../../src/providers/cmsScheduleProvider'
+import { CachedCmsScheduleApi } from '../../src/web/cms/cachedCmsScheduleApi'
 
 describe('cmsScheduleProvider', () => {
   describe('getSchedule', () => {
@@ -11,7 +12,7 @@ describe('cmsScheduleProvider', () => {
       it('returns matching schedule', async () => {
         // Arrange
         const scheduleId = schedule.id
-        const cmsScheduleApi = Substitute.for<CmsScheduleApi>()
+        const cmsScheduleApi = Substitute.for<CachedCmsScheduleApi>()
         cmsScheduleApi.getSchedule(scheduleId, Arg.any()).resolves(scheduleDto)
         const sut = new CmsScheduleProvider(cmsScheduleApi)
 
@@ -28,7 +29,7 @@ describe('cmsScheduleProvider', () => {
       it('returns undefined', async () => {
         // Arrange
         const scheduleId = 'schedule2'
-        const cmsScheduleApi = Substitute.for<CmsScheduleApi>()
+        const cmsScheduleApi = Substitute.for<CachedCmsScheduleApi>()
         cmsScheduleApi.getSchedule(scheduleId, Arg.any()).resolves(undefined)
         const sut = new CmsScheduleProvider(cmsScheduleApi)
 

@@ -15,8 +15,6 @@ export class RedisError extends Error {
   }
 }
 
-const prefix = `assessment`
-
 export const connectToIoRedis = async (
   mode: RedisMode,
   host: string,
@@ -33,6 +31,7 @@ export const connectToIoRedis = async (
         },
       ],
       {
+        keyPrefix: 'assessment:',
         lazyConnect: true,
         redisOptions: {
           password: process.env.REDIS_PASS,
@@ -50,6 +49,7 @@ export const connectToIoRedis = async (
   } else {
     logger.info('🏎  Creating NODE mode Redis connection')
     client = new Redis(port, host, {
+      keyPrefix: 'assessment:',
       lazyConnect: true,
       password: process.env.REDIS_PASS,
     })

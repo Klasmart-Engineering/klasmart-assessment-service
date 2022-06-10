@@ -2,8 +2,9 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import { Content } from '../db/cms/entities/content'
 import { throwExpression } from '../helpers/throwExpression'
-import { CmsContentApi, ContentDto } from '../web/cms'
+import { CachedCmsContentApi } from '../web/cms/cachedCmsContentApi'
 import ContentResponse, {
+  ContentDto,
   StudentContentMapEntryDto,
 } from '../web/cms/contentResponse'
 
@@ -11,7 +12,7 @@ const logger = withLogger('CmsContentProvider')
 
 @Service()
 export class CmsContentProvider {
-  constructor(private readonly cmsContentApi: CmsContentApi) {}
+  constructor(private readonly cmsContentApi: CachedCmsContentApi) {}
 
   public async getLessonMaterials(
     roomId: string,
