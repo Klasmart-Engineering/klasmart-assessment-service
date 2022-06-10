@@ -13,6 +13,9 @@ export class H5pContentProvider {
     h5pIds: ReadonlyArray<string>,
     authenticationToken: string | undefined,
   ): Promise<ReadonlyMap<string, H5pContent>> {
+    if (h5pIds.length === 0) {
+      return new Map<string, H5pContent>()
+    }
     const response = await this.h5pContentApi.getH5pContents(
       h5pIds,
       authenticationToken,
@@ -27,10 +30,7 @@ export class H5pContentProvider {
 }
 
 function h5pDtoToEntity(h5p: H5pInfoDto): H5pContent {
-  const subContents: H5pSubContent[] = []
-  for (const child of h5p.subContents ?? []) {
-    subContents.push(...flattenRecursive(child))
-  }
+  const subContents: H5pSubContent[] = flattenRecursive(h5p)
   return {
     id: h5p.id,
     type: h5p.type,
@@ -38,10 +38,21 @@ function h5pDtoToEntity(h5p: H5pInfoDto): H5pContent {
   }
 }
 
-function flattenRecursive(h5p: H5pInfoDto): H5pSubContent[] {
+function flattenRecursive(
+  h5p: H5pInfoDto,
+  parent?: H5pInfoDto,
+): H5pSubContent[] {
   const subContents: H5pSubContent[] = []
   for (const child of h5p.subContents ?? []) {
-    subContents.push(...flattenRecursive(child))
+    subContents.push(...flattenRecursive(child, h5p))
   }
-  return [{ ...h5p, parentId: h5p.id }].concat(subContents)
+  if (parent) {
+    subContents.unshift({
+      id: h5p.id,
+      type: h5p.type,
+      name: h5p.name,
+      parentId: parent.id,
+    })
+  }
+  return subContents
 }
