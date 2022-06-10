@@ -31,7 +31,6 @@ export const connectToIoRedis = async (
         },
       ],
       {
-        keyPrefix: 'assessment:',
         lazyConnect: true,
         redisOptions: {
           password: process.env.REDIS_PASS,
@@ -49,7 +48,6 @@ export const connectToIoRedis = async (
   } else {
     logger.info('🏎  Creating NODE mode Redis connection')
     client = new Redis(port, host, {
-      keyPrefix: 'assessment:',
       lazyConnect: true,
       password: process.env.REDIS_PASS,
     })
@@ -103,9 +101,11 @@ export const RedisErrorRecovery =
 export class RedisCache implements ICache {
   constructor(private readonly redisClient: IoRedisClientType) {}
 
+  prefix = (key: string) => `assessment:${key}`
+
   @RedisErrorRecovery()
   get(key: string): Promise<string | null> {
-    return this.redisClient.get(key)
+    return this.redisClient.get(this.prefix(key))
   }
 
   // nx: Only set the key if it does not already exist.
@@ -113,11 +113,11 @@ export class RedisCache implements ICache {
   // px: Set the specified expire time, in milliseconds.
   @RedisErrorRecovery()
   set(key: string, value: string, ttlSeconds: number): Promise<'OK' | null> {
-    return this.redisClient.set(key, value, 'EX', ttlSeconds, 'NX')
+    return this.redisClient.set(this.prefix(key), value, 'EX', ttlSeconds, 'NX')
   }
 
   @RedisErrorRecovery()
   async delete(key: string): Promise<void> {
-    await this.redisClient.del(key)
+    await this.redisClient.del(this.prefix(key))
   }
 }
