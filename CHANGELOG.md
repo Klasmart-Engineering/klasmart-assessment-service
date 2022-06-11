@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.15 (2022-06-11)
+
+
+### Features
+
+* add h5p api caching ([de0be29](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/de0be2901e2b7a7891b391acb7a33fc5707feb48))
+
 ## 2.0.0-alpha.14 (2022-06-10)
 
 ## 2.0.0-alpha.13 (2022-06-10)
