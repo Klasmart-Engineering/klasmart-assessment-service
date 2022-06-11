@@ -2,8 +2,9 @@ import 'reflect-metadata'
 import { expect } from 'chai'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { H5pContentProvider } from '../../src/providers/h5pContentProvider'
-import { H5pContentApi, H5PInfoResponse } from '../../src/web/h5p'
+import { H5PInfoResponse } from '../../src/web/h5p'
 import H5pContent from '../../src/helpers/h5pContent'
+import { CachedH5pContentApi } from '../../src/web/h5p/cachedH5pContentApi'
 
 describe('h5pContentProvider', () => {
   describe('getH5pContents', () => {
@@ -13,7 +14,7 @@ describe('h5pContentProvider', () => {
         it('returns a map containing 1 H5PContent with 2 subcontents', async () => {
           // Arrange
           const h5pIds = ['60a715b0b4e91700136c585b']
-          const h5pContentApi = Substitute.for<H5pContentApi>()
+          const h5pContentApi = Substitute.for<CachedH5pContentApi>()
           h5pContentApi.getH5pContents(h5pIds, Arg.any()).resolves(response)
           const sut = new H5pContentProvider(h5pContentApi)
 

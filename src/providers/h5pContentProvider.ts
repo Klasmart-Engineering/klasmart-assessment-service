@@ -1,13 +1,14 @@
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
 import H5pContent, { H5pSubContent } from '../helpers/h5pContent'
-import { H5pContentApi, H5pInfoDto } from '../web/h5p'
+import { H5pInfoDto } from '../web/h5p'
+import { CachedH5pContentApi } from '../web/h5p/cachedH5pContentApi'
 
 const logger = withLogger('H5pContentProvider')
 
 @Service()
 export class H5pContentProvider {
-  constructor(private readonly h5pContentApi: H5pContentApi) {}
+  constructor(private readonly h5pContentApi: CachedH5pContentApi) {}
 
   public async getH5pContents(
     h5pIds: ReadonlyArray<string>,
