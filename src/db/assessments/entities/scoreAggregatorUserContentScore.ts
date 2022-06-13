@@ -2,6 +2,8 @@ import { Answer } from './answer'
 import { UserContentScore } from './userContentScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 
+// TODO: Consider deleting this since it doesn't work for the new event-driven architecture.
+
 /**
  * This class makes up for activities that are scored differently than
  * all the others. These activities report "score so far" after each step
