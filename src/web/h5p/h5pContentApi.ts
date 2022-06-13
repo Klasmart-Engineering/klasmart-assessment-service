@@ -9,9 +9,10 @@ const logger = withLogger('H5pContentApi')
 
 let callCount = 0
 if (process.env.NODE_ENV !== 'test') {
-  const scheduler = setTimeout(() => {
+  const scheduler = setInterval(() => {
     logger.info(`H5P API call count (non-cached): ${callCount}`)
-  }, 24 * 60 * 60)
+    callCount = 0
+  }, 1 * 60 * 60 * 1000)
   const exitEvents = ['beforeExit', 'SIGINT', 'SIGTERM']
   exitEvents.forEach((event) => {
     process.on(event, function () {
