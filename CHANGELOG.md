@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.16 (2022-06-13)
+
+
+### Bug Fixes
+
+* periodic logging not working ([b5cff10](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/b5cff1096ad2021fb34482313f25eb81870a6a86))
+
 ## 2.0.0-alpha.15 (2022-06-11)
 
 
