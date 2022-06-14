@@ -1,5 +1,4 @@
 import { MigrationInterface, QueryRunner } from "typeorm"
-import { featureFlags } from '../initialization/featureFlags'
 
 class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {
     name = 'AddCreatedAtUpdatedAtColumns1641219623960'
@@ -91,12 +90,4 @@ class AddCreatedAtUpdatedAtColumns1641219623960 implements MigrationInterface {
 
 }
 
-const toExport = {
-  AddCreatedAtUpdatedAtColumns1641219623960:
-    featureFlags.UseCreatedAtUpdatedAtVersionColumns
-      ? AddCreatedAtUpdatedAtColumns1641219623960
-      : null,
-}
-
-export default toExport
-
+export default AddCreatedAtUpdatedAtColumns1641219623960

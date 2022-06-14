@@ -6,19 +6,13 @@ import {
   ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
-  BaseEntity,
 } from 'typeorm'
 import { Room } from './room'
-import { featureFlags } from '../../../initialization/featureFlags'
 import { BaseWithVersionCol } from './base'
-
-const Base = featureFlags.UseCreatedAtUpdatedAtVersionColumns
-  ? BaseWithVersionCol
-  : BaseEntity
 
 @Entity({ name: 'assessment_xapi_teacher_comment' })
 @ObjectType()
-export class TeacherComment extends Base {
+export class TeacherComment extends BaseWithVersionCol {
   @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly roomId: string
 
@@ -46,17 +40,13 @@ export class TeacherComment extends Base {
 
   @Field()
   @CreateDateColumn({
-    name: featureFlags.UseCreatedAtUpdatedAtVersionColumns
-      ? 'created_at'
-      : 'date',
+    name: 'created_at',
   })
   public date!: Date
 
   @Field()
   @UpdateDateColumn({
-    name: featureFlags.UseCreatedAtUpdatedAtVersionColumns
-      ? 'updated_at'
-      : 'lastUpdated',
+    name: 'updated_at',
   })
   public lastUpdated!: Date
 

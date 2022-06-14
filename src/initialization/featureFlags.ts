@@ -3,14 +3,11 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 const logger = withLogger('featureFlags')
 
 export class FeatureFlags {
-  UseCreatedAtUpdatedAtVersionColumns!: boolean
-
   constructor() {
     this.reset()
   }
 
   reset() {
-    this.UseCreatedAtUpdatedAtVersionColumns = true
     this.logAllFlags()
   }
 
@@ -18,9 +15,6 @@ export class FeatureFlags {
     logger.info('')
     logger.info('🚩 FEATURE FLAGS:')
     logger.info('-----------------')
-    logger.info(
-      `UseCreatedAtUpdatedAtVersionColumns: ${this.UseCreatedAtUpdatedAtVersionColumns}`,
-    )
     // add more flags here ...
     logger.info('-----------------')
   }

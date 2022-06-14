@@ -4,9 +4,6 @@ import {
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm'
-import { featureFlags } from '../../../initialization/featureFlags'
-
-const useCreatedUpdatedCols = featureFlags.UseCreatedAtUpdatedAtVersionColumns
 
 class BaseWithCreatedUpdatedCols extends BaseEntity {
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
@@ -30,6 +27,4 @@ class BaseWithCreatedUpdatedVersionCols extends BaseWithCreatedUpdatedCols {
   public readonly version!: number
 }
 
-export const Base = useCreatedUpdatedCols
-  ? BaseWithCreatedUpdatedVersionCols
-  : BaseEntity
+export const Base = BaseWithCreatedUpdatedVersionCols

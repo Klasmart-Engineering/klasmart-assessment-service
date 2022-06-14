@@ -6,19 +6,13 @@ import {
   ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
-  BaseEntity,
 } from 'typeorm'
 import { UserContentScore } from './userContentScore'
-import { featureFlags } from '../../../initialization/featureFlags'
 import { BaseWithVersionCol } from './base'
-
-const Base = featureFlags.UseCreatedAtUpdatedAtVersionColumns
-  ? BaseWithVersionCol
-  : BaseEntity
 
 @Entity({ name: 'assessment_xapi_teacher_score' })
 @ObjectType()
-export class TeacherScore extends Base {
+export class TeacherScore extends BaseWithVersionCol {
   @PrimaryColumn({ name: 'room_id', nullable: false })
   public readonly roomId: string
 
@@ -42,20 +36,15 @@ export class TeacherScore extends Base {
   )
   public userContentScore?: Promise<UserContentScore>
 
-  // TODO: Consider removing these feature flags since it's been fully integrated already.
   @Field()
   @CreateDateColumn({
-    name: featureFlags.UseCreatedAtUpdatedAtVersionColumns
-      ? 'created_at'
-      : 'date',
+    name: 'created_at',
   })
   public date!: Date
 
   @Field()
   @UpdateDateColumn({
-    name: featureFlags.UseCreatedAtUpdatedAtVersionColumns
-      ? 'updated_at'
-      : 'lastUpdated',
+    name: 'updated_at',
   })
   public lastUpdated!: Date
 
