@@ -7,13 +7,13 @@ import { UserContentScore } from './userContentScore'
 @ObjectType()
 export class Answer extends Base {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly roomId: string
+  public readonly roomId!: string
 
   @PrimaryColumn({ name: 'student_id', nullable: false })
-  public readonly studentId: string
+  public readonly studentId!: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly contentKey: string
+  public readonly contentKey!: string
 
   @PrimaryColumn({
     name: 'timestamp_epoch',
@@ -61,6 +61,10 @@ export class Answer extends Base {
     date: Date,
   ) {
     super()
+    if (roomId == null) {
+      // typeorm is making the call, so don't overwrite values.
+      return
+    }
     this.roomId = roomId
     this.studentId = studentId
     this.contentKey = contentKey

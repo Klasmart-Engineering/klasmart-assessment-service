@@ -22,13 +22,13 @@ import { Content } from '../../cms/entities/content'
 @ObjectType()
 export class UserContentScore extends Base {
   @PrimaryColumn({ name: 'room_id', nullable: false })
-  public readonly roomId: string
+  public readonly roomId!: string
 
   @PrimaryColumn({ name: 'student_id', nullable: false })
-  public readonly studentId: string
+  public readonly studentId!: string
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
-  public readonly contentKey: string
+  public readonly contentKey!: string
 
   @ManyToOne(
     () => Room, //Linter bug
@@ -76,7 +76,7 @@ export class UserContentScore extends Base {
 
   @Field(() => Boolean)
   @Column({ type: 'bool', default: false })
-  public seen: boolean
+  public seen!: boolean
 
   @Field(() => ScoreSummary, { name: 'score' })
   public async scoreSummary(): Promise<ScoreSummary> {
@@ -96,14 +96,13 @@ export class UserContentScore extends Base {
 
   constructor(roomId: string, studentId: string, contentKey: string) {
     super()
+    if (roomId == null) {
+      // typeorm is making the call, so don't overwrite values.
+      return
+    }
     this.roomId = roomId
     this.studentId = studentId
     this.contentKey = contentKey
-    this.seen = false
-    if (roomId == null) {
-      // typeorm is making the call, so don't overwrite answers.
-      return
-    }
     this.answers = Promise.resolve([])
   }
 
@@ -114,6 +113,7 @@ export class UserContentScore extends Base {
     content?: Content,
   ): UserContentScore {
     const userContentScore = new UserContentScore(roomId, studentId, contentKey)
+    userContentScore.seen = false
     userContentScore.content = content ?? null
     userContentScore.contentType = content?.type
     userContentScore.contentName = content?.name
