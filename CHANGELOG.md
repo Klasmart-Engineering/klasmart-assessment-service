@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.17 (2022-06-14)
+
+
+### Bug Fixes
+
+* userContentScore.seen not set to true in edge case ([d871056](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/d87105619b4754f97477333b45f5951f5a1f4670))
+
 ## 2.0.0-alpha.16 (2022-06-13)
 
 
