@@ -1,10 +1,6 @@
 import expect from '../../utils/chaiAsPromisedSetup'
-import {
-  InMemoryCache,
-  DateClock,
-  IClock,
-  MemoryCacheRecord,
-} from '../../../src/cache/inMemory'
+import { InMemoryCache, MemoryCacheRecord } from '../../../src/cache/inMemory'
+import { TestClock } from '../../utils/testClock'
 
 describe('InMemoryCache', () => {
   describe('get', () => {
@@ -178,29 +174,3 @@ describe('InMemoryCache', () => {
     })
   })
 })
-
-describe('DateClock.now', () => {
-  it('executes without error', async () => {
-    // Arrange
-    const sut = new DateClock()
-
-    // Act
-    const actual = sut.now()
-    const expected = Date.now()
-
-    // Assert
-    expect(actual).to.equal(expected)
-  })
-})
-
-export class TestClock implements IClock {
-  constructor(private currentMs = 0) {}
-
-  now(): number {
-    return this.currentMs
-  }
-
-  public addMs(ms: number) {
-    this.currentMs += ms
-  }
-}
