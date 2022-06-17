@@ -187,6 +187,7 @@ describe('Event-driven Worker', () => {
 
       expect(room).to.not.be.undefined
       expect(userContentScores.length).to.equal(1)
+      expect(userContentScores[0].seen).to.be.true
       expect(answers.length).to.equal(1)
       const answer = answers[0]
       expect(answer).to.contain({
@@ -266,6 +267,7 @@ describe('Event-driven Worker', () => {
 
         expect(room).to.not.be.undefined
         expect(userContentScores.length).to.equal(1)
+        expect(userContentScores[0].seen).to.be.true
         expect(answers.length).to.equal(1)
         const answer = answers[0]
         expect(answer).to.contain({
@@ -436,6 +438,10 @@ describe('Event-driven Worker', () => {
         expect(room).to.not.be.undefined
         expect(userContentScores).to.not.be.undefined
         expect(userContentScores!.length).to.equal(4)
+        expect(userContentScores![0].seen).to.be.true
+        expect(userContentScores![1].seen).to.be.true
+        expect(userContentScores![2].seen).to.be.true
+        expect(userContentScores![3].seen).to.be.true
       })
 
       it('creates Answers only for events that have a valid Score or Response', async () => {
