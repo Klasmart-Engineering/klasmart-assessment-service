@@ -9,21 +9,6 @@ export const getH5pContentsKey = (key: string) => `getH5pContents:${key}`
 
 const logger = withLogger('H5pContentApi')
 
-let callCount = 0
-if (process.env.NODE_ENV !== 'test') {
-  const scheduler = setInterval(() => {
-    logger.info(`H5P API call count (cached + non-cached): ${callCount}`)
-    callCount = 0
-  }, 1 * 60 * 60 * 1000)
-  const exitEvents = ['beforeExit', 'SIGINT', 'SIGTERM']
-  exitEvents.forEach((event) => {
-    process.on(event, function () {
-      console.log(`${event} received...`)
-      clearTimeout(scheduler)
-    })
-  })
-}
-
 @Service()
 export class CachedH5pContentApi {
   public constructor(
@@ -37,7 +22,6 @@ export class CachedH5pContentApi {
     h5pIds: ReadonlyArray<string>,
     authenticationToken?: string,
   ): Promise<H5PInfoResponse> {
-    callCount += 1
     const key = getH5pContentsKey(h5pIds.join(','))
     const cached = await this.cache.get(key)
     if (cached) {

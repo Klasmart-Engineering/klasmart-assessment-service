@@ -7,21 +7,6 @@ import { ErrorMessage } from '../../helpers/errorMessages'
 
 const logger = withLogger('H5pContentApi')
 
-let callCount = 0
-if (process.env.NODE_ENV !== 'test') {
-  const scheduler = setInterval(() => {
-    logger.info(`H5P API call count (non-cached): ${callCount}`)
-    callCount = 0
-  }, 1 * 60 * 60 * 1000)
-  const exitEvents = ['beforeExit', 'SIGINT', 'SIGTERM']
-  exitEvents.forEach((event) => {
-    process.on(event, function () {
-      console.log(`${event} received...`)
-      clearTimeout(scheduler)
-    })
-  })
-}
-
 @Service()
 export class H5pContentApi {
   public constructor(
@@ -37,7 +22,6 @@ export class H5pContentApi {
     if (!authenticationToken) {
       throw new Error(ErrorMessage.authenticationTokenUndefined)
     }
-    callCount += 1
     const h5pIdCsv = h5pIds.join(',')
     const requestUrl = `${this.baseUrl}/content_info?contentIds=${h5pIdCsv}`
 
