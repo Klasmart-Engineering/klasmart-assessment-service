@@ -50,6 +50,16 @@ export default class RoomResolver {
        * and new scores calculated from the materials or lesson plan
        */
       const existingScores = (await room.scores) ?? []
+      logger.verbose('existingScores.seen', {
+        roomId,
+        seen: existingScores.map((x) => {
+          return {
+            seen: x.seen,
+            contentKey: x.contentKey,
+            studentId: x.studentId,
+          }
+        }),
+      })
       const newScores = await this.roomScoresCalculator.calculate(
         roomId,
         context.encodedAuthenticationToken,
