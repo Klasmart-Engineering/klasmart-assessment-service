@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.19 (2022-06-20)
+
+
+### Performance
+
+* change field resolvers into normal properties and functions ([ab5f2d4](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/ab5f2d499faff8fca3a416cabe8a26e779dbd870))
+
 ## 2.0.0-alpha.18 (2022-06-17)
 
 ## 2.0.0-alpha.17 (2022-06-14)
