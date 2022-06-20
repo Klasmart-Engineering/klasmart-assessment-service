@@ -18,6 +18,7 @@ import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context } from '../auth/context'
 import { RoomScoresTemplateProvider } from '../providers/roomScoresTemplateProvider'
+import { Benchmark } from '../helpers/benchmarkMiddleware'
 
 const logger = withLogger('RoomResolver')
 
@@ -30,6 +31,7 @@ export default class RoomResolver {
     private readonly roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
+  @Benchmark()
   @Authorized()
   @Query(() => Room)
   public async Room(

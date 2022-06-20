@@ -5,6 +5,7 @@ import { Service } from 'typedi'
 import { Context } from '../auth/context'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
+import { Benchmark } from '../helpers/benchmarkMiddleware'
 import CustomizedContentProvider from '../providers/customizedContentProvider'
 import { User } from '../web/user'
 
@@ -24,7 +25,7 @@ export default class UserContentScoreResolver {
     return { userId: source.studentId }
   }
 
-  // TODO: Use field in UserContentScore rather than this FieldResolver.
+  @Benchmark('UserContentScore')
   @FieldResolver(() => Content, { nullable: true })
   public async content(
     @Root() source: UserContentScore,
