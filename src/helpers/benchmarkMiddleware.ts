@@ -7,7 +7,7 @@ export const GqlBenchmark: MiddlewareFn = async ({ info }, next) => {
   const start = Date.now()
   await next()
   const resolveTime = Date.now() - start
-  logger.info(`${info.parentType.name}.${info.fieldName} [${resolveTime} ms]`)
+  logger.debug(`${info.parentType.name}.${info.fieldName} [${resolveTime} ms]`)
 }
 
 export function Benchmark(className?: string) {
@@ -37,7 +37,6 @@ export function Benchmark(className?: string) {
 
       if (error) throw error
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return result
     }
 

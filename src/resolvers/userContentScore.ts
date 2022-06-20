@@ -5,7 +5,6 @@ import { Service } from 'typedi'
 import { Context } from '../auth/context'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
-import { Benchmark } from '../helpers/benchmarkMiddleware'
 import CustomizedContentProvider from '../providers/customizedContentProvider'
 
 const logger = withLogger('UserContentScoreResolver')
@@ -15,7 +14,6 @@ const logger = withLogger('UserContentScoreResolver')
 export default class UserContentScoreResolver {
   constructor(private readonly contentProvider: CustomizedContentProvider) {}
 
-  @Benchmark('UserContentScore')
   @FieldResolver(() => Content, { nullable: true })
   public async content(
     @Root() source: UserContentScore,
