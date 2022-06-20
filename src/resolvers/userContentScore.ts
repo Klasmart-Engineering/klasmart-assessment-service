@@ -7,7 +7,6 @@ import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import { Benchmark } from '../helpers/benchmarkMiddleware'
 import CustomizedContentProvider from '../providers/customizedContentProvider'
-import { User } from '../web/user'
 
 const logger = withLogger('UserContentScoreResolver')
 
@@ -15,15 +14,6 @@ const logger = withLogger('UserContentScoreResolver')
 @Resolver(() => UserContentScore)
 export default class UserContentScoreResolver {
   constructor(private readonly contentProvider: CustomizedContentProvider) {}
-
-  // TODO: Use field in UserContentScore rather than this FieldResolver.
-  @FieldResolver(() => User, { nullable: true })
-  public user(@Root() source: UserContentScore): User {
-    logger.debug(
-      `UserContentScore { studentId: ${source.studentId} } >> student`,
-    )
-    return { userId: source.studentId }
-  }
 
   @Benchmark('UserContentScore')
   @FieldResolver(() => Content, { nullable: true })

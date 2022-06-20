@@ -17,6 +17,7 @@ import { TeacherScore } from './teacherScore'
 import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 import { ASSESSMENTS_CONNECTION_NAME } from '../connectToAssessmentDatabase'
 import { Content } from '../../cms/entities/content'
+import { User } from '../../../web'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -93,6 +94,11 @@ export class UserContentScore extends Base {
   public contentParentId?: string | null
 
   public content: Content | null = null
+
+  @Field(() => User)
+  public get user(): User {
+    return { userId: this.studentId }
+  }
 
   constructor(roomId: string, studentId: string, contentKey: string) {
     super()

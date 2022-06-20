@@ -71,12 +71,12 @@ type TeacherComment {
   comment: String!
   date: Timestamp!
   lastUpdated: Timestamp!
-  student: User
-  teacher: User
+  student: User!
+  teacher: User!
 }
 
 type TeacherCommentsByStudent {
-  student: User
+  student: User!
   teacherComments: [TeacherComment!]!
 }
 
@@ -85,8 +85,8 @@ type TeacherScore {
   date: Timestamp!
   lastUpdated: Timestamp!
   score: Float!
-  student: User
-  teacher: User
+  student: User!
+  teacher: User!
 }
 
 """
@@ -109,7 +109,7 @@ type UserContentScore {
   score: ScoreSummary!
   seen: Boolean!
   teacherScores: [TeacherScore!]!
-  user: User
+  user: User!
 }
 
 type UserScores {

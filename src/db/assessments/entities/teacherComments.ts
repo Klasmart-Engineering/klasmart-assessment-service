@@ -9,6 +9,7 @@ import {
 } from 'typeorm'
 import { Room } from './room'
 import { BaseWithVersionCol } from './base'
+import { User } from '../../../web'
 
 @Entity({ name: 'assessment_xapi_teacher_comment' })
 @ObjectType()
@@ -26,6 +27,16 @@ export class TeacherComment extends BaseWithVersionCol {
   // But for some reason this column is null without it.
   @Column({ name: 'roomRoomId' })
   public readonly roomRoomId?: string
+
+  @Field(() => User)
+  public get teacher(): User {
+    return { userId: this.teacherId }
+  }
+
+  @Field(() => User)
+  public get student(): User {
+    return { userId: this.studentId }
+  }
 
   @ManyToOne(
     () => Room, // Linter bug

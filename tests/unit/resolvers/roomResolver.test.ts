@@ -101,13 +101,8 @@ describe('roomResolver', () => {
         room.scores = Promise.resolve([])
         room.teacherComments = Promise.resolve([comment1, comment2])
 
-        const assessmentDB = Substitute.for<EntityManager>()
-        const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-
-        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
-
         // Act
-        const results = await sut.teacherCommentsByStudent(room)
+        const results = await room.teacherCommentsByStudent()
 
         // Assert
         expect(results).to.have.lengthOf(1)
@@ -139,13 +134,8 @@ describe('roomResolver', () => {
         room.scores = Promise.resolve([userContentScore1, userContentScore2])
         room.teacherComments = Promise.resolve([])
 
-        const assessmentDB = Substitute.for<EntityManager>()
-        const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-
-        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
-
         // Act
-        const results = await sut.scoresByUser(room)
+        const results = await room.scoresByUser()
 
         // Assert
         expect(results).to.have.lengthOf(1)
@@ -176,13 +166,8 @@ describe('roomResolver', () => {
         room.scores = Promise.resolve([userContentScore1, userContentScore2])
         room.teacherComments = Promise.resolve([])
 
-        const assessmentDB = Substitute.for<EntityManager>()
-        const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-
-        const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
-
         // Act
-        const results = await sut.scoresByContent(room)
+        const results = await room.scoresByContent()
 
         // Assert
         expect(results).to.have.lengthOf(2)
@@ -226,13 +211,8 @@ describe('roomResolver', () => {
           ])
           room.teacherComments = Promise.resolve([])
 
-          const assessmentDB = Substitute.for<EntityManager>()
-          const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-
-          const sut = new RoomResolver(assessmentDB, roomScoresCalculator)
-
           // Act
-          const results = await sut.scoresByContent(room)
+          const results = await room.scoresByContent()
 
           // Assert
           expect(results).to.have.lengthOf(2)

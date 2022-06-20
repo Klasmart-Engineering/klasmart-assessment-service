@@ -47,7 +47,7 @@ export default class CustomizedContentProvider {
     if (content) {
       const result = Content.clone(content)
       result.subcontentId = subcontentId
-      result.type = contentType
+      result.type = contentType ?? undefined
       result.name = contentName ?? content.name
       result.parentId = contentParentId
       return result

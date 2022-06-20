@@ -1,12 +1,4 @@
-import {
-  Arg,
-  FieldResolver,
-  Mutation,
-  Resolver,
-  Root,
-  Ctx,
-  Authorized,
-} from 'type-graphql'
+import { Arg, Mutation, Resolver, Ctx, Authorized } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { UserInputError } from 'apollo-server-express'
@@ -18,7 +10,6 @@ import { TeacherComment } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { CmsScheduleProvider } from '../providers/cmsScheduleProvider'
-import { User } from '../web/user'
 
 const logger = withLogger('TeacherCommentResolver')
 
@@ -93,17 +84,5 @@ export default class TeacherCommentResolver {
       logger.error(e)
       throw e
     }
-  }
-
-  @FieldResolver(() => User, { nullable: true })
-  public teacher(@Root() source: TeacherComment): User {
-    logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
-    return { userId: source.teacherId }
-  }
-
-  @FieldResolver(() => User, { nullable: true })
-  public student(@Root() source: TeacherComment): User {
-    logger.debug(`TeacherScore { studentId: ${source.studentId} } >> student`)
-    return { userId: source.studentId }
   }
 }

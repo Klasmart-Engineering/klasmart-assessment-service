@@ -9,6 +9,7 @@ import {
 } from 'typeorm'
 import { UserContentScore } from './userContentScore'
 import { BaseWithVersionCol } from './base'
+import { User } from '../../../web'
 
 @Entity({ name: 'assessment_xapi_teacher_score' })
 @ObjectType()
@@ -51,6 +52,16 @@ export class TeacherScore extends BaseWithVersionCol {
   @Field()
   @Column('float4', { nullable: false, default: 0.0 })
   public score!: number
+
+  @Field(() => User)
+  public get teacher(): User {
+    return { userId: this.teacherId }
+  }
+
+  @Field(() => User)
+  public get student(): User {
+    return { userId: this.studentId }
+  }
 
   constructor(
     roomId: string,

@@ -18,11 +18,22 @@ export class Content {
   @Field({ nullable: true })
   name!: string
 
-  @Field(() => String, { nullable: true })
-  type?: string | null
-
-  fileType?: FileType
+  private _type?: string
+  private _fileType?: FileType
   readonly publishStatus!: string
+
+  @Field(() => FileType, { nullable: true })
+  get fileType(): string | undefined {
+    return this._fileType as never
+  }
+
+  @Field(() => String, { nullable: true })
+  get type(): string | undefined {
+    return this._type ?? this.fileType
+  }
+  set type(value: string | undefined) {
+    this._type = value
+  }
 
   constructor(
     contentId: string,
@@ -37,7 +48,18 @@ export class Content {
   }
 
   public static clone(content: Content): Content {
-    return { ...content, populateH5pId: content.populateH5pId }
+    const result = new Content(
+      content.contentId,
+      content.name,
+      content.publishStatus,
+      undefined,
+    )
+    result._fileType = content._fileType
+    result._type = content._type
+    result.h5pId = content.h5pId
+    result.parentId = content.parentId
+    result.subcontentId = content.subcontentId
+    return result
   }
 
   populateH5pId(data: JSON | undefined): void {
@@ -45,8 +67,8 @@ export class Content {
     if (typedData == null) {
       return
     }
-    this.fileType = typedData.file_type
-    if (this.fileType === FileType.H5P) {
+    this._fileType = typedData.file_type
+    if (this._fileType === FileType.H5P) {
       this.h5pId = typedData.source
     }
   }

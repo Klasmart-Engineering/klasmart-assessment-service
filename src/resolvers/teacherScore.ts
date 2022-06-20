@@ -20,7 +20,6 @@ import { Content } from '../db/cms/entities/content'
 import CustomizedContentProvider from '../providers/customizedContentProvider'
 import ContentKey from '../helpers/contentKey'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { User } from '../web/user'
 import { CmsContentProvider } from '../providers/cmsContentProvider'
 
 const logger = withLogger('TeacherScoreResolver')
@@ -99,20 +98,6 @@ export default class TeacherScoreResolver {
       logger.error(e)
       throw e
     }
-  }
-
-  // TODO: Move to entity.
-  @FieldResolver(() => User, { nullable: true })
-  public teacher(@Root() source: TeacherScore): User {
-    logger.debug(`TeacherScore { teacherId: ${source.teacherId} } >> teacher`)
-    return { userId: source.teacherId }
-  }
-
-  // TODO: Move to entity.
-  @FieldResolver(() => User, { nullable: true })
-  public student(@Root() source: TeacherScore): User {
-    logger.debug(`TeacherScore { studentId: ${source.studentId} } >> student`)
-    return { userId: source.studentId }
   }
 
   @FieldResolver(() => Content, { nullable: true })

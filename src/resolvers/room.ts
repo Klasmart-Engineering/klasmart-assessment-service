@@ -1,12 +1,4 @@
-import {
-  Arg,
-  FieldResolver,
-  Query,
-  Resolver,
-  Root,
-  Authorized,
-  Ctx,
-} from 'type-graphql'
+import { Arg, Query, Resolver, Authorized, Ctx } from 'type-graphql'
 import { Service } from 'typedi'
 import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
@@ -14,7 +6,6 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { ContentScores, UserScores, TeacherCommentsByStudent } from '../graphql'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context } from '../auth/context'
 import { RoomScoresTemplateProvider } from '../providers/roomScoresTemplateProvider'
@@ -108,96 +99,5 @@ export default class RoomResolver {
       logger.error(e)
       throw e
     }
-  }
-
-  @FieldResolver(() => [UserScores])
-  public async scoresByUser(
-    @Root() room: Room,
-  ): Promise<ReadonlyArray<UserScores>> {
-    logger.debug(`Room room_id: ${room.roomId} >> scoresByUser`)
-
-    const scoresByUser: Map<string, UserScores> = new Map()
-
-    const allScores = await room.scores
-    for (const userContentScore of allScores) {
-      const userScores = scoresByUser.get(userContentScore.studentId)
-      if (userScores) {
-        userScores.scores.push(userContentScore)
-      } else {
-        scoresByUser.set(
-          userContentScore.studentId,
-          new UserScores(userContentScore.studentId, [userContentScore]),
-        )
-      }
-    }
-    logger.debug(
-      `Room >> scoresByUser >> users count: ${scoresByUser.size}, ` +
-        `total scores count: ${allScores.length}`,
-    )
-
-    return [...scoresByUser.values()]
-  }
-
-  @FieldResolver(() => [ContentScores])
-  public async scoresByContent(
-    @Root() room: Room,
-  ): Promise<ReadonlyArray<ContentScores>> {
-    logger.debug(`Room room_id: ${room.roomId} >> scoresByContent`)
-
-    const scoresByContent: Map<string, ContentScores> = new Map()
-
-    const allScores = await room.scores
-    for (const userContentScore of allScores) {
-      const contentScores = scoresByContent.get(userContentScore.contentKey)
-      if (contentScores) {
-        contentScores.scores.push(userContentScore)
-      } else {
-        scoresByContent.set(
-          userContentScore.contentKey,
-          new ContentScores(
-            userContentScore.contentKey,
-            [userContentScore],
-            userContentScore.contentType,
-            userContentScore.contentName,
-            userContentScore.contentParentId,
-          ),
-        )
-      }
-    }
-    logger.debug(
-      `Room room_id: ${room.roomId} >> scoresByContent >> ` +
-        `content count: ${scoresByContent.size}, ` +
-        `total scores count: ${allScores.length}`,
-    )
-
-    return [...scoresByContent.values()]
-  }
-
-  @FieldResolver(() => [TeacherCommentsByStudent])
-  public async teacherCommentsByStudent(
-    @Root() room: Room,
-  ): Promise<ReadonlyArray<TeacherCommentsByStudent>> {
-    logger.debug(`Room room_id: ${room.roomId} >> teacherCommentsByStudent`)
-    const commentsByStudent: Map<string, TeacherCommentsByStudent> = new Map()
-
-    const allTeacherComments = await room.teacherComments
-    for (const comment of await room.teacherComments) {
-      const teacherComments = commentsByStudent.get(comment.studentId)
-      if (teacherComments) {
-        teacherComments.teacherComments.push(comment)
-      } else {
-        commentsByStudent.set(
-          comment.studentId,
-          new TeacherCommentsByStudent(comment.studentId, [comment]),
-        )
-      }
-    }
-    logger.debug(
-      `Room room_id: ${room.roomId} >> teacherCommentsByStudent >> ` +
-        `students count: ${commentsByStudent.size}, ` +
-        `total comments count: ${allTeacherComments.length}`,
-    )
-
-    return [...commentsByStudent.values()]
   }
 }
