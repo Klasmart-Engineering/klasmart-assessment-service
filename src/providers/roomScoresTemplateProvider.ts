@@ -18,7 +18,7 @@ const logger = withLogger('RoomScoresTemplateProvider')
  */
 @Service()
 export class RoomScoresTemplateProvider {
-  private roomIdToContentKeyUsesContentIdMap = new Map<string, boolean>()
+  private roomIdToContentKeyUsesH5pIdMap = new Map<string, boolean>()
 
   constructor(
     @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
@@ -112,26 +112,25 @@ export class RoomScoresTemplateProvider {
     if (!h5pId) {
       return ContentKey.construct(contentId, h5pSubId)
     }
-    let contentKey = ContentKey.construct(contentId, h5pSubId)
-    const contentKeyUsesContentId =
-      this.roomIdToContentKeyUsesContentIdMap.get(roomId)
-    if (contentKeyUsesContentId === true) {
+    let contentKey = ContentKey.construct(h5pId, h5pSubId)
+    const contentKeyUsesH5pId = this.roomIdToContentKeyUsesH5pIdMap.get(roomId)
+    if (contentKeyUsesH5pId === true) {
       return contentKey
-    } else if (contentKeyUsesContentId === false) {
-      return ContentKey.construct(h5pId, h5pSubId)
+    } else if (contentKeyUsesH5pId === false) {
+      return ContentKey.construct(contentId, h5pSubId)
     }
 
-    const userContentScoreUsingContentId =
+    const userContentScoreUsingH5pId =
       (await this.userContentScoreRepository.manager.query(
         `SELECT EXISTS(SELECT * FROM assessment_xapi_user_content_score WHERE room_id = $1 AND student_id = $2 AND content_id = $3)`,
         [roomId, studentId, contentKey],
       )) as [{ exists: boolean }]
 
-    if (userContentScoreUsingContentId[0].exists === true) {
-      this.roomIdToContentKeyUsesContentIdMap.set(roomId, true)
+    if (userContentScoreUsingH5pId[0].exists === true) {
+      this.roomIdToContentKeyUsesH5pIdMap.set(roomId, true)
     } else {
-      this.roomIdToContentKeyUsesContentIdMap.set(roomId, false)
-      contentKey = ContentKey.construct(h5pId, h5pSubId)
+      this.roomIdToContentKeyUsesH5pIdMap.set(roomId, false)
+      contentKey = ContentKey.construct(contentId, h5pSubId)
     }
     return contentKey
   }

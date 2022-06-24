@@ -55,6 +55,9 @@ describe('teacherCommentResolver.setComment', () => {
       const endUser = new EndUserBuilder().dontAuthenticate().build()
       const student = new UserBuilder().build()
 
+      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+
       // Act
       const fn = () =>
         setTeacherCommentMutation(

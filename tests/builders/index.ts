@@ -1,4 +1,5 @@
 export { default as AnswerBuilder } from './answerBuilder'
+export { default as RawAnswerBuilder } from './rawAnswerBuilder'
 export { default as ContentBuilder } from './contentBuilder'
 export { default as EndUserBuilder } from './endUserBuilder'
 export { default as LessonMaterialBuilder } from './lessonMaterialBuilder'

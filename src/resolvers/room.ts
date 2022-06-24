@@ -4,12 +4,13 @@ import { EntityManager } from 'typeorm'
 import { InjectManager } from 'typeorm-typedi-extensions'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
-import { Room } from '../db/assessments/entities'
+import { Answer, RawAnswer, Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context } from '../auth/context'
 import { RoomScoresTemplateProvider } from '../providers/roomScoresTemplateProvider'
 import { Benchmark } from '../helpers/benchmarkMiddleware'
+import ContentKey from '../helpers/contentKey'
 
 const logger = withLogger('RoomResolver')
 
@@ -31,21 +32,42 @@ export default class RoomResolver {
   ): Promise<Room> {
     logger.debug(`Room >> roomId: ${roomId}`)
     try {
-      let room = await this.assessmentDB.findOne(Room, roomId, {})
+      let room = await this.assessmentDB.findOne(Room, roomId)
 
+      const roomSaved = room != null
       if (!room) {
         room = new Room(roomId)
         logger.warn(`Room >> roomId: ${roomId} >> created new Room`)
+        const userContentScoreTemplates =
+          await this.roomScoresCalculator.calculate(
+            roomId,
+            context.encodedAuthenticationToken,
+          )
+        room.scores = Promise.resolve(userContentScoreTemplates)
+      }
+      if (room.assessmentVersion === 1) {
+        logger.verbose(`Room ${roomId} is v1. Returning cached results.`)
+        return room
       }
 
-      /**
-       * merge existing scores calculated from xapi events (+ cached getMaterials scores)
-       * and new scores calculated from the materials or lesson plan
-       */
-      const existingScores = (await room.scores) ?? []
+      // Optimization.
+      const existingAnswerCount = await this.assessmentDB.count(Answer, {
+        where: { roomId },
+      })
+      const allRawAnswers = await this.assessmentDB.find(RawAnswer, {
+        where: { roomId },
+      })
+      if (allRawAnswers.length === existingAnswerCount) {
+        if (!roomSaved) {
+          await this.assessmentDB.save(room)
+        }
+        return room
+      }
+
+      const userContentScores = (await room.scores) ?? []
       logger.verbose('existingScores.seen', {
         roomId,
-        seen: existingScores.map((x) => {
+        seen: userContentScores.map((x) => {
           return {
             seen: x.seen,
             contentKey: x.contentKey,
@@ -53,45 +75,49 @@ export default class RoomResolver {
           }
         }),
       })
-      const newScores = await this.roomScoresCalculator.calculate(
-        roomId,
-        context.encodedAuthenticationToken,
+      const mapKeyToUserContentScoreMap = new Map(
+        userContentScores
+          .filter((x) => x.h5pId)
+          .map((x) => {
+            const mapKey = RoomScoresTemplateProvider.getMapKey(
+              roomId,
+              x.studentId,
+              ContentKey.construct(x.h5pId!, x.h5pSubId),
+            )
+            return [mapKey, x]
+          }),
       )
-      logger.debug(
-        `existingScores num: ${existingScores.length}, newScores num: ${newScores.length}`,
-      )
-      const mapKeyToNewScoreMap = new Map(
-        newScores.map((x) => {
-          const mapKey = RoomScoresTemplateProvider.getMapKey(
-            roomId,
-            x.studentId,
-            x.contentKey,
-          )
-          return [mapKey, x]
-        }),
-      )
-      // Start with newScores because these are in lesson plan order.
-      const scoresToUpsert = [...newScores]
-      for (const existingScore of existingScores) {
+
+      const mapKeyToRawAnswersMap = new Map<string, RawAnswer[]>()
+      for (const rawAnswer of allRawAnswers) {
         const mapKey = RoomScoresTemplateProvider.getMapKey(
           roomId,
-          existingScore.studentId,
-          existingScore.contentKey,
+          rawAnswer.studentId,
+          ContentKey.construct(rawAnswer.h5pId, rawAnswer.h5pSubId),
         )
-        const newScore = mapKeyToNewScoreMap.get(mapKey)
-        if (!newScore) {
+        const entry = mapKeyToRawAnswersMap.get(mapKey) ?? []
+        if (entry.length === 0) {
+          mapKeyToRawAnswersMap.set(mapKey, entry)
+        }
+        entry.push(rawAnswer)
+      }
+      for (const [mapKey, rawAnswers] of mapKeyToRawAnswersMap.entries()) {
+        const ucs = mapKeyToUserContentScoreMap.get(mapKey)
+        if (!ucs) {
           logger.error(
             "Received event for room but the material isn't part of the lesson plan.",
-            { roomId, contentKey: existingScore.contentKey },
+            {
+              roomId,
+              h5pId: rawAnswers[0].h5pId,
+              h5pSubId: rawAnswers[0].h5pSubId,
+            },
           )
           continue
         }
-        newScore.seen = existingScore.seen
-        newScore.answers = existingScore.answers
-        newScore.teacherScores = existingScore.teacherScores
+        ucs.applyAnswers(rawAnswers)
       }
 
-      room.scores = Promise.resolve(scoresToUpsert)
+      room.scores = Promise.resolve(userContentScores)
       await this.assessmentDB.save(room)
 
       return room

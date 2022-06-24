@@ -1,4 +1,3 @@
-import { v4 } from 'uuid'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { FindConditions, getRepository } from 'typeorm'
 import { Container as MutableContainer } from 'typedi'
@@ -35,6 +34,7 @@ import {
   AnswerBuilder,
   EndUserBuilder,
   LessonMaterialBuilder,
+  RawAnswerBuilder,
   RoomBuilder,
   ScheduleBuilder,
   TeacherScoreBuilder,
@@ -44,6 +44,7 @@ import {
 } from '../../builders'
 import {
   Answer,
+  RawAnswer,
   Room,
   TeacherComment,
   TeacherScore,
@@ -61,7 +62,6 @@ import { H5pContentProvider } from '../../../src/providers/h5pContentProvider'
 /**
  * - scores 0 the first time
  * - room/ucs/answer exist (update), make sure teacher scores and comments don't get wiped out
- * - multiple-hotspot scoring
  * - non-h5p materials
  * - user content score ordering
  * - include user content scores for students with no events
@@ -195,459 +195,465 @@ describe('roomResolver.Room', () => {
     after(async () => await dbDisconnect())
   })
 
-  context('1 student, 1 xapi "score" event', () => {
-    const roomId = 'room1'
-    let endUser: EndUser
-    let gqlRoom: GqlRoom | undefined | null
-    let student: User
-    let lessonMaterial: Content
-    let existingUcs: UserContentScore
-    let ucsTemplate: UserContentScore
-    let answer: Answer
-    const h5pId = 'h5p1'
-    const contentName = 'My H5P Name'
-    const contentType = 'Flashcards'
-    const score = { min: 0, max: 3, raw: 2 }
+  context(
+    '1 student, 1 xapi "score" event, no existing UserContentScores, no existing answers',
+    () => {
+      const roomId = 'room1'
+      let endUser: EndUser
+      let gqlRoom: GqlRoom | undefined | null
+      let student: User
+      let lessonMaterial: Content
+      let rawAnswer: RawAnswer
+      const h5pId = 'h5p1'
+      const contentName = 'My H5P Name'
+      const contentType = 'Flashcards'
+      const score = { min: 0, max: 3, raw: 2 }
 
-    before(async () => {
-      // Arrange
-      await dbConnect()
+      before(async () => {
+        // Arrange
+        await dbConnect()
 
-      endUser = new EndUserBuilder().authenticate().build()
-      student = new UserBuilder().build()
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
 
-      const ucsBuilder = new UserContentScoreBuilder()
-        .withroomId(roomId)
-        .withStudentId(student.userId)
-        .withContentKey(h5pId)
-        .withContentName(contentName)
-        .withContentType(contentType)
-      existingUcs = ucsBuilder.withSeen(true).build()
-      ucsTemplate = ucsBuilder.withSeen(false).build()
+        lessonMaterial = new LessonMaterialBuilder()
+          .withSource(FileType.H5P, h5pId)
+          .withName(contentName)
+          .build()
 
-      answer = new AnswerBuilder(existingUcs)
-        .withScore(score)
-        .withResponse(undefined)
-        .build()
-      existingUcs.answers = Promise.resolve([answer])
-      const room = await new RoomBuilder()
-        .withRoomId(roomId)
-        .withUcs([existingUcs])
-        .buildAndPersist()
+        rawAnswer = await new RawAnswerBuilder()
+          .withRoomId(roomId)
+          .withStudentId(student.userId)
+          .withH5pId(h5pId)
+          .withScore(score.raw)
+          .withResponse(undefined)
+          .withMinimumPossibleScore(score.min)
+          .withMaximumPossibleScore(score.max)
+          .buildAndPersist()
 
-      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider
-        .getSchedule(Arg.all())
-        .rejects('This should not have been called.')
-      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider
+          .getSchedule(Arg.all())
+          .rejects('This should not have been called.')
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
-      const h5pContentProvider = Substitute.for<H5pContentProvider>()
-      h5pContentProvider
-        .getH5pContents(Arg.any(), endUser.token)
-        .resolves(
-          new Map([[h5pId, { id: h5pId, type: contentType, subContents: [] }]]),
-        )
-      MutableContainer.set(H5pContentProvider, h5pContentProvider)
+        const h5pContentProvider = Substitute.for<H5pContentProvider>()
+        h5pContentProvider
+          .getH5pContents(Arg.any(), endUser.token)
+          .resolves(
+            new Map([
+              [h5pId, { id: h5pId, type: contentType, subContents: [] }],
+            ]),
+          )
+        MutableContainer.set(H5pContentProvider, h5pContentProvider)
 
-      lessonMaterial = new LessonMaterialBuilder()
-        .withSource(FileType.H5P, h5pId)
-        .withName(contentName)
-        .build()
-      const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([
-          [
-            lessonMaterial.contentId,
-            { content: lessonMaterial, subContents: [] },
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
           ],
-        ]),
-        studentContentMap: [
-          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
-        ],
+        })
+        cmsContentProvider
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
+          .resolves(lessonMaterial)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(Arg.all())
+          .rejects('This shold not have been called.')
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
+
+        gqlRoom = await roomQuery(roomId, endUser)
       })
-      cmsContentProvider
-        .getLessonMaterial(h5pId, endUser.token)
-        .resolves(undefined)
-      cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
-        .resolves(lessonMaterial)
-      cmsContentProvider
-        .getLessonMaterialsWithSourceId(h5pId, endUser.token)
-        .resolves([lessonMaterial])
-      MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
-      gqlRoom = await roomQuery(roomId, endUser)
-    })
+      after(async () => await dbDisconnect())
 
-    after(async () => await dbDisconnect())
+      it('returns room with expected id', async () => {
+        expect(gqlRoom).to.not.be.null
+        expect(gqlRoom).to.not.be.undefined
+        expect(gqlRoom?.room_id).to.equal(roomId)
+      })
 
-    it('returns room with expected id', async () => {
-      expect(gqlRoom).to.not.be.null
-      expect(gqlRoom).to.not.be.undefined
-      expect(gqlRoom?.room_id).to.equal(roomId)
-    })
+      it('returns room.scores with length of 1', async () => {
+        const gqlScores = gqlRoom?.scores
+        expect(gqlScores).to.have.lengthOf(1)
+      })
 
-    it('returns room.scores with length of 1', async () => {
-      const gqlScores = gqlRoom?.scores
-      expect(gqlScores).to.have.lengthOf(1)
-    })
+      it('returns room.scores[0].teacherScores with length of 0', async () => {
+        const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
+        expect(gqlTeacherScores).to.have.lengthOf(0)
+      })
 
-    it('returns room.scores[0].teacherScores with length of 0', async () => {
-      const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
-      expect(gqlTeacherScores).to.have.lengthOf(0)
-    })
+      it('returns expected room.scores[0].user', async () => {
+        const actual = gqlRoom?.scores?.[0]?.user
+        const expected: FindConditions<GqlUser> = {
+          user_id: student.userId,
+          given_name: null,
+          family_name: null,
+        }
+        expect(actual).to.deep.equal(expected)
+      })
 
-    it('returns expected room.scores[0].user', async () => {
-      const actual = gqlRoom?.scores?.[0]?.user
-      const expected: FindConditions<GqlUser> = {
-        user_id: student.userId,
-        given_name: null,
-        family_name: null,
-      }
-      expect(actual).to.deep.equal(expected)
-    })
+      it('returns expected room.scores[0].content', async () => {
+        const actual = gqlRoom?.scores?.[0]?.content
+        const expected: FindConditions<GqlContent> = {
+          content_id: lessonMaterial.contentId,
+          subcontent_id: lessonMaterial.subcontentId ?? null,
+          h5p_id: lessonMaterial.h5pId,
+          parent_id: null,
+          name: contentName,
+          type: contentType,
+          fileType: FileType[FileType.H5P],
+        }
+        expect(actual).to.deep.equal(expected)
+      })
 
-    it('returns expected room.scores[0].content', async () => {
-      const actual = gqlRoom?.scores?.[0]?.content
-      const expected: FindConditions<GqlContent> = {
-        content_id: lessonMaterial.contentId,
-        subcontent_id: lessonMaterial.subcontentId ?? null,
-        h5p_id: lessonMaterial.h5pId,
-        parent_id: null,
-        name: contentName,
-        type: contentType,
-        fileType: FileType[FileType.H5P],
-      }
-      expect(actual).to.deep.equal(expected)
-    })
+      it('returns expected room.scores[0].score', async () => {
+        const actual = gqlRoom?.scores?.[0]?.score
+        const expected: FindConditions<GqlScoreSummary> = {
+          max: 2,
+          min: 2,
+          mean: 2,
+          median: 2,
+          medians: [2],
+          scoreFrequency: 1,
+          scores: [2],
+          sum: 2,
+        }
+        expect(actual).to.deep.include(expected)
+      })
 
-    it('returns expected room.scores[0].score', async () => {
-      const actual = gqlRoom?.scores?.[0]?.score
-      const expected: FindConditions<GqlScoreSummary> = {
-        max: 2,
-        min: 2,
-        mean: 2,
-        median: 2,
-        medians: [2],
-        scoreFrequency: 1,
-        scores: [2],
-        sum: 2,
-      }
-      expect(actual).to.deep.include(expected)
-    })
+      it('returns room.scores[0].score.answers with length of 1', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+        expect(gqlAnswers).to.have.lengthOf(1)
+      })
 
-    it('returns room.scores[0].score.answers with length of 1', async () => {
-      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
-      expect(gqlAnswers).to.have.lengthOf(1)
-    })
+      it('returns expected room.scores[0].score.answers', async () => {
+        const actual = gqlRoom?.scores?.[0]?.score?.answers
+        const expected: FindConditions<GqlAnswer>[] = [
+          {
+            answer: null,
+            date: rawAnswer.timestamp,
+            maximumPossibleScore: 3,
+            minimumPossibleScore: 0,
+            score: 2,
+          },
+        ]
+        expect(actual).to.deep.equal(expected)
+      })
 
-    it('returns expected room.scores[0].score.answers', async () => {
-      const actual = gqlRoom?.scores?.[0]?.score?.answers
-      const expected: FindConditions<GqlAnswer>[] = [
-        {
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('DB: adds 1 Room entry', async () => {
+        const dbRooms = await roomRepo().count()
+        expect(dbRooms).to.equal(1)
+      })
+
+      it('DB: Room has expected values', async () => {
+        const actual = await roomRepo().findOneOrFail()
+        const expected: FindConditions<Room> = {
+          roomId: roomId,
+          startTime: null,
+          endTime: null,
+          attendanceCount: null,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: adds 1 UserContentScore entry', async () => {
+        const dbUserContentScores = await userContentScoreRepo().count()
+        expect(dbUserContentScores).to.equal(1)
+      })
+
+      it('DB: UserContentScore has expected values', async () => {
+        const actual = await userContentScoreRepo().findOneOrFail()
+        const expected: FindConditions<UserContentScore> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          contentName: contentName,
+          contentType: contentType,
+          seen: true,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: adds 1 Answer entry', async () => {
+        const dbAnswers = await answerRepo().count()
+        expect(dbAnswers).to.equal(1)
+      })
+
+      it('DB: Answer has expected values', async () => {
+        const dbAnswer = await answerRepo().findOneOrFail()
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
           answer: null,
-          date: answer.date.getTime(),
-          maximumPossibleScore: 3,
-          minimumPossibleScore: 0,
-          score: 2,
-        },
-      ]
-      expect(actual).to.deep.equal(expected)
-    })
+          date: new Date(rawAnswer.timestamp),
+          maximumPossibleScore: score.max,
+          minimumPossibleScore: score.min,
+          score: score.raw,
+        }
 
-    it('returns room.teacherComments with length of 0', async () => {
-      const gqlComments = gqlRoom?.teacherComments
-      expect(gqlComments).to.have.lengthOf(0)
-    })
-
-    it('returns room.teacherCommentsByStudent with length of 0', async () => {
-      const gqlComments = gqlRoom?.teacherCommentsByStudent
-      expect(gqlComments).to.have.lengthOf(0)
-    })
-
-    it('DB: adds 1 Room entry', async () => {
-      const dbRooms = await roomRepo().count()
-      expect(dbRooms).to.equal(1)
-    })
-
-    it('DB: Room has expected values', async () => {
-      const actual = await roomRepo().findOneOrFail()
-      const expected: FindConditions<Room> = {
-        roomId: roomId,
-        startTime: null,
-        endTime: null,
-        attendanceCount: null,
-      }
-      expect(actual).to.deep.include(expected)
-    })
-
-    it('DB: adds 1 UserContentScore entry', async () => {
-      const dbUserContentScores = await userContentScoreRepo().count()
-      expect(dbUserContentScores).to.equal(1)
-    })
-
-    it('DB: UserContentScore has expected values', async () => {
-      const actual = await userContentScoreRepo().findOneOrFail()
-      const expected: FindConditions<UserContentScore> = {
-        roomId: roomId,
-        studentId: student.userId,
-        contentKey: h5pId,
-        contentName: contentName,
-        contentType: contentType,
-        seen: true,
-      }
-      expect(actual).to.deep.include(expected)
-    })
-
-    it('DB: adds 1 Answer entry', async () => {
-      const dbAnswers = await answerRepo().count()
-      expect(dbAnswers).to.equal(1)
-    })
-
-    it('DB: Answer has expected values', async () => {
-      const dbAnswer = await answerRepo().findOneOrFail()
-
-      const expected: FindConditions<Answer> = {
-        roomId: roomId,
-        studentId: student.userId,
-        contentKey: h5pId,
-        answer: null,
-        date: answer.date,
-        maximumPossibleScore: score.max,
-        minimumPossibleScore: score.min,
-        score: score.raw,
-      }
-
-      expect(dbAnswer).to.deep.include(expected)
-    })
-  })
-
-  context('1 student, 1 xapi "answer" event', () => {
-    const roomId = 'room1'
-    let endUser: EndUser
-    let gqlRoom: GqlRoom | undefined | null
-    let student: User
-    let lessonMaterial: Content
-    let existingUcs: UserContentScore
-    let ucsTemplate: UserContentScore
-    let answer: Answer
-    const h5pId = 'h5p1'
-    const contentName = 'My H5P Name'
-    const contentType = 'Flashcards'
-    const response = 'Badanamu'
-
-    before(async () => {
-      // Arrange
-      await dbConnect()
-
-      endUser = new EndUserBuilder().authenticate().build()
-      student = new UserBuilder().build()
-
-      const ucsBuilder = new UserContentScoreBuilder()
-        .withroomId(roomId)
-        .withStudentId(student.userId)
-        .withContentKey(h5pId)
-        .withContentName(contentName)
-        .withContentType(contentType)
-      existingUcs = ucsBuilder.withSeen(true).build()
-      ucsTemplate = ucsBuilder.withSeen(false).build()
-
-      answer = new AnswerBuilder(existingUcs)
-        .withScore(undefined)
-        .withResponse(response)
-        .build()
-      existingUcs.answers = Promise.resolve([answer])
-      const room = await new RoomBuilder()
-        .withRoomId(roomId)
-        .withUcs([existingUcs])
-        .buildAndPersist()
-
-      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider
-        .getSchedule(Arg.all())
-        .rejects('This should not have been called.')
-      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
-
-      const h5pContentProvider = Substitute.for<H5pContentProvider>()
-      h5pContentProvider
-        .getH5pContents(Arg.any(), endUser.token)
-        .resolves(
-          new Map([[h5pId, { id: h5pId, type: contentType, subContents: [] }]]),
-        )
-      MutableContainer.set(H5pContentProvider, h5pContentProvider)
-
-      lessonMaterial = new LessonMaterialBuilder()
-        .withSource(FileType.H5P, h5pId)
-        .withName(contentName)
-        .build()
-      const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
-        contents: new Map([
-          [
-            lessonMaterial.contentId,
-            { content: lessonMaterial, subContents: [] },
-          ],
-        ]),
-        studentContentMap: [
-          { studentId: student.userId, contentIds: [lessonMaterial.contentId] },
-        ],
+        expect(dbAnswer).to.deep.include(expected)
       })
-      cmsContentProvider
-        .getLessonMaterial(h5pId, endUser.token)
-        .resolves(undefined)
-      cmsContentProvider
-        .getLessonMaterial(lessonMaterial.contentId, endUser.token)
-        .resolves(lessonMaterial)
-      cmsContentProvider
-        .getLessonMaterialsWithSourceId(h5pId, endUser.token)
-        .resolves([lessonMaterial])
-      MutableContainer.set(CmsContentProvider, cmsContentProvider)
+    },
+  )
 
-      gqlRoom = await roomQuery(roomId, endUser)
-    })
+  context(
+    '1 student, 1 xapi "answer" event, 1 existing UserContentScore, no existing answers',
+    () => {
+      const roomId = 'room1'
+      let endUser: EndUser
+      let gqlRoom: GqlRoom | undefined | null
+      let student: User
+      let lessonMaterial: Content
+      let existingUcs: UserContentScore
+      let rawAnswer: RawAnswer
+      const h5pId = 'h5p1'
+      const contentName = 'My H5P Name'
+      const contentType = 'Flashcards'
+      const response = 'Badanamu'
 
-    after(async () => await dbDisconnect())
+      before(async () => {
+        // Arrange
+        await dbConnect()
 
-    it('returns room with expected id', async () => {
-      expect(gqlRoom).to.not.be.null
-      expect(gqlRoom).to.not.be.undefined
-      expect(gqlRoom?.room_id).to.equal(roomId)
-    })
+        endUser = new EndUserBuilder().authenticate().build()
+        student = new UserBuilder().build()
 
-    it('returns room.scores with length of 1', async () => {
-      const gqlScores = gqlRoom?.scores
-      expect(gqlScores).to.have.lengthOf(1)
-    })
+        lessonMaterial = new LessonMaterialBuilder()
+          .withSource(FileType.H5P, h5pId)
+          .withName(contentName)
+          .build()
 
-    it('returns room.scores[0].teacherScores with length of 0', async () => {
-      const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
-      expect(gqlTeacherScores).to.have.lengthOf(0)
-    })
+        const ucsBuilder = new UserContentScoreBuilder()
+          .withroomId(roomId)
+          .withStudentId(student.userId)
+          .withContentKey(lessonMaterial.contentId)
+          .withH5pId(h5pId)
+          .withContentName(contentName)
+          .withContentType(contentType)
+        existingUcs = ucsBuilder.withSeen(false).build()
 
-    it('returns expected room.scores[0].user', async () => {
-      const actual = gqlRoom?.scores?.[0]?.user
-      const expected: FindConditions<GqlUser> = {
-        user_id: student.userId,
-        given_name: null,
-        family_name: null,
-      }
-      expect(actual).to.deep.equal(expected)
-    })
+        existingUcs.answers = Promise.resolve([])
+        const room = await new RoomBuilder()
+          .withRoomId(roomId)
+          .withUcs([existingUcs])
+          .buildAndPersist()
 
-    it('returns expected room.scores[0].content', async () => {
-      const actual = gqlRoom?.scores?.[0]?.content
-      const expected: FindConditions<GqlContent> = {
-        content_id: lessonMaterial.contentId,
-        subcontent_id: lessonMaterial.subcontentId ?? null,
-        h5p_id: lessonMaterial.h5pId,
-        parent_id: null,
-        name: contentName,
-        type: contentType,
-        fileType: FileType[FileType.H5P],
-      }
-      expect(actual).to.deep.equal(expected)
-    })
+        rawAnswer = await new RawAnswerBuilder()
+          .withRoomId(roomId)
+          .withStudentId(student.userId)
+          .withH5pId(h5pId)
+          .withScore(undefined)
+          .withResponse(response)
+          .withMinimumPossibleScore(undefined)
+          .withMaximumPossibleScore(undefined)
+          .buildAndPersist()
 
-    it('returns expected room.scores[0].score', async () => {
-      const actual = gqlRoom?.scores?.[0]?.score
-      const expected: FindConditions<GqlScoreSummary> = {
-        max: null,
-        min: null,
-        mean: null,
-        median: null,
-        medians: [],
-        scoreFrequency: 0,
-        scores: [],
-        sum: 0,
-      }
-      expect(actual).to.deep.include(expected)
-    })
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider
+          .getSchedule(Arg.all())
+          .rejects('This should not have been called.')
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
-    it('returns room.scores[0].score.answers with length of 1', async () => {
-      const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
-      expect(gqlAnswers).to.have.lengthOf(1)
-    })
+        const h5pContentProvider = Substitute.for<H5pContentProvider>()
+        h5pContentProvider
+          .getH5pContents(Arg.any(), endUser.token)
+          .resolves(
+            new Map([
+              [h5pId, { id: h5pId, type: contentType, subContents: [] }],
+            ]),
+          )
+        MutableContainer.set(H5pContentProvider, h5pContentProvider)
 
-    it('returns expected room.scores[0].score.answers', async () => {
-      const actual = gqlRoom?.scores?.[0]?.score?.answers
-      const expected: FindConditions<GqlAnswer>[] = [
-        {
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
+          contents: new Map([
+            [
+              lessonMaterial.contentId,
+              { content: lessonMaterial, subContents: [] },
+            ],
+          ]),
+          studentContentMap: [
+            {
+              studentId: student.userId,
+              contentIds: [lessonMaterial.contentId],
+            },
+          ],
+        })
+        cmsContentProvider
+          .getLessonMaterial(lessonMaterial.contentId, endUser.token)
+          .resolves(lessonMaterial)
+        cmsContentProvider
+          .getLessonMaterialsWithSourceId(Arg.all())
+          .rejects('This shold not have been called.')
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
+
+        gqlRoom = await roomQuery(roomId, endUser)
+      })
+
+      after(async () => await dbDisconnect())
+
+      it('returns room with expected id', async () => {
+        expect(gqlRoom).to.not.be.null
+        expect(gqlRoom).to.not.be.undefined
+        expect(gqlRoom?.room_id).to.equal(roomId)
+      })
+
+      it('returns room.scores with length of 1', async () => {
+        const gqlScores = gqlRoom?.scores
+        expect(gqlScores).to.have.lengthOf(1)
+      })
+
+      it('returns room.scores[0].teacherScores with length of 0', async () => {
+        const gqlTeacherScores = gqlRoom?.scores?.[0].teacherScores
+        expect(gqlTeacherScores).to.have.lengthOf(0)
+      })
+
+      it('returns expected room.scores[0].user', async () => {
+        const actual = gqlRoom?.scores?.[0]?.user
+        const expected: FindConditions<GqlUser> = {
+          user_id: student.userId,
+          given_name: null,
+          family_name: null,
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[0].content', async () => {
+        const actual = gqlRoom?.scores?.[0]?.content
+        const expected: FindConditions<GqlContent> = {
+          content_id: lessonMaterial.contentId,
+          subcontent_id: lessonMaterial.subcontentId ?? null,
+          h5p_id: lessonMaterial.h5pId,
+          parent_id: null,
+          name: contentName,
+          type: contentType,
+          fileType: FileType[FileType.H5P],
+        }
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns expected room.scores[0].score', async () => {
+        const actual = gqlRoom?.scores?.[0]?.score
+        const expected: FindConditions<GqlScoreSummary> = {
+          max: null,
+          min: null,
+          mean: null,
+          median: null,
+          medians: [],
+          scoreFrequency: 0,
+          scores: [],
+          sum: 0,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('returns room.scores[0].score.answers with length of 1', async () => {
+        const gqlAnswers = gqlRoom?.scores?.[0]?.score?.answers
+        expect(gqlAnswers).to.have.lengthOf(1)
+      })
+
+      it('returns expected room.scores[0].score.answers', async () => {
+        const actual = gqlRoom?.scores?.[0]?.score?.answers
+        const expected: FindConditions<GqlAnswer>[] = [
+          {
+            answer: response,
+            date: rawAnswer.timestamp,
+            maximumPossibleScore: null,
+            minimumPossibleScore: null,
+            score: null,
+          },
+        ]
+        expect(actual).to.deep.equal(expected)
+      })
+
+      it('returns room.teacherComments with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherComments
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('returns room.teacherCommentsByStudent with length of 0', async () => {
+        const gqlComments = gqlRoom?.teacherCommentsByStudent
+        expect(gqlComments).to.have.lengthOf(0)
+      })
+
+      it('DB: adds 1 Room entry', async () => {
+        const dbRooms = await roomRepo().count()
+        expect(dbRooms).to.equal(1)
+      })
+
+      it('DB: Room has expected values', async () => {
+        const actual = await roomRepo().findOneOrFail()
+        const expected: FindConditions<Room> = {
+          roomId: roomId,
+          startTime: null,
+          endTime: null,
+          attendanceCount: null,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: adds 1 UserContentScore entry', async () => {
+        const dbUserContentScores = await userContentScoreRepo().count()
+        expect(dbUserContentScores).to.equal(1)
+      })
+
+      it('DB: UserContentScore has expected values', async () => {
+        const actual = await userContentScoreRepo().findOneOrFail()
+        const expected: FindConditions<UserContentScore> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
+          contentName: contentName,
+          contentType: contentType,
+          seen: true,
+        }
+        expect(actual).to.deep.include(expected)
+      })
+
+      it('DB: adds 1 Answer entry', async () => {
+        const dbAnswers = await answerRepo().count()
+        expect(dbAnswers).to.equal(1)
+      })
+
+      it('DB: Answer has expected values', async () => {
+        const dbAnswer = await answerRepo().findOneOrFail()
+
+        const expected: FindConditions<Answer> = {
+          roomId: roomId,
+          studentId: student.userId,
+          contentKey: lessonMaterial.contentId,
           answer: response,
-          date: answer.date.getTime(),
+          date: new Date(rawAnswer.timestamp),
           maximumPossibleScore: null,
           minimumPossibleScore: null,
           score: null,
-        },
-      ]
-      expect(actual).to.deep.equal(expected)
-    })
+        }
 
-    it('returns room.teacherComments with length of 0', async () => {
-      const gqlComments = gqlRoom?.teacherComments
-      expect(gqlComments).to.have.lengthOf(0)
-    })
-
-    it('returns room.teacherCommentsByStudent with length of 0', async () => {
-      const gqlComments = gqlRoom?.teacherCommentsByStudent
-      expect(gqlComments).to.have.lengthOf(0)
-    })
-
-    it('DB: adds 1 Room entry', async () => {
-      const dbRooms = await roomRepo().count()
-      expect(dbRooms).to.equal(1)
-    })
-
-    it('DB: Room has expected values', async () => {
-      const actual = await roomRepo().findOneOrFail()
-      const expected: FindConditions<Room> = {
-        roomId: roomId,
-        startTime: null,
-        endTime: null,
-        attendanceCount: null,
-      }
-      expect(actual).to.deep.include(expected)
-    })
-
-    it('DB: adds 1 UserContentScore entry', async () => {
-      const dbUserContentScores = await userContentScoreRepo().count()
-      expect(dbUserContentScores).to.equal(1)
-    })
-
-    it('DB: UserContentScore has expected values', async () => {
-      const actual = await userContentScoreRepo().findOneOrFail()
-      const expected: FindConditions<UserContentScore> = {
-        roomId: roomId,
-        studentId: student.userId,
-        contentKey: h5pId,
-        contentName: contentName,
-        contentType: contentType,
-        seen: true,
-      }
-      expect(actual).to.deep.include(expected)
-    })
-
-    it('DB: adds 1 Answer entry', async () => {
-      const dbAnswers = await answerRepo().count()
-      expect(dbAnswers).to.equal(1)
-    })
-
-    it('DB: Answer has expected values', async () => {
-      const dbAnswer = await answerRepo().findOneOrFail()
-
-      const expected: FindConditions<Answer> = {
-        roomId: roomId,
-        studentId: student.userId,
-        contentKey: h5pId,
-        answer: response,
-        date: answer.date,
-        maximumPossibleScore: null,
-        minimumPossibleScore: null,
-        score: null,
-      }
-
-      expect(dbAnswer).to.deep.include(expected)
-    })
-  })
+        expect(dbAnswer).to.deep.include(expected)
+      })
+    },
+  )
 
   context(
     '1 student, 1 xapi "score" event for subcontent1, 1 xapi "score" event for subcontent2',
@@ -657,12 +663,8 @@ describe('roomResolver.Room', () => {
       let gqlRoom: GqlRoom | undefined | null
       let student: User
       let lessonMaterial: Content
-      let existingSub1Ucs: UserContentScore
-      let existingSub2Ucs: UserContentScore
-      let ucsTemplate1: UserContentScore
-      let ucsTemplate2: UserContentScore
-      let sub1Answer: Answer
-      let sub2Answer: Answer
+      let sub1Answer: RawAnswer
+      let sub2Answer: RawAnswer
       const h5pId = 'h5p1'
       const contentName = 'My H5P Name'
       const contentType = 'Flashcards'
@@ -672,8 +674,6 @@ describe('roomResolver.Room', () => {
       const subName2 = 'subName2'
       const subcontent1Id = 'sub1'
       const subcontent2Id = 'sub2'
-      const contentKeySub1 = ContentKey.construct(h5pId, subcontent1Id)
-      const contentKeySub2 = ContentKey.construct(h5pId, subcontent2Id)
 
       before(async () => {
         // Arrange
@@ -682,35 +682,30 @@ describe('roomResolver.Room', () => {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
 
-        const ucsBuilder = new UserContentScoreBuilder()
-          .withroomId(roomId)
-          .withStudentId(student.userId)
-          .withContentName(contentName)
-          .withContentType(contentType)
-        existingSub1Ucs = ucsBuilder
-          .withSeen(true)
-          .withContentKey(contentKeySub1)
-          .build()
-        ucsTemplate1 = ucsBuilder.withSeen(false).build()
-        existingSub2Ucs = ucsBuilder
-          .withSeen(true)
-          .withContentKey(contentKeySub2)
-          .build()
-        ucsTemplate2 = ucsBuilder.withSeen(false).build()
+        const materialBuilder = new LessonMaterialBuilder()
+          .withSource(FileType.H5P, h5pId)
+          .withName(contentName)
+        lessonMaterial = materialBuilder.build()
 
-        sub1Answer = new AnswerBuilder(existingSub1Ucs)
-          .withScore({ min: 0, max: 3, raw: 2 })
-          .withResponse(undefined)
-          .build()
-        sub2Answer = new AnswerBuilder(existingSub2Ucs)
-          .withScore({ min: 0, max: 2, raw: 1 })
-          .withResponse(undefined)
-          .build()
-        existingSub1Ucs.answers = Promise.resolve([sub1Answer])
-        existingSub2Ucs.answers = Promise.resolve([sub2Answer])
-        const room = await new RoomBuilder()
+        sub1Answer = await new RawAnswerBuilder()
           .withRoomId(roomId)
-          .withUcs([existingSub1Ucs, existingSub2Ucs])
+          .withStudentId(student.userId)
+          .withH5pId(h5pId)
+          .withH5pSubId(subcontent1Id)
+          .withScore(2)
+          .withResponse(undefined)
+          .withMinimumPossibleScore(0)
+          .withMaximumPossibleScore(3)
+          .buildAndPersist()
+        sub2Answer = await new RawAnswerBuilder()
+          .withRoomId(roomId)
+          .withStudentId(student.userId)
+          .withH5pId(h5pId)
+          .withH5pSubId(subcontent2Id)
+          .withScore(1)
+          .withResponse(undefined)
+          .withMinimumPossibleScore(0)
+          .withMaximumPossibleScore(2)
           .buildAndPersist()
 
         const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
@@ -747,12 +742,6 @@ describe('roomResolver.Room', () => {
         )
         MutableContainer.set(H5pContentProvider, h5pContentProvider)
 
-        const materialBuilder = new LessonMaterialBuilder()
-          .withSource(FileType.H5P, h5pId)
-          .withName(contentName)
-        lessonMaterial = materialBuilder.build()
-        const subMaterial1 = materialBuilder.withName(subName1).build()
-        const subMaterial2 = materialBuilder.withName(subName2).build()
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider.getLessonMaterials(roomId, endUser.token).resolves({
           contents: new Map([
@@ -773,10 +762,10 @@ describe('roomResolver.Room', () => {
         })
         cmsContentProvider
           .getLessonMaterial(lessonMaterial.contentId, endUser.token)
-          .resolves(undefined)
+          .resolves(lessonMaterial)
         cmsContentProvider
-          .getLessonMaterialsWithSourceId(h5pId, endUser.token)
-          .resolves([lessonMaterial])
+          .getLessonMaterialsWithSourceId(Arg.all())
+          .rejects('This shold not have been called.')
         MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
         gqlRoom = await roomQuery(roomId, endUser)
@@ -937,7 +926,7 @@ describe('roomResolver.Room', () => {
         const expected: FindConditions<GqlAnswer>[] = [
           {
             answer: null,
-            date: sub1Answer.date.getTime(),
+            date: sub1Answer.timestamp,
             maximumPossibleScore: 3,
             minimumPossibleScore: 0,
             score: 2,
@@ -951,7 +940,7 @@ describe('roomResolver.Room', () => {
         const expected: FindConditions<GqlAnswer>[] = [
           {
             answer: null,
-            date: sub2Answer.date.getTime(),
+            date: sub2Answer.timestamp,
             maximumPossibleScore: 2,
             minimumPossibleScore: 0,
             score: 1,
@@ -994,13 +983,13 @@ describe('roomResolver.Room', () => {
       it('DB: UserContentScore (root content) has expected values', async () => {
         const actual = await userContentScoreRepo().findOne({
           where: {
-            contentKey: h5pId,
+            contentKey: lessonMaterial.contentId,
           },
         })
         const expected: FindConditions<UserContentScore> = {
           roomId: roomId,
           studentId: student.userId,
-          contentKey: h5pId,
+          contentKey: lessonMaterial.contentId,
           contentName: contentName,
           contentType: contentType,
           seen: false,
@@ -1011,13 +1000,19 @@ describe('roomResolver.Room', () => {
       it('DB: UserContentScore (subcontent1) has expected values', async () => {
         const actual = await userContentScoreRepo().findOne({
           where: {
-            contentKey: ContentKey.construct(h5pId, subcontent1Id),
+            contentKey: ContentKey.construct(
+              lessonMaterial.contentId,
+              subcontent1Id,
+            ),
           },
         })
         const expected: FindConditions<UserContentScore> = {
           roomId: roomId,
           studentId: student.userId,
-          contentKey: ContentKey.construct(h5pId, subcontent1Id),
+          contentKey: ContentKey.construct(
+            lessonMaterial.contentId,
+            subcontent1Id,
+          ),
           contentName: subName1,
           contentType: subType1,
           seen: true,
@@ -1028,13 +1023,19 @@ describe('roomResolver.Room', () => {
       it('DB: UserContentScore (subcontent2) has expected values', async () => {
         const actual = await userContentScoreRepo().findOne({
           where: {
-            contentKey: ContentKey.construct(h5pId, subcontent2Id),
+            contentKey: ContentKey.construct(
+              lessonMaterial.contentId,
+              subcontent2Id,
+            ),
           },
         })
         const expected: FindConditions<UserContentScore> = {
           roomId: roomId,
           studentId: student.userId,
-          contentKey: ContentKey.construct(h5pId, subcontent2Id),
+          contentKey: ContentKey.construct(
+            lessonMaterial.contentId,
+            subcontent2Id,
+          ),
           contentName: subName2,
           contentType: subType2,
           seen: true,
@@ -1048,7 +1049,10 @@ describe('roomResolver.Room', () => {
       })
 
       it('DB: Answer 1 has expected values', async () => {
-        const contentKey = ContentKey.construct(h5pId, subcontent1Id)
+        const contentKey = ContentKey.construct(
+          lessonMaterial.contentId,
+          subcontent1Id,
+        )
         const dbAnswer = await answerRepo().findOneOrFail({
           where: { contentKey },
         })
@@ -1057,7 +1061,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           studentId: student.userId,
           answer: null,
-          date: sub1Answer.date,
+          timestamp: sub1Answer.timestamp,
           maximumPossibleScore: 3,
           minimumPossibleScore: 0,
           score: 2,
@@ -1067,7 +1071,10 @@ describe('roomResolver.Room', () => {
       })
 
       it('DB: Answer 2 has expected values', async () => {
-        const contentKey = ContentKey.construct(h5pId, subcontent2Id)
+        const contentKey = ContentKey.construct(
+          lessonMaterial.contentId,
+          subcontent2Id,
+        )
         const dbAnswer = await answerRepo().findOneOrFail({
           where: { contentKey },
         })
@@ -1076,7 +1083,7 @@ describe('roomResolver.Room', () => {
           roomId: roomId,
           studentId: student.userId,
           answer: null,
-          date: sub2Answer.date,
+          timestamp: sub2Answer.timestamp,
           maximumPossibleScore: 2,
           minimumPossibleScore: 0,
           score: 1,

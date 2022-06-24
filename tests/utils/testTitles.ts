@@ -1,6 +1,4 @@
-/**
- * Centralizes common test scenarios that are repeated in numerous tests.
- */
+// TODO: Get rid of this. Not as useful as initially thought.
 export class TestTitle {
   static Authentication = class {
     static readonly context = 'end user is unauthenticated'

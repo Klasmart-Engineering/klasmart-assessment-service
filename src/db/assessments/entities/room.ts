@@ -1,4 +1,3 @@
-import { v4 } from 'uuid'
 import { Field, ObjectType } from 'type-graphql'
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm'
 import { TeacherComment } from './teacherComments'
@@ -18,7 +17,7 @@ const logger = withLogger('Room')
 export class Room extends Base {
   @PrimaryColumn({ name: 'room_id' })
   @Field({ name: 'room_id' })
-  public readonly roomId: string
+  public readonly roomId!: string
 
   @Field(() => [UserContentScore])
   @OneToMany(
@@ -38,23 +37,33 @@ export class Room extends Base {
   @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   public teacherComments!: Promise<ReadonlyArray<TeacherComment>>
 
+  // The following 4 columns are not used anymore. Ideally, they should be deleted,
+  // but we have to get permission from the data team first.
   @Column({ type: 'timestamp', nullable: true })
   public startTime?: Date | null
-
   @Column({ type: 'timestamp', nullable: true })
   public endTime?: Date | null
-
   @Column({ type: 'smallint', name: 'attendance_count', nullable: true })
   public attendanceCount?: number | null
-
   @Column({ default: false })
   public recalculate!: boolean
 
-  constructor(roomId = v4(), startTime?: Date, endTime?: Date) {
+  @Column({
+    type: 'int2',
+    name: 'assessment_version',
+    comment:
+      'What major version of the assessment service this room was created with.',
+  })
+  public assessmentVersion!: number
+
+  constructor(roomId: string) {
     super()
+    if (roomId == null) {
+      // typeorm is making the call, so don't overwrite values.
+      return
+    }
     this.roomId = roomId
-    this.startTime = startTime
-    this.endTime = endTime
+    this.assessmentVersion = 2
   }
 
   @Field(() => [UserScores])

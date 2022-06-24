@@ -1,12 +1,6 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
-import {
-  Connection,
-  EntityManager,
-  getManager,
-  getRepository,
-  Repository,
-} from 'typeorm'
+import { Connection, Repository } from 'typeorm'
 
 import { XApiRecordBuilder } from '../../builders'
 import { createAssessmentDbConnection } from '../../utils/testConnection'
@@ -15,12 +9,6 @@ import {
   IoRedisClientType,
   RedisMode,
 } from '../../../src/cache/redis'
-import { ASSESSMENTS_CONNECTION_NAME } from '../../../src/db/assessments/connectToAssessmentDatabase'
-import {
-  Answer,
-  Room,
-  UserContentScore,
-} from '../../../src/db/assessments/entities'
 import { createXapiEvents } from '../../utils/createXapiEvents'
 import { RedisStreams } from '../../../src/streams/redisApi'
 import { simpleConsumerGroupWorkerLoop } from '../../../src/streams/simpleConsumerGroupWorker'
@@ -29,26 +17,18 @@ import {
   RoomScoresTemplateProvider2,
 } from '../../../src/streams/calculateScores'
 import { XApiRecord } from '../../../src/db/xapi'
+import { RawAnswer } from '../../../src/db/assessments/entities/rawAnswer'
 
 describe('Event-driven Worker', () => {
   let redisClient: IoRedisClientType
   let xClient: RedisStreams
   let dbConnection: Connection
-  let entityManager: EntityManager
-  let roomRepo: Repository<Room>
-  let userContentScoresRepo: Repository<UserContentScore>
-  let answerRepo: Repository<Answer>
+  let rawAnswerRepo: Repository<RawAnswer>
   let roomScoreProviderWorker: RoomScoresTemplateProvider2
 
   before(async () => {
     dbConnection = await createAssessmentDbConnection()
-    entityManager = getManager(ASSESSMENTS_CONNECTION_NAME)
-    roomRepo = getRepository(Room, ASSESSMENTS_CONNECTION_NAME)
-    userContentScoresRepo = getRepository(
-      UserContentScore,
-      ASSESSMENTS_CONNECTION_NAME,
-    )
-    answerRepo = getRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
+    rawAnswerRepo = dbConnection.getRepository(RawAnswer)
 
     const redisMode = (
       process.env.REDIS_MODE || 'node'
@@ -58,12 +38,7 @@ describe('Event-driven Worker', () => {
 
     redisClient = await connectToIoRedis(redisMode, redisHost, redisPort)
     xClient = new RedisStreams(redisClient)
-    roomScoreProviderWorker = new RoomScoresTemplateProvider2(
-      roomRepo,
-      userContentScoresRepo,
-      answerRepo,
-      entityManager,
-    )
+    roomScoreProviderWorker = new RoomScoresTemplateProvider2(rawAnswerRepo)
   })
 
   after(async () => {
@@ -148,7 +123,7 @@ describe('Event-driven Worker', () => {
       expect(result?.[0].message).to.not.be.undefined
       const parseJsonDataFn = () => JSON.parse(result![0].message.data)
       expect(parseJsonDataFn).to.not.throw
-      const parsedXapiEvent = parseRawEvent(parseJsonDataFn())
+      const parsedXapiEvent = parseRawEvent(parseJsonDataFn(), entryId!)
       expect(parsedXapiEvent).to.not.be.undefined
     })
 
@@ -163,7 +138,7 @@ describe('Event-driven Worker', () => {
       expect(results?.[0][1][1]).to.not.be.undefined
       const parseJsonDataFn = () => JSON.parse(results?.[0][1][1])
       expect(parseJsonDataFn).to.not.throw
-      const parsedXapiEvent = parseRawEvent(parseJsonDataFn())
+      const parsedXapiEvent = parseRawEvent(parseJsonDataFn(), entryId!)
       expect(parsedXapiEvent).to.not.be.null
       expect(parsedXapiEvent).to.contains({
         roomId: 'room1',
@@ -175,25 +150,13 @@ describe('Event-driven Worker', () => {
     })
 
     it('processed events are found in the database', async () => {
-      const room = await entityManager.findOne(Room, 'room1', {})
-      const userContentScores = (await room?.scores) || []
-      const answers = (
-        await Promise.all(
-          userContentScores.map(
-            async (userX) => (await userX.getAnswers()) || [],
-          ),
-        )
-      ).flat()
-
-      expect(room).to.not.be.undefined
-      expect(userContentScores.length).to.equal(1)
-      expect(userContentScores[0].seen).to.be.true
+      const answers = await rawAnswerRepo.find()
       expect(answers.length).to.equal(1)
       const answer = answers[0]
       expect(answer).to.contain({
         roomId: 'room1',
         studentId: 'user1',
-        contentKey: 'h5p1',
+        h5pId: 'h5p1',
       })
     })
   })
@@ -252,28 +215,17 @@ describe('Event-driven Worker', () => {
 
       after(async () => {
         await xClient.deleteGroup(streamName, groupName)
+        await rawAnswerRepo.clear()
       })
 
       it('Idempotently processes the duplicate events and finds a single answer record', async () => {
-        const room = await entityManager.findOne(Room, 'room1', {})
-        const userContentScores = (await room?.scores) || []
-        const answers = (
-          await Promise.all(
-            userContentScores.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-
-        expect(room).to.not.be.undefined
-        expect(userContentScores.length).to.equal(1)
-        expect(userContentScores[0].seen).to.be.true
+        const answers = await rawAnswerRepo.find()
         expect(answers.length).to.equal(1)
         const answer = answers[0]
         expect(answer).to.contain({
           roomId: 'room1',
           studentId: 'user1',
-          contentKey: 'h5p1',
+          h5pId: 'h5p1',
         })
       })
     },
@@ -370,8 +322,7 @@ describe('Event-driven Worker', () => {
         .withClientTimestamp(100000000002)
       const xapiRecordInvalid3 = xapiEventInvalid3.build()
 
-      // Semi Invalid => Score + Response Missing
-      // creates a UserContentScore, but not an Answer
+      // Score + Response Missing
       const xapiEventSemiValid = new XApiRecordBuilder()
         .withRoomId('room1')
         .withUserId('user1')
@@ -429,39 +380,17 @@ describe('Event-driven Worker', () => {
 
       after(async () => {
         await xClient.deleteGroup(streamName, groupName)
-      })
-
-      it('creates userContentScores given valid index triplet (roomId, userId, ActivityId)', async () => {
-        const room = await entityManager.findOne(Room, 'room1', {})
-        const userContentScores = await room?.scores
-
-        expect(room).to.not.be.undefined
-        expect(userContentScores).to.not.be.undefined
-        expect(userContentScores!.length).to.equal(4)
-        expect(userContentScores![0].seen).to.be.true
-        expect(userContentScores![1].seen).to.be.true
-        expect(userContentScores![2].seen).to.be.true
-        expect(userContentScores![3].seen).to.be.true
+        await rawAnswerRepo.clear()
       })
 
       it('creates Answers only for events that have a valid Score or Response', async () => {
-        const room = await entityManager.findOne(Room, 'room1', {})
-        const userContentScores = (await room?.scores) || []
-        const answers = (
-          await Promise.all(
-            userContentScores.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-
-        expect(room).to.not.be.undefined
-        expect(answers.length).to.equal(3)
+        const answers = await rawAnswerRepo.find()
+        expect(answers.length).to.equal(4)
         const answer = answers[0]
         expect(answer).to.contain({
           roomId: 'room1',
           studentId: 'user1',
-          contentKey: 'h5p1',
+          h5pId: 'h5p1',
         })
       })
 
@@ -520,6 +449,7 @@ describe('Event-driven Worker', () => {
 
       after(async () => {
         await xClient.deleteGroup(streamName, groupName)
+        await rawAnswerRepo.clear()
       })
 
       it('events can be read from the stream', async () => {
@@ -534,7 +464,7 @@ describe('Event-driven Worker', () => {
         expect(result?.[0].message).to.not.be.undefined
         const parseJsonDataFn = () => JSON.parse(result![0].message.data)
         expect(parseJsonDataFn).to.not.throw
-        const parsedXapiEvent = parseRawEvent(parseJsonDataFn())
+        const parsedXapiEvent = parseRawEvent(parseJsonDataFn(), entryIds[0])
         expect(parsedXapiEvent).to.not.be.undefined
       })
 
@@ -546,31 +476,21 @@ describe('Event-driven Worker', () => {
         const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvents = parseJsonDataFn().map(
-          (x: XApiRecord | undefined) => parseRawEvent(x),
+          (x: XApiRecord | undefined, index) =>
+            parseRawEvent(x, entryIds[index]),
         )
         expect(parsedXapiEvents.length).to.be.equal(10)
         expect(parsedXapiEvents.every((x) => x !== null)).to.be.true
       })
 
       it('processed events are found in the database', async () => {
-        const room = await entityManager.findOne(Room, '_test1_room0', {})
-        const userContentScores = (await room?.scores) || []
-        const answers = (
-          await Promise.all(
-            userContentScores.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-
-        expect(room).to.not.be.undefined
-        expect(userContentScores.length).to.equal(1)
+        const answers = await rawAnswerRepo.find()
         expect(answers.length).to.equal(10)
         const answer = answers[0]
         expect(answer).to.contain({
           roomId: '_test1_room0',
           studentId: 'user0',
-          contentKey: 'h5pId0',
+          h5pId: 'h5pId0',
         })
       })
     },
@@ -627,6 +547,7 @@ describe('Event-driven Worker', () => {
 
       after(async () => {
         await xClient.deleteGroup(streamName, groupName)
+        await rawAnswerRepo.clear()
       })
 
       it('all xapiEvents have been pushed to the stream', async () => {
@@ -641,39 +562,24 @@ describe('Event-driven Worker', () => {
         const parseJsonDataFn = () => results.map((x) => JSON.parse(x[1][1]))
         expect(parseJsonDataFn).to.not.throw
         const parsedXapiEvents = parseJsonDataFn().map(
-          (x: XApiRecord | undefined) => parseRawEvent(x),
+          (x: XApiRecord | undefined, index) =>
+            parseRawEvent(x, entryIds[index]),
         )
         expect(parsedXapiEvents.length).to.be.equal(80)
       })
 
-      it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        const room0 = await entityManager.findOne(Room, '_test2_room0', {})
-        const userContentScores0 = (await room0?.scores) || []
-        const answers0 = (
-          await Promise.all(
-            userContentScores0.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-        expect(room0).to.not.be.undefined
-        expect(userContentScores0.length).to.equal(4)
-        expect(answers0.length).to.equal(40)
+      it('room0 Answers are found in the database', async () => {
+        const answers = await rawAnswerRepo.find({
+          where: { roomId: '_test2_room0' },
+        })
+        expect(answers.length).to.equal(40)
       })
 
-      it('room1 and its UsercontentScores and Answers are found in the database', async () => {
-        const room1 = await entityManager.findOne(Room, '_test2_room1', {})
-        const userContentScores1 = (await room1?.scores) || []
-        const answers1 = (
-          await Promise.all(
-            userContentScores1.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-        expect(room1).to.not.be.undefined
-        expect(userContentScores1.length).to.equal(4)
-        expect(answers1.length).to.equal(40)
+      it('room1 Answers are found in the database', async () => {
+        const answers = await rawAnswerRepo.find({
+          where: { roomId: '_test2_room1' },
+        })
+        expect(answers.length).to.equal(40)
       })
     },
   )
@@ -753,6 +659,7 @@ describe('Event-driven Worker', () => {
 
       after(async () => {
         await xClient.deleteGroup(streamName, groupName)
+        await rawAnswerRepo.clear()
       })
 
       it('all xapiEvents have been pushed to the stream', async () => {
@@ -771,17 +678,10 @@ describe('Event-driven Worker', () => {
         ])
       })
 
-      it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        const room = await entityManager.findOne(Room, '_test3_room0', {})
-        const userContentScores = (await room?.scores) || []
-        const answers = (
-          await Promise.all(
-            userContentScores.map((userX) => userX.getAnswers() || []),
-          )
-        ).flat()
-
-        expect(room).to.not.be.undefined
-        expect(userContentScores.length).to.equal(1)
+      it('room0 Answers are found in the database', async () => {
+        const answers = await rawAnswerRepo.find({
+          where: { roomId: '_test3_room0' },
+        })
         expect(answers.length).to.equal(10)
       })
     },
@@ -880,40 +780,29 @@ describe('Event-driven Worker', () => {
         ).to.equal(xapiRecords.length)
       })
 
-      it('room0 and its UsercontentScores and Answers are found in the database', async () => {
-        const room = await entityManager.findOne(Room, '_test4_room0', {})
-        const userContentScores = (await room?.scores) || []
-        const answers = (
-          await Promise.all(
-            userContentScores.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-        expect(room).to.not.be.undefined
-        expect(userContentScores.length).to.equal(1)
+      after(async () => {
+        await xClient.deleteGroup(streamName, groupName)
+        await rawAnswerRepo.clear()
+      })
+
+      it('room0 Answers are found in the database', async () => {
+        const answers = await rawAnswerRepo.find({
+          where: { roomId: '_test4_room0' },
+        })
         expect(answers.length).to.equal(10)
       })
 
-      it('room1 and its UsercontentScores and Answers are found in the database', async () => {
-        const room = await entityManager.findOne(Room, '_test4_room1', {})
-        const userContentScores = (await room?.scores) || []
-        const answers = (
-          await Promise.all(
-            userContentScores.map(
-              async (userX) => (await userX.getAnswers()) || [],
-            ),
-          )
-        ).flat()
-        expect(room).to.not.be.undefined
-        expect(userContentScores.length).to.equal(1)
+      it('room1 Answers are found in the database', async () => {
+        const answers = await rawAnswerRepo.find({
+          where: { roomId: '_test4_room0' },
+        })
         expect(answers.length).to.equal(10)
       })
     },
   )
 
   context(
-    'Pushing 10 rooms, 10 users, 10 activity, 10000 events with 1 Consumer',
+    'Pushing 3 rooms, 3 users, 3 activity, 10 events with 1 Consumer',
     () => {
       const streamName = 'stream1'
       const errorStreamName = 'errorstream1'
@@ -946,7 +835,7 @@ describe('Event-driven Worker', () => {
         }
         const pushPullLoop = async (xapiRecords: XApiRecord[]) => {
           const entryIds = await Promise.all(
-            xapiRecords.map(async (xapiRecord) =>
+            xapiRecords.map((xapiRecord) =>
               xClient.add(streamName, {
                 data: JSON.stringify(xapiRecord),
               }),
@@ -984,35 +873,7 @@ describe('Event-driven Worker', () => {
       })
 
       it('all rooms have are found in the database', async () => {
-        const rooms = (await roomRepo.find()).filter((room) =>
-          room.roomId.startsWith('_test5_'),
-        )
-        const userContentScores = (
-          await Promise.all(
-            rooms.map(async (room) => {
-              const userXscores = (await room?.scores) || []
-              return userXscores
-            }),
-          )
-        ).flat()
-        const answers = (
-          await Promise.all(
-            userContentScores.map(async (userX) => {
-              return entityManager.find(Answer, {
-                where: {
-                  roomId: userX!.roomId,
-                  studentId: userX!.studentId,
-                  contentKey: userX!.contentKey,
-                },
-              })
-            }),
-          )
-        ).flat()
-
-        expect(rooms.length).to.equal(numRooms)
-        expect(userContentScores.length).to.equal(
-          numRooms * numUsers * numActivities,
-        )
+        const answers = await rawAnswerRepo.find()
         expect(answers.length).to.equal(
           numRooms * numUsers * numActivities * numEvents,
         )

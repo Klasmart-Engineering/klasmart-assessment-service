@@ -1,4 +1,5 @@
 export { Answer } from './answer'
+export { RawAnswer } from './rawAnswer'
 export { Room } from './room'
 export { TeacherComment } from './teacherComments'
 export { TeacherScore } from './teacherScore'

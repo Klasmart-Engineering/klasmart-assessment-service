@@ -1,12 +1,12 @@
 import { XApiRecord } from '../db/xapi'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { Service } from 'typedi'
-import { InjectManager, InjectRepository } from 'typeorm-typedi-extensions'
-import { Answer, Room, UserContentScore } from '../db/assessments/entities'
+import { InjectRepository } from 'typeorm-typedi-extensions'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { EntityManager, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import ContentKey from '../helpers/contentKey'
 import { RedisStreams, StreamMessageReply } from './redisApi'
+import { RawAnswer } from '../db/assessments/entities/rawAnswer'
 
 const logger = withLogger('streamCalculateScore')
 
@@ -36,8 +36,9 @@ type XApiRecordEvent = ParsedXapiEvent & {
 }
 
 export const parseRawEvent = (
-  rawXapiEvent?: XApiRecord,
-): ParsedXapiEvent | null => {
+  rawXapiEvent: XApiRecord | undefined,
+  entryId: string,
+): XApiRecordEvent | null => {
   const userId = rawXapiEvent?.userId
   const roomId = rawXapiEvent?.roomId
   const timestamp = rawXapiEvent?.xapi?.clientTimestamp
@@ -88,6 +89,7 @@ export const parseRawEvent = (
   const score = statement.result?.score
 
   return {
+    entryId,
     userId,
     roomId,
     h5pId,
@@ -122,23 +124,9 @@ function groupBy<K, V>(
 @Service()
 export class RoomScoresTemplateProvider2 {
   constructor(
-    @InjectRepository(Room, ASSESSMENTS_CONNECTION_NAME)
-    private readonly roomRepository: Repository<Room>,
-    @InjectRepository(UserContentScore, ASSESSMENTS_CONNECTION_NAME)
-    private readonly userContentScoreRepository: Repository<UserContentScore>,
-    @InjectRepository(Answer, ASSESSMENTS_CONNECTION_NAME)
-    private readonly answerRepository: Repository<Answer>,
-    @InjectManager(ASSESSMENTS_CONNECTION_NAME)
-    public readonly assessmentDB: EntityManager,
+    @InjectRepository(RawAnswer, ASSESSMENTS_CONNECTION_NAME)
+    private readonly rawAnswerRepo: Repository<RawAnswer>,
   ) {}
-
-  public static getUserContentScoreKey(
-    roomId: string,
-    userId: string,
-    contentKey: string,
-  ): string {
-    return `${roomId}|${userId}|${contentKey}`
-  }
 
   // 1 rooms -> 10 students -> 1 events every 10s => 1 event/second
   // 10 rooms -> fine
@@ -175,9 +163,9 @@ export class RoomScoresTemplateProvider2 {
     events.forEach(({ id, message }) => {
       const data = message?.data
       try {
-        const valid = parseRawEvent(JSON.parse(data))
+        const valid = parseRawEvent(JSON.parse(data), id)
         if (valid) {
-          validXapiEvents.push({ ...valid, entryId: id })
+          validXapiEvents.push(valid)
         } else {
           invalidXapiEvents.push({
             id,
@@ -185,7 +173,7 @@ export class RoomScoresTemplateProvider2 {
           })
         }
       } catch (e) {
-        invalidXapiEvents.push({ id, message: { data, error: String(e) } })
+        invalidXapiEvents.push({ id, message: { data, error: e.message } })
       }
     })
     logger.debug(
@@ -208,128 +196,70 @@ export class RoomScoresTemplateProvider2 {
       )
     }
 
-    // 2. Group by Room
-    const xapiEventsGroupedByRoom = groupBy(
-      validXapiEvents,
-      (xapiEvent) => xapiEvent.roomId,
-    )
-    logger.debug(
-      `process >> valid events grouped by roomId,` +
-        ` total groups: ${xapiEventsGroupedByRoom.size}`,
-    )
-
-    for (const [roomId, xapiEvents] of xapiEventsGroupedByRoom.entries()) {
-      logger.debug(
-        `process >> roomId(${roomId}) >> events: ${xapiEvents.length}`,
-      )
-
-      // Get the room or create a new one
-      // let room = await this.assessmentDB.findOne(Room, roomId, {})
-      let room = await this.roomRepository.findOne(roomId)
-      if (!room) {
-        room = new Room(roomId)
-        await this.assessmentDB.save(Room, room)
-        logger.debug(`process >> roomId(${roomId}) >> created new Room`)
+    const contentKeySet = new Set<string>()
+    const eventsWithAnswers: XApiRecordEvent[] = []
+    const eventsWithNoAnswers: XApiRecordEvent[] = []
+    for (const xapiEvent of validXapiEvents) {
+      if (xapiEvent.response || xapiEvent.score) {
+        eventsWithAnswers.push(xapiEvent)
+        const contentKey = ContentKey.construct(
+          xapiEvent.h5pId,
+          xapiEvent.h5pSubId,
+        )
+        contentKeySet.add(contentKey)
+      } else {
+        eventsWithNoAnswers.push(xapiEvent)
       }
-
-      // 3. Group by user
-      const xapiEventsGroupedByUser = groupBy(
-        xapiEvents,
-        (xapiEvent) => xapiEvent.userId,
-      )
-      logger.debug(
-        `process >> Grouped by userId, total groups: ${xapiEventsGroupedByUser.size}`,
-      )
-
-      for (const [userId, xapiEvents] of xapiEventsGroupedByUser.entries()) {
-        logger.debug(
-          `process >> roomId(${roomId}) userId(${userId}) >>` +
-            ` events: ${xapiEvents.length}`,
-        )
-        const xapiEventsGroupedByContentKey = groupBy(
-          xapiEvents,
-          (xapiEvent) =>
-            ContentKey.construct(xapiEvent.h5pId, xapiEvent.h5pSubId), // old way -> Material:content_id + xapiEvent:h5pSubId
-        )
-        logger.debug(
-          `process >> Grouped by contentKey, ` +
-            `total groups: ${xapiEventsGroupedByContentKey.size}`,
-        )
-
-        // 4. Group by activity/content
-        for (const [
-          contentKey,
-          xapiEvents,
-        ] of xapiEventsGroupedByContentKey.entries()) {
-          logger.debug(
-            `process >> roomId(${roomId}) userId(${userId}) ` +
-              `contentKey(${contentKey}) >> events: ${xapiEvents.length}`,
-          )
-
-          // Sanity check, should be IMPOSSIBLE -> ContentKey should not exist for events that don't exist
-          if (xapiEvents.length == 0) {
-            logger.error(`process >> No events found after groupby!`)
-            continue
-          }
-
-          // At this point, xapi events that share the same h5pId and h5pSubId
-          // must also have the same Type, Name and h5pParentId
-          const { h5pType, h5pName, h5pParentId } = xapiEvents[0]
-
-          logger.debug(
-            `process >> userContentScore(${roomId}:${userId}:${contentKey})`,
-          )
-          // Time for the UserContentScore entity!
-          // First, let's try to find one in the database if it already exists
-          let userContentScore = await this.assessmentDB.findOne(
-            UserContentScore,
-            {
-              where: {
-                roomId: roomId,
-                studentId: userId,
-                contentKey: contentKey,
-              },
-            },
-          )
-
-          // If we haven't found one, we will create a new one
-          if (!userContentScore) {
-            logger.debug(
-              `process >> creating a new userContentScore(${roomId}:${userId}:${contentKey})`,
-            )
-            userContentScore = UserContentScore.new(roomId, userId, contentKey)
-            userContentScore.seen = true
-            await this.assessmentDB.save(UserContentScore, userContentScore)
-            room.scores = Promise.resolve([
-              ...(await room.scores),
-              userContentScore,
-            ])
-          }
-
-          await Promise.all([
-            xapiEvents.map((a) => {
-              return userContentScore!.applyEvent(a)
-            }),
-          ])
-          await this.assessmentDB.save(Answer, await userContentScore.answers)
-
-          logger.info(
-            `xAPI events with answers: ${xapiEvents.length}`,
-            xapiEvents,
-          )
-
-          // 7. Acknowledge
-          logger.debug(
-            `process >> Redis acknowledge processed events: ${xapiEvents.length}`,
-          )
-          await xClient.ack(
-            stream,
-            group,
-            xapiEvents.map((x) => x.entryId),
-          )
-        }
-      }
-      await this.assessmentDB.save(room)
     }
+
+    logger.info(
+      `xAPI events with answers: ${eventsWithAnswers.length}`,
+      eventsWithAnswers,
+    )
+
+    // If we don't have any answers for a given contentKey, add a non-answer event
+    // so the consumer knows that the activity was at least seen/attempted.
+    for (const xapiEvent of eventsWithNoAnswers) {
+      const contentKey = ContentKey.construct(
+        xapiEvent.h5pId,
+        xapiEvent.h5pSubId,
+      )
+      if (!contentKeySet.has(contentKey)) {
+        contentKeySet.add(contentKey)
+        eventsWithAnswers.push(xapiEvent)
+      }
+    }
+    // Now convert the events to RawAnswers for the database.
+    const rawAnswers = eventsWithAnswers.map((x) =>
+      this.rawAnswerRepo.create({
+        roomId: x.roomId,
+        studentId: x.userId,
+        h5pId: x.h5pId,
+        h5pSubId: x.h5pSubId,
+        timestamp: x.timestamp,
+        answer: x.response,
+        score: x.score?.raw,
+        maximumPossibleScore: x.score?.max,
+        minimumPossibleScore: x.score?.min,
+      }),
+    )
+
+    // 7. Acknowledge
+    logger.debug(
+      `process >> Redis acknowledge processed events: ${validXapiEvents.length}`,
+    )
+    await xClient.ack(
+      stream,
+      group,
+      validXapiEvents.map((x) => x.entryId),
+    )
+
+    await this.rawAnswerRepo
+      .createQueryBuilder()
+      .insert()
+      .into(RawAnswer)
+      .values(rawAnswers)
+      .orIgnore()
+      .execute()
   }
 }

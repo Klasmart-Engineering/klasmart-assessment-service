@@ -114,5 +114,5 @@ type UserContentScore {
 
 type UserScores {
   scores: [UserContentScore!]!
-  user: User
+  user: User!
 }

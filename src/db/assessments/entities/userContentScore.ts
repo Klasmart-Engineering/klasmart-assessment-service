@@ -14,10 +14,10 @@ import { Base } from './base'
 import { Room } from './room'
 import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
-import { ParsedXapiEvent } from '../../../helpers/parsedXapiEvent'
 import { ASSESSMENTS_CONNECTION_NAME } from '../connectToAssessmentDatabase'
 import { Content } from '../../cms/entities/content'
 import { User } from '../../../web'
+import { RawAnswer } from './rawAnswer'
 
 @Entity({ name: 'assessment_xapi_user_content_score' })
 @ObjectType()
@@ -30,6 +30,12 @@ export class UserContentScore extends Base {
 
   @PrimaryColumn({ name: 'content_id', nullable: false })
   public readonly contentKey!: string
+
+  @Column({ name: 'h5p_id', nullable: true })
+  public h5pId?: string
+
+  @Column({ name: 'h5p_sub_id', nullable: true })
+  public h5pSubId?: string
 
   @ManyToOne(
     () => Room, //Linter bug
@@ -100,7 +106,7 @@ export class UserContentScore extends Base {
     return { userId: this.studentId }
   }
 
-  constructor(roomId: string, studentId: string, contentKey: string) {
+  private constructor(roomId: string, studentId: string, contentKey: string) {
     super()
     if (roomId == null) {
       // typeorm is making the call, so don't overwrite values.
@@ -124,37 +130,30 @@ export class UserContentScore extends Base {
     userContentScore.contentType = content?.type
     userContentScore.contentName = content?.name
     userContentScore.contentParentId = content?.parentId
+    userContentScore.h5pId = content?.h5pId
+    userContentScore.h5pSubId = content?.subcontentId
 
     return userContentScore
   }
 
-  public async applyEvent(
-    xapiEvent: ParsedXapiEvent,
-  ): Promise<Answer | undefined> {
-    this.seen = true
-    const score = xapiEvent.score?.raw
-    const response = xapiEvent.response
-    if (score === undefined && response === undefined) {
-      return
+  public applyAnswers(rawAnswers: RawAnswer[]) {
+    const answers: Answer[] = []
+    this.answers = Promise.resolve(answers)
+    for (const rawAnswer of rawAnswers) {
+      this.seen = true
+      const { answer: response, score } = rawAnswer
+      if (score == null && response == null) {
+        continue
+      }
+      const answer = Answer.new(
+        this,
+        rawAnswer.timestamp,
+        rawAnswer.answer,
+        rawAnswer.score,
+        rawAnswer.minimumPossibleScore,
+        rawAnswer.maximumPossibleScore,
+      )
+      answers.push(answer)
     }
-    return await this.addAnswer(xapiEvent)
-  }
-
-  protected async addAnswer(xapiEvent: ParsedXapiEvent): Promise<Answer> {
-    let answers = await this.answers
-    if (!answers) {
-      answers = []
-      this.answers = Promise.resolve(answers)
-    }
-    const answer = Answer.new(
-      this,
-      new Date(xapiEvent.timestamp),
-      xapiEvent.response,
-      xapiEvent.score?.raw,
-      xapiEvent.score?.min,
-      xapiEvent.score?.max,
-    )
-    answers.push(answer)
-    return answer
   }
 }

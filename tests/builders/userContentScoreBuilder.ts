@@ -11,6 +11,8 @@ export default class UserContentScoreBuilder {
   private contentName?: string
   private contentParentId?: string | null
   private seen = false
+  private h5pId?: string
+  private h5pSubId?: string
 
   public withroomId(value: string): this {
     this.roomId = value
@@ -48,6 +50,16 @@ export default class UserContentScoreBuilder {
     return this
   }
 
+  public withH5pId(value?: string): this {
+    this.h5pId = value
+    return this
+  }
+
+  public withH5pSubId(value?: string): this {
+    this.h5pSubId = value
+    return this
+  }
+
   public build(): UserContentScore {
     const entity = UserContentScore.new(
       this.roomId,
@@ -58,6 +70,8 @@ export default class UserContentScoreBuilder {
     entity.contentName = this.contentName
     entity.contentParentId = this.contentParentId
     entity.seen = this.seen
+    entity.h5pId = this.h5pId
+    entity.h5pSubId = this.h5pSubId
     return entity
   }
 

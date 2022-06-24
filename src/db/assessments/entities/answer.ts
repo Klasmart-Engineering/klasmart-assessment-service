@@ -58,7 +58,7 @@ export class Answer extends Base {
     roomId: string,
     studentId: string,
     contentKey: string,
-    date: Date,
+    timestamp: number,
   ) {
     super()
     if (roomId == null) {
@@ -68,24 +68,22 @@ export class Answer extends Base {
     this.roomId = roomId
     this.studentId = studentId
     this.contentKey = contentKey
-    // This null check is needed because TypeOrm calls constructors
-    // with null parameters when loading entities.
-    this.timestamp = this.timestamp = date?.getTime() ?? 0
+    this.timestamp = timestamp
   }
 
   public static new(
     userContentScore: UserContentScore,
-    date: Date,
-    answer?: string,
-    score?: number,
-    minimumPossibleScore?: number,
-    maximumPossibleScore?: number,
+    timestamp: number,
+    answer?: string | null,
+    score?: number | null,
+    minimumPossibleScore?: number | null,
+    maximumPossibleScore?: number | null,
   ): Answer {
     const answerObject = new Answer(
       userContentScore.roomId,
       userContentScore.studentId,
       userContentScore.contentKey,
-      date,
+      timestamp,
     )
     answerObject.userContentScore = Promise.resolve(userContentScore)
     answerObject.answer = answer

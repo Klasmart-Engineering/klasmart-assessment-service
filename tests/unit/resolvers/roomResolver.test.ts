@@ -5,7 +5,11 @@ import { EntityManager } from 'typeorm'
 import { Room } from '../../../src/db/assessments/entities/room'
 import { UserContentScore } from '../../../src/db/assessments/entities/userContentScore'
 import { RoomScoresCalculator } from '../../../src/providers/roomScoresCalculator'
-import { TeacherCommentBuilder, UserContentScoreBuilder } from '../../builders'
+import {
+  RoomBuilder,
+  TeacherCommentBuilder,
+  UserContentScoreBuilder,
+} from '../../builders'
 
 describe('roomResolver', () => {
   describe('Room', () => {
@@ -18,14 +22,14 @@ describe('roomResolver', () => {
         const scores = [
           new UserContentScoreBuilder().withroomId(roomId).build(),
         ]
-        const room: Room = new Room(roomId)
+        const room: Room = new RoomBuilder().withRoomId(roomId).build()
         room.scores = Promise.resolve(scores)
         room.teacherComments = Promise.resolve([])
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
 
-        assessmentDB.findOne(Room, roomId, {}).resolves(room)
+        assessmentDB.findOne(Room, roomId).resolves(room)
         roomScoresCalculator
           .calculate(roomId, authenticationToken)
           .resolves(scores)
@@ -36,8 +40,8 @@ describe('roomResolver', () => {
         const resultRoom = await sut.Room(roomId, {})
 
         // Assert
-        assessmentDB.received(1).findOne(Room, roomId, {})
-        roomScoresCalculator.received(1).calculate(roomId, undefined)
+        assessmentDB.received(1).findOne(Room, roomId)
+        roomScoresCalculator.received(0).calculate(roomId, undefined)
         assessmentDB.received(1).save(room)
         const resultScores = await resultRoom.scores
 
@@ -54,12 +58,12 @@ describe('roomResolver', () => {
         const studentId = 'student1'
         const contentId = 'content1'
         const authenticationToken = undefined
-        const scores = [new UserContentScore(roomId, studentId, contentId)]
+        const scores = [UserContentScore.new(roomId, studentId, contentId)]
 
         const assessmentDB = Substitute.for<EntityManager>()
         const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
 
-        assessmentDB.findOne(Room, roomId, {}).resolves(undefined)
+        assessmentDB.findOne(Room, roomId).resolves(undefined)
         roomScoresCalculator
           .calculate(roomId, authenticationToken)
           .resolves(scores)
@@ -70,7 +74,7 @@ describe('roomResolver', () => {
         const resultRoom = await resolver.Room(roomId, {})
 
         // Assert
-        assessmentDB.received(1).findOne(Room, roomId, {})
+        assessmentDB.received(1).findOne(Room, roomId)
         roomScoresCalculator.received(1).calculate(roomId, authenticationToken)
         assessmentDB.received(1).save(resultRoom)
         const resultScores = await resultRoom.scores
@@ -97,7 +101,7 @@ describe('roomResolver', () => {
           .withStudentId(studentId)
           .withComment('comment 2')
           .build()
-        const room: Room = new Room(roomId)
+        const room: Room = new RoomBuilder().withRoomId(roomId).build()
         room.scores = Promise.resolve([])
         room.teacherComments = Promise.resolve([comment1, comment2])
 
@@ -130,7 +134,7 @@ describe('roomResolver', () => {
           .withStudentId(studentId)
           .withContentKey(contentKey2)
           .build()
-        const room: Room = new Room(roomId)
+        const room: Room = new RoomBuilder().withRoomId(roomId).build()
         room.scores = Promise.resolve([userContentScore1, userContentScore2])
         room.teacherComments = Promise.resolve([])
 
@@ -162,7 +166,7 @@ describe('roomResolver', () => {
           .withroomId(roomId)
           .withStudentId(studentId)
           .build()
-        const room: Room = new Room(roomId)
+        const room: Room = new RoomBuilder().withRoomId(roomId).build()
         room.scores = Promise.resolve([userContentScore1, userContentScore2])
         room.teacherComments = Promise.resolve([])
 
@@ -203,7 +207,7 @@ describe('roomResolver', () => {
             .withStudentId(student2Id)
             .withContentKey(contentKeyB)
             .build()
-          const room: Room = new Room(roomId)
+          const room: Room = new RoomBuilder().withRoomId(roomId).build()
           room.scores = Promise.resolve([
             student1UserContentScore,
             student2UserContentScore1,

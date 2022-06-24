@@ -30,7 +30,7 @@ export default class AnswerBuilder {
   public build(): Answer {
     const entity = Answer.new(
       this.userContentScore,
-      this.date,
+      this.date.getTime(),
       this.response,
       this.score?.raw,
       this.score?.min,

@@ -1,5 +1,8 @@
 export default class ContentKey {
-  public static construct(contentId: string, subcontentId?: string): string {
+  public static construct(
+    contentId: string,
+    subcontentId?: string | null,
+  ): string {
     return subcontentId ? `${contentId}|${subcontentId}` : contentId
   }
 
