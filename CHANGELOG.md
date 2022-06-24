@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.21 (2022-06-24)
+
+
+### Features
+
+* only store 1 non-answer per room/student/content ([1bdd6fe](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/1bdd6fe2ba81cdfa09cf7034b8709352da0eaed4))
+
 ## 2.0.0-alpha.20 (2022-06-24)
 
 
