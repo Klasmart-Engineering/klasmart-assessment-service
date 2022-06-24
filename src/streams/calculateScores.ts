@@ -228,6 +228,7 @@ export class RoomScoresTemplateProvider2 {
       )
       if (!contentKeySet.has(contentKey)) {
         contentKeySet.add(contentKey)
+        xapiEvent.timestamp = 0
         eventsWithAnswers.push(xapiEvent)
       }
     }
