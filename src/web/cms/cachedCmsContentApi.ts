@@ -60,26 +60,4 @@ export class CachedCmsContentApi {
 
     return dto
   }
-
-  // TODO: Consider renaming sourceId to h5pId. sourceId is CMS terminology.
-  public async getLessonMaterialsWithSourceId(
-    sourceId: string,
-    authenticationToken?: string,
-  ): Promise<ReadonlyArray<ContentDto>> {
-    const key = getLessonMaterialsWithSourceIdKey(sourceId)
-    const cached = await this.cache.get(key)
-    if (cached) {
-      return JSON.parse(cached)
-    }
-    const dtos = await this.cmsContentApi.getLessonMaterialsWithSourceId(
-      sourceId,
-      authenticationToken,
-    )
-    if (dtos) {
-      const json = JSON.stringify(dtos)
-      await this.cache.set(key, json, this.ttlSeconds)
-    }
-
-    return dtos
-  }
 }

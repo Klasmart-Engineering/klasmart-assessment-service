@@ -51,29 +51,15 @@ export default class TeacherScoreResolver {
         `subcontentId: ${subcontentId}`,
     )
     try {
-      let contentKey = ContentKey.construct(contentId, subcontentId)
-      let userContentScore = await this.assesmentDB.findOne(UserContentScore, {
-        roomId: roomId,
-        studentId: studentId,
-        contentKey: contentKey,
-      })
-
-      // If the content_id columns haven't been migrated yet
-      // (still using h5p ids), we need to try with the h5pId.
-      if (!userContentScore) {
-        const content = await this.cmsContentProvider.getLessonMaterial(
-          contentId,
-          context.encodedAuthenticationToken,
-        )
-        if (content?.h5pId) {
-          contentKey = ContentKey.construct(content.h5pId, subcontentId)
-          userContentScore = await this.assesmentDB.findOne(UserContentScore, {
-            roomId: roomId,
-            studentId: studentId,
-            contentKey: contentKey,
-          })
-        }
-      }
+      const contentKey = ContentKey.construct(contentId, subcontentId)
+      const userContentScore = await this.assesmentDB.findOne(
+        UserContentScore,
+        {
+          roomId: roomId,
+          studentId: studentId,
+          contentKey: contentKey,
+        },
+      )
 
       if (!userContentScore) {
         throw new UserInputError(

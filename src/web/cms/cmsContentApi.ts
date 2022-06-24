@@ -73,32 +73,4 @@ export class CmsContentApi {
 
     return dtos[0]
   }
-
-  public async getLessonMaterialsWithSourceId(
-    sourceId: string,
-    authenticationToken?: string,
-  ): Promise<ReadonlyArray<ContentDto>> {
-    if (!authenticationToken) {
-      throw new Error(ErrorMessage.authenticationTokenUndefined)
-    }
-    const requestUrl = `${this.baseUrl}/contents?source_id=${sourceId}`
-
-    const response = await this.fetchWrapper.fetch<ContentResponse>(
-      requestUrl,
-      {
-        method: 'GET',
-        headers: {
-          cookie: `access=${authenticationToken}`,
-        },
-      },
-    )
-
-    const dtos = response?.list ?? []
-    logger.debug(
-      `getLessonMaterials >> sourceId: ${sourceId}, ` +
-        `ContentDto count: ${dtos.length}`,
-    )
-
-    return dtos
-  }
 }

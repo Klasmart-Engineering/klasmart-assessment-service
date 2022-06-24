@@ -61,15 +61,6 @@ describe('roomScoresCalculator', () => {
         .getMaterials(roomId, authenticationToken)
         .resolves(studentContentsResult)
       scoresTemplateProvider
-        .getCompatContentKey(
-          roomId,
-          studentId,
-          material.contentId,
-          material.h5pId,
-          undefined,
-        )
-        .resolves(material.contentId)
-      scoresTemplateProvider
         .getTemplate(roomId, studentContentsResult)
         .resolves(mapKeyToUserContentScoreMap)
 
@@ -152,15 +143,6 @@ describe('roomScoresCalculator', () => {
         materialsProvider
           .getMaterials(roomId, authenticationToken)
           .resolves(studentContentsResult)
-        roomScoresTemplateProvider
-          .getCompatContentKey(
-            roomId,
-            idOfSomeOtherUser,
-            material.contentId,
-            material.h5pId,
-            undefined,
-          )
-          .resolves(material.contentId)
         roomScoresTemplateProvider
           .getTemplate(roomId, studentContentsResult)
           .resolves(mapKeyToUserContentScoreMap)

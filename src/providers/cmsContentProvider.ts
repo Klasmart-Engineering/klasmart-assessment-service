@@ -44,21 +44,6 @@ export class CmsContentProvider {
 
     return lessonMaterial
   }
-
-  public async getLessonMaterialsWithSourceId(
-    sourceId: string,
-    authenticationToken?: string,
-  ): Promise<ReadonlyArray<Content>> {
-    logger.debug(`getLessonMaterialsWithSourceId >> sourceId: ${sourceId}`)
-
-    const dtos = await this.cmsContentApi.getLessonMaterialsWithSourceId(
-      sourceId,
-      authenticationToken,
-    )
-    const lessonMaterials = dtos.map((x) => contentDtoToEntity(x))
-
-    return lessonMaterials
-  }
 }
 
 function responseToStudentContentsResult(

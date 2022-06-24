@@ -59,10 +59,7 @@ describe('roomScoresTemplateProvider', () => {
             ],
           }
 
-          const userContentScoreRepository =
-            Substitute.for<Repository<UserContentScore>>()
-
-          const sut = new RoomScoresTemplateProvider(userContentScoreRepository)
+          const sut = new RoomScoresTemplateProvider()
 
           // Act
           const result = await sut.getTemplate(roomId, materials)
