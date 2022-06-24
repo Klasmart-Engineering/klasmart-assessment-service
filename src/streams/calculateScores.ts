@@ -212,10 +212,12 @@ export class RoomScoresTemplateProvider2 {
       }
     }
 
-    logger.info(
-      `xAPI events with answers: ${eventsWithAnswers.length}`,
-      eventsWithAnswers,
-    )
+    if (eventsWithAnswers.length > 0) {
+      logger.info(
+        `xAPI events with answers: ${eventsWithAnswers.length}`,
+        eventsWithAnswers,
+      )
+    }
 
     // If we don't have any answers for a given contentKey, add a non-answer event
     // so the consumer knows that the activity was at least seen/attempted.
