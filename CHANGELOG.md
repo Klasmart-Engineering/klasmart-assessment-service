@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.20 (2022-06-24)
+
+
+### Features
+
+* go back to using cms content ids in the content_id columns ([471497b](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/471497b1606e6a81dacc6d87116c366d1d589bb2))
+
 ## 2.0.0-alpha.19 (2022-06-20)
 
 
