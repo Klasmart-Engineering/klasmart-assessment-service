@@ -3,6 +3,7 @@ export interface XApiRecord {
   roomId?: string
   serverTimestamp?: number
   userId?: string
+  authenticationToken?: string
   xapi?: XApiObject
 }
 

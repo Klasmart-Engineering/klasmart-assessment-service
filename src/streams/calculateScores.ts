@@ -7,6 +7,8 @@ import { Repository } from 'typeorm'
 import ContentKey from '../helpers/contentKey'
 import { RedisStreams, StreamMessageReply } from './redisApi'
 import { RawAnswer } from '../db/assessments/entities/rawAnswer'
+import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
+import { Room } from '../db/assessments/entities'
 
 const logger = withLogger('streamCalculateScore')
 
@@ -33,7 +35,12 @@ type ParsedXapiEvent = {
 
 type XApiRecordEvent = ParsedXapiEvent & {
   entryId: string
+  authenticationToken?: string
 }
+
+const categoryRegex = new RegExp(
+  `^http://h5p.org/libraries/H5P.(.+)-\\d+.\\d+$`,
+)
 
 export const parseRawEvent = (
   rawXapiEvent: XApiRecord | undefined,
@@ -41,6 +48,7 @@ export const parseRawEvent = (
 ): XApiRecordEvent | null => {
   const userId = rawXapiEvent?.userId
   const roomId = rawXapiEvent?.roomId
+  const authenticationToken = rawXapiEvent?.authenticationToken
   const timestamp = rawXapiEvent?.xapi?.clientTimestamp
   const statement = rawXapiEvent?.xapi?.data?.statement
   const extensions = statement?.object?.definition?.extensions
@@ -68,8 +76,7 @@ export const parseRawEvent = (
 
   let h5pType: string | undefined
   if (categoryId) {
-    const regex = new RegExp(`^http://h5p.org/libraries/H5P.(.+)-\\d+.\\d+$`)
-    const results = regex.exec(categoryId)
+    const results = categoryRegex.exec(categoryId)
     h5pType = (results && results[1]) || undefined
   }
 
@@ -101,6 +108,7 @@ export const parseRawEvent = (
     response,
     verb,
     timestamp,
+    authenticationToken,
   }
 }
 
@@ -126,6 +134,9 @@ export class RoomScoresTemplateProvider2 {
   constructor(
     @InjectRepository(RawAnswer, ASSESSMENTS_CONNECTION_NAME)
     private readonly rawAnswerRepo: Repository<RawAnswer>,
+    @InjectRepository(RawAnswer, ASSESSMENTS_CONNECTION_NAME)
+    private readonly roomRepo: Repository<Room>,
+    private roomScoresCalculator: RoomScoresCalculator,
   ) {}
 
   // 1 rooms -> 10 students -> 1 events every 10s => 1 event/second
@@ -196,6 +207,7 @@ export class RoomScoresTemplateProvider2 {
       )
     }
 
+    const eventsWithRoomIdAndAuthToken: XApiRecordEvent[] = []
     const contentKeySet = new Set<string>()
     const eventsWithAnswers: XApiRecordEvent[] = []
     const eventsWithNoAnswers: XApiRecordEvent[] = []
@@ -209,6 +221,9 @@ export class RoomScoresTemplateProvider2 {
         contentKeySet.add(contentKey)
       } else {
         eventsWithNoAnswers.push(xapiEvent)
+      }
+      if (xapiEvent.authenticationToken && xapiEvent.roomId) {
+        eventsWithRoomIdAndAuthToken.push(xapiEvent)
       }
     }
 
@@ -228,6 +243,9 @@ export class RoomScoresTemplateProvider2 {
       )
       if (!contentKeySet.has(contentKey)) {
         contentKeySet.add(contentKey)
+        // timestamp is part of the composite primary key, so we set it to zero
+        // for "events with no answers" to signify that we only care about one
+        // event per contentKey.
         xapiEvent.timestamp = 0
         eventsWithAnswers.push(xapiEvent)
       }
@@ -264,5 +282,39 @@ export class RoomScoresTemplateProvider2 {
       .values(rawAnswers)
       .orIgnore()
       .execute()
+
+    try {
+      await this.createRoom(eventsWithRoomIdAndAuthToken)
+    } catch (error) {
+      logger.error('room creation failed', error)
+    }
+  }
+
+  /**
+   * Create Room and UserContentScore templates ahead of time.
+   * It's better to do it now than when users are waiting.
+   * Template creation involves calls to the CMS and H5P services.
+   * It's okay if this fails because the the API will detect and handle accordingly.
+   */
+  private async createRoom(
+    eventsWithRoomIdAndAuthToken: ReadonlyArray<XApiRecordEvent>,
+  ) {
+    for (const {
+      roomId,
+      authenticationToken,
+    } of eventsWithRoomIdAndAuthToken) {
+      const existingRoom = await this.roomRepo.findOne(roomId, {
+        select: ['roomId'],
+      })
+      if (existingRoom) {
+        continue
+      }
+      const userContentScoreTemplates =
+        await this.roomScoresCalculator.calculate(roomId, authenticationToken)
+      const room = new Room(roomId)
+      room.scores = Promise.resolve(userContentScoreTemplates)
+      await this.roomRepo.save(room)
+      logger.info(`room created: ${roomId}`)
+    }
   }
 }

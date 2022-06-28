@@ -18,17 +18,24 @@ import {
 } from '../../../src/streams/calculateScores'
 import { XApiRecord } from '../../../src/db/xapi'
 import { RawAnswer } from '../../../src/db/assessments/entities/rawAnswer'
+import { Room } from '../../../src/db/assessments/entities'
+import { RoomScoresCalculator } from '../../../src/providers/roomScoresCalculator'
+import Substitute, { Arg } from '@fluffy-spoon/substitute'
 
 describe('Event-driven Worker', () => {
   let redisClient: IoRedisClientType
   let xClient: RedisStreams
   let dbConnection: Connection
   let rawAnswerRepo: Repository<RawAnswer>
+  let roomRepo: Repository<Room>
   let roomScoreProviderWorker: RoomScoresTemplateProvider2
 
   before(async () => {
     dbConnection = await createAssessmentDbConnection()
     rawAnswerRepo = dbConnection.getRepository(RawAnswer)
+    roomRepo = dbConnection.getRepository(Room)
+    const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
+    roomScoresCalculator.calculate(Arg.all()).resolves([])
 
     const redisMode = (
       process.env.REDIS_MODE || 'node'
@@ -38,7 +45,11 @@ describe('Event-driven Worker', () => {
 
     redisClient = await connectToIoRedis(redisMode, redisHost, redisPort)
     xClient = new RedisStreams(redisClient)
-    roomScoreProviderWorker = new RoomScoresTemplateProvider2(rawAnswerRepo)
+    roomScoreProviderWorker = new RoomScoresTemplateProvider2(
+      rawAnswerRepo,
+      roomRepo,
+      roomScoresCalculator,
+    )
   })
 
   after(async () => {
