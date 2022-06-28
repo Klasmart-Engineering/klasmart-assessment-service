@@ -2,11 +2,13 @@ import 'reflect-metadata'
 import { useContainer } from 'typeorm'
 import { Container as TypeormTypediContainer } from 'typeorm-typedi-extensions'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
+import { Container as MutableContainer } from 'typedi'
 
 import { connectToAssessmentDatabase } from './db/assessments/connectToAssessmentDatabase'
 import { RedisStreams } from './streams/redisApi'
-import { RedisMode, connectToIoRedis } from './cache/redis'
+import { RedisMode, connectToIoRedis, RedisCache } from './cache/redis'
 import { simpleConsumerGroupWorker } from './streams/simpleConsumerGroupWorker'
+import DiKeys from './initialization/diKeys'
 
 useContainer(TypeormTypediContainer)
 
@@ -39,6 +41,15 @@ const main = async () => {
     redisHost,
     redisPort,
   )
+
+  if (!process.env.CMS_API_URL || !process.env.H5P_API_URL) {
+    throw new Error('CMS_API_URL and H5P_API_URL need to be defined.')
+  }
+  const cache = new RedisCache(redisClient)
+  MutableContainer.set(DiKeys.CmsApiUrl, process.env.CMS_API_URL)
+  MutableContainer.set(DiKeys.H5pUrl, process.env.H5P_API_URL)
+  MutableContainer.set(DiKeys.ICache, cache)
+
   const xClient = new RedisStreams(redisClient)
   const group = process.env.REDIS_CONSUMER_GROUP || 'assessment-worker'
   const consumer = process.env.REDIS_CONSUMER || 'worker-0'
