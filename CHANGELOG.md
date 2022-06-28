@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.23 (2022-06-28)
+
+
+### Bug Fixes
+
+* worker env variable error ([2ab6ff4](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/2ab6ff4f803bfd873a0f21f64e6de18ce6ee4709))
+
 ## 2.0.0-alpha.22 (2022-06-28)
 
 
