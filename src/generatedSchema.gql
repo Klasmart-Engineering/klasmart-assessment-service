@@ -43,6 +43,7 @@ type Mutation {
 
 type Query {
   Room(room_id: String!): Room!
+  completionPercentages(room_ids: [String!]!): [Float!]!
   ready: Boolean!
 }
 
