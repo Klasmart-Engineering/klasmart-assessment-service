@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.25 (2022-06-29)
+
+
+### Refactor
+
+* more issue debugging ([a8b0c2f](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/a8b0c2f689f305febe19a8d5ed53059cfd318097))
+
 ## 2.0.0-alpha.24 (2022-06-29)
 
 
