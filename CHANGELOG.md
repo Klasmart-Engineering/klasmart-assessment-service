@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.26 (2022-06-29)
+
+
+### Bug Fixes
+
+* room creation fails ([1bfe024](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/1bfe024cae5fe9b42e0a4696d04604b5a99b10a7))
+
 ## 2.0.0-alpha.25 (2022-06-29)
 
 
