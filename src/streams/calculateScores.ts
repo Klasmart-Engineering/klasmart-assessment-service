@@ -9,6 +9,7 @@ import { RedisStreams, StreamMessageReply } from './redisApi'
 import { RawAnswer } from '../db/assessments/entities/rawAnswer'
 import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Room } from '../db/assessments/entities'
+import { notNullish } from '../helpers/filters'
 
 const logger = withLogger('streamCalculateScore')
 
@@ -251,28 +252,35 @@ export class RoomScoresTemplateProvider2 {
       }
     }
 
-    let rawAnswers: RawAnswer[] = []
-    try {
-      // Now convert the events to RawAnswers for the database.
-      rawAnswers = eventsWithAnswers.map((x) =>
-        this.rawAnswerRepo.create({
-          roomId: x.roomId,
-          studentId: x.userId,
-          h5pId: x.h5pId,
-          h5pSubId: x.h5pSubId,
-          timestamp: x.timestamp,
-          answer: x.response,
-          score: x.score?.raw,
-          maximumPossibleScore: x.score?.max,
-          minimumPossibleScore: x.score?.min,
-        }),
+    if (eventsWithNoAnswers.length > 0) {
+      logger.info(
+        `xAPI events with no answers: ${eventsWithNoAnswers.length}`,
+        eventsWithNoAnswers,
       )
-    } catch (error) {
-      logger.error('rawAnswerRepo.create failed', {
-        error: error.message,
-        events: eventsWithAnswers,
-      })
     }
+
+    const rawAnswers = eventsWithAnswers
+      .map((x) => {
+        try {
+          return this.rawAnswerRepo.create({
+            roomId: x.roomId,
+            studentId: x.userId,
+            h5pId: x.h5pId,
+            h5pSubId: x.h5pSubId,
+            timestamp: x.timestamp,
+            answer: x.response,
+            score: x.score?.raw,
+            maximumPossibleScore: x.score?.max,
+            minimumPossibleScore: x.score?.min,
+          })
+        } catch (error) {
+          logger.error('rawAnswerRepo.create failed', {
+            error: error.message,
+            event: x,
+          })
+        }
+      })
+      .filter(notNullish)
     if (rawAnswers.length > 0) {
       try {
         await this.rawAnswerRepo
