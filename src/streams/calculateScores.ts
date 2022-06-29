@@ -250,20 +250,45 @@ export class RoomScoresTemplateProvider2 {
         eventsWithAnswers.push(xapiEvent)
       }
     }
-    // Now convert the events to RawAnswers for the database.
-    const rawAnswers = eventsWithAnswers.map((x) =>
-      this.rawAnswerRepo.create({
-        roomId: x.roomId,
-        studentId: x.userId,
-        h5pId: x.h5pId,
-        h5pSubId: x.h5pSubId,
-        timestamp: x.timestamp,
-        answer: x.response,
-        score: x.score?.raw,
-        maximumPossibleScore: x.score?.max,
-        minimumPossibleScore: x.score?.min,
-      }),
-    )
+
+    let rawAnswers: RawAnswer[] = []
+    try {
+      // Now convert the events to RawAnswers for the database.
+      rawAnswers = eventsWithAnswers.map((x) =>
+        this.rawAnswerRepo.create({
+          roomId: x.roomId,
+          studentId: x.userId,
+          h5pId: x.h5pId,
+          h5pSubId: x.h5pSubId,
+          timestamp: x.timestamp,
+          answer: x.response,
+          score: x.score?.raw,
+          maximumPossibleScore: x.score?.max,
+          minimumPossibleScore: x.score?.min,
+        }),
+      )
+    } catch (error) {
+      logger.error('rawAnswerRepo.create failed', {
+        error: error.message,
+        events: eventsWithAnswers,
+      })
+    }
+    if (rawAnswers.length > 0) {
+      try {
+        await this.rawAnswerRepo
+          .createQueryBuilder()
+          .insert()
+          .into(RawAnswer)
+          .values(rawAnswers)
+          .orIgnore()
+          .execute()
+      } catch (error) {
+        logger.error('rawAnswerRepo.insert failed', {
+          error: error.message,
+          rawAnswers,
+        })
+      }
+    }
 
     // 7. Acknowledge
     logger.debug(
@@ -274,14 +299,6 @@ export class RoomScoresTemplateProvider2 {
       group,
       validXapiEvents.map((x) => x.entryId),
     )
-
-    await this.rawAnswerRepo
-      .createQueryBuilder()
-      .insert()
-      .into(RawAnswer)
-      .values(rawAnswers)
-      .orIgnore()
-      .execute()
 
     try {
       await this.createRoom(eventsWithRoomIdAndAuthToken)
