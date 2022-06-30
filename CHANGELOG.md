@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.29 (2022-06-30)
+
+
+### Bug Fixes
+
+* forgot to await in try/catch ([b385aaf](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/b385aafc130b9432a595dad41920ec1b840413dd))
+
 ## 2.0.0-alpha.28 (2022-06-30)
 
 
