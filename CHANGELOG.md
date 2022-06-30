@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.27 (2022-06-30)
+
+
+### Refactor
+
+* remove UserContentScore.getAnswers helper ([2db3559](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/2db3559a609a9de9e3458a107ce1f56dbf79566a))
+
 ## 2.0.0-alpha.26 (2022-06-29)
 
 
