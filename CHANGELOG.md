@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0-alpha.28 (2022-06-30)
+
+
+### Bug Fixes
+
+* redis.xack failures can result in skipped processing ([f4aa4f2](https://github.com/KL-Engineering/kidsloop-assessment-service/commits/f4aa4f240964abc2e385abb064c65f87e7b2ca88))
+
 ## 2.0.0-alpha.27 (2022-06-30)
 
 
