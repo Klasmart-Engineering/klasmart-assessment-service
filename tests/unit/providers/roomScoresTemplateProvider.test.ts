@@ -1,25 +1,18 @@
 import { expect } from 'chai'
-import { Substitute } from '@fluffy-spoon/substitute'
-import { Repository } from 'typeorm'
+import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { LessonMaterialBuilder, UserContentScoreBuilder } from '../../builders'
-import { UserContentScore } from '../../../src/db/assessments/entities'
 import { RoomScoresTemplateProvider } from '../../../src/providers/roomScoresTemplateProvider'
 import ContentKey from '../../../src/helpers/contentKey'
 import { FileType } from '../../../src/db/cms/enums'
 import { StudentContentsResult } from '../../../src/providers/cmsContentProvider'
+import { RoomMaterialsProvider } from '../../../src/providers/roomMaterialsProvider'
 
 describe('roomScoresTemplateProvider', () => {
   describe('getTemplate', () => {
-    // TODO: This logic is no longer done here. It's done in the worker.
+    // TODO: Not finished.
     context.skip(
       "1 student, 1 h5p material with 'h5pSub1' sub-activity; 'h5pSub1' has 'h5pSub2' sub-activity; only 1 xAPI event which is for 'h5pSub2'; h5pRoot->h5pSub1->h5pSub2",
       () => {
-        // Originally, sub-activities only generated a UserContentScore if an xAPI was received for it.
-        // Because without a subcontent API, we can't know about it.
-        // But now we use the fact that an xAPI event will include a parent ID if the activity
-        // that generated the event is a sub-activity. So we now use that parent ID to generate a
-        // UserContentScore for that parent, even though the parent may not emit an event.
-        // Before the fix, this test returned 2 instead of 3.
         it('returns 3 UserContentScores', async () => {
           // Arrange
           const roomId = 'room1'
@@ -50,7 +43,7 @@ describe('roomScoresTemplateProvider', () => {
             .withSource(FileType.H5P, h5pRoot)
             .build()
           // TODO: This needs to be fixed to reflect the above content scores.
-          const materials: StudentContentsResult = {
+          const studentContentsResult: StudentContentsResult = {
             contents: new Map([
               [material.contentId, { content: material, subContents: [] }],
             ]),
@@ -58,11 +51,17 @@ describe('roomScoresTemplateProvider', () => {
               { studentId: userId, contentIds: [material.contentId] },
             ],
           }
+          const materialsProvider = Substitute.for<RoomMaterialsProvider>()
+          materialsProvider
+            .getMaterials(roomId, Arg.any())
+            .resolves(studentContentsResult)
 
-          const sut = new RoomScoresTemplateProvider()
+          const sut = new RoomScoresTemplateProvider(materialsProvider)
 
           // Act
-          const result = await sut.getTemplate(roomId, materials)
+          const result = await sut.getTemplates(roomId)
+
+          // Assert
           expect(result).to.have.lengthOf(3)
         })
       },

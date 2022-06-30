@@ -5,7 +5,7 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { delay } from '../helpers/delay'
 import { RedisStreams } from './redisApi'
-import { RoomScoresTemplateProvider2 } from './calculateScores'
+import { XapiEventProcessor } from './xapiEventProcessor'
 
 useContainer(TypeormTypediContainer)
 
@@ -36,9 +36,7 @@ export const simpleConsumerGroupWorker = async (
     retryWhenFailed: true,
   },
 ) => {
-  const roomScoreProviderWorker = TypeormTypediContainer.get(
-    RoomScoresTemplateProvider2,
-  )
+  const xapiEventProcessor = TypeormTypediContainer.get(XapiEventProcessor)
 
   const state: State = {
     i: 0,
@@ -53,7 +51,7 @@ export const simpleConsumerGroupWorker = async (
       errorStream,
       group,
       consumer,
-      roomScoreProviderWorker,
+      xapiEventProcessor,
       state,
       {
         minEvents: opts.minEvents,
@@ -79,7 +77,7 @@ export const simpleConsumerGroupWorkerLoop = async (
   errorStream: string,
   group: string,
   consumer: string,
-  calculator: RoomScoresTemplateProvider2,
+  calculator: XapiEventProcessor,
   { i, delays }: State,
   opts?: Options,
 ): Promise<void> => {

@@ -4,7 +4,7 @@ import { Service } from 'typedi'
 import { UserContentScore } from '../db/assessments/entities'
 import { Content } from '../db/cms/entities'
 import ContentKey from '../helpers/contentKey'
-import { StudentContentsResult } from './cmsContentProvider'
+import { RoomMaterialsProvider } from './roomMaterialsProvider'
 
 const logger = withLogger('RoomScoresTemplateProvider')
 
@@ -23,10 +23,19 @@ export class RoomScoresTemplateProvider {
     return `${roomId}|${userId}|${contentKey}`
   }
 
-  public async getTemplate(
+  public constructor(
+    private readonly roomMaterialsProvider: RoomMaterialsProvider,
+  ) {}
+
+  public async getTemplates(
     roomId: string,
-    studentContentsResult: StudentContentsResult,
-  ): Promise<ReadonlyMap<string, UserContentScore>> {
+    authenticationToken?: string,
+  ): Promise<ReadonlyArray<UserContentScore>> {
+    const studentContentsResult = await this.roomMaterialsProvider.getMaterials(
+      roomId,
+      authenticationToken,
+    )
+
     const mapKeyToUserContentScoreMap = new Map<string, UserContentScore>()
 
     for (const student of studentContentsResult.studentContentMap) {
@@ -55,7 +64,8 @@ export class RoomScoresTemplateProvider {
         }
       }
     }
-    return mapKeyToUserContentScoreMap
+    const userContentScores = [...mapKeyToUserContentScoreMap.values()]
+    return userContentScores
   }
 
   private async addUserContentScoreToMap(

@@ -6,7 +6,6 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 import { Answer, RawAnswer, Room } from '../db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../db/assessments/connectToAssessmentDatabase'
-import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Context } from '../auth/context'
 import { RoomScoresTemplateProvider } from '../providers/roomScoresTemplateProvider'
 import { Benchmark } from '../helpers/benchmarkMiddleware'
@@ -20,7 +19,7 @@ export default class RoomResolver {
   constructor(
     @InjectManager(ASSESSMENTS_CONNECTION_NAME)
     private readonly assessmentDB: EntityManager,
-    private readonly roomScoresCalculator: RoomScoresCalculator,
+    private readonly roomScoresTemplateProvider: RoomScoresTemplateProvider,
   ) {}
 
   @Benchmark()
@@ -39,7 +38,7 @@ export default class RoomResolver {
         room = new Room(roomId)
         logger.warn(`Room >> roomId: ${roomId} >> created new Room`)
         const userContentScoreTemplates =
-          await this.roomScoresCalculator.calculate(
+          await this.roomScoresTemplateProvider.getTemplates(
             roomId,
             context.encodedAuthenticationToken,
           )

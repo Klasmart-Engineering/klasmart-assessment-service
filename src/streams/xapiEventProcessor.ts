@@ -7,10 +7,10 @@ import { Repository } from 'typeorm'
 import ContentKey from '../helpers/contentKey'
 import { RedisStreams, StreamMessageReply } from './redisApi'
 import { RawAnswer } from '../db/assessments/entities/rawAnswer'
-import { RoomScoresCalculator } from '../providers/roomScoresCalculator'
 import { Room } from '../db/assessments/entities'
+import { RoomScoresTemplateProvider } from '../providers/roomScoresTemplateProvider'
 
-const logger = withLogger('streamCalculateScore')
+const logger = withLogger('XapiEventProcessor')
 
 type XapiScore = {
   min?: number
@@ -112,53 +112,16 @@ export const parseRawEvent = (
   }
 }
 
-function groupBy<K, V>(
-  list: Array<V>,
-  keyGetter: (input: V) => K,
-): Map<K, Array<V>> {
-  const map = new Map()
-  list.forEach((item) => {
-    const key = keyGetter(item)
-    const collection = map.get(key)
-    if (!collection) {
-      map.set(key, [item])
-    } else {
-      collection.push(item)
-    }
-  })
-  return map
-}
-
 @Service()
-export class RoomScoresTemplateProvider2 {
+export class XapiEventProcessor {
   constructor(
     @InjectRepository(RawAnswer, ASSESSMENTS_CONNECTION_NAME)
     private readonly rawAnswerRepo: Repository<RawAnswer>,
     @InjectRepository(Room, ASSESSMENTS_CONNECTION_NAME)
     private readonly roomRepo: Repository<Room>,
-    private roomScoresCalculator: RoomScoresCalculator,
+    private roomScoresTemplateProvider: RoomScoresTemplateProvider,
   ) {}
 
-  // 1 rooms -> 10 students -> 1 events every 10s => 1 event/second
-  // 10 rooms -> fine
-  // 100 rooms ->fine
-  // 1000 rooms -> ok maybe it's fine
-  // 10000 rooms => probably slows down
-
-  // ! DOES NOT QUERY THE CMS SERVICE
-
-  // xapi events -> room_id, user_id, content_key = (h5p_id + h5p_sub_id)
-  //   -> process
-  //   -> room(room_id) + userContentScore(user_id, content_key)
-  //   -> xapiEvent -> userContentScore -> @oneToMany(Answers)
-
-  // ACTION plan:
-  // -> save/upsert at the very end so that all the edits happen in one go
-  // -> don't read
-  // -> add try/catch + retry logic (3-5 times) with delay logic (exponential decayed delay 1-2-3-5-10 seconds) -> delay only on retries
-  // -> multiple failures -> pop into failure queue
-  // => [refactor in API] query CMS with room_id => list of lesson materials => map h5pIds to CMS content ids (no caching for now)
-  // => add event stream producer logic to live-backend service
   public async process(
     events: StreamMessageReply[],
     xClient: RedisStreams,
@@ -245,7 +208,7 @@ export class RoomScoresTemplateProvider2 {
         contentKeySet.add(contentKey)
         // timestamp is part of the composite primary key, so we set it to zero
         // for "events with no answers" to signify that we only care about one
-        // event per contentKey.
+        // event per contentKey. The insert statement will conflict and be ignored.
         xapiEvent.timestamp = 0
         eventsWithAnswers.push(xapiEvent)
       }
@@ -286,7 +249,7 @@ export class RoomScoresTemplateProvider2 {
     try {
       await this.createRoom(eventsWithRoomIdAndAuthToken)
     } catch (error) {
-      logger.error('room creation failed', error)
+      logger.error('room creation failed', { error: error.message })
     }
   }
 
@@ -310,7 +273,10 @@ export class RoomScoresTemplateProvider2 {
         continue
       }
       const userContentScoreTemplates =
-        await this.roomScoresCalculator.calculate(roomId, authenticationToken)
+        await this.roomScoresTemplateProvider.getTemplates(
+          roomId,
+          authenticationToken,
+        )
       const room = new Room(roomId)
       room.scores = Promise.resolve(userContentScoreTemplates)
       await this.roomRepo.save(room)

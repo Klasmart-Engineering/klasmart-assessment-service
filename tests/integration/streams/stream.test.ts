@@ -14,13 +14,13 @@ import { RedisStreams } from '../../../src/streams/redisApi'
 import { simpleConsumerGroupWorkerLoop } from '../../../src/streams/simpleConsumerGroupWorker'
 import {
   parseRawEvent,
-  RoomScoresTemplateProvider2,
-} from '../../../src/streams/calculateScores'
+  XapiEventProcessor,
+} from '../../../src/streams/xapiEventProcessor'
 import { XApiRecord } from '../../../src/db/xapi'
 import { RawAnswer } from '../../../src/db/assessments/entities/rawAnswer'
 import { Room } from '../../../src/db/assessments/entities'
-import { RoomScoresCalculator } from '../../../src/providers/roomScoresCalculator'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
+import { RoomScoresTemplateProvider } from '../../../src/providers/roomScoresTemplateProvider'
 
 describe('Event-driven Worker', () => {
   let redisClient: IoRedisClientType
@@ -28,14 +28,15 @@ describe('Event-driven Worker', () => {
   let dbConnection: Connection
   let rawAnswerRepo: Repository<RawAnswer>
   let roomRepo: Repository<Room>
-  let roomScoreProviderWorker: RoomScoresTemplateProvider2
+  let roomScoreProviderWorker: XapiEventProcessor
 
   before(async () => {
     dbConnection = await createAssessmentDbConnection()
     rawAnswerRepo = dbConnection.getRepository(RawAnswer)
     roomRepo = dbConnection.getRepository(Room)
-    const roomScoresCalculator = Substitute.for<RoomScoresCalculator>()
-    roomScoresCalculator.calculate(Arg.all()).resolves([])
+    const roomScoresTemplateProvider =
+      Substitute.for<RoomScoresTemplateProvider>()
+    roomScoresTemplateProvider.getTemplates(Arg.all()).resolves([])
 
     const redisMode = (
       process.env.REDIS_MODE || 'node'
@@ -45,10 +46,10 @@ describe('Event-driven Worker', () => {
 
     redisClient = await connectToIoRedis(redisMode, redisHost, redisPort)
     xClient = new RedisStreams(redisClient)
-    roomScoreProviderWorker = new RoomScoresTemplateProvider2(
+    roomScoreProviderWorker = new XapiEventProcessor(
       rawAnswerRepo,
       roomRepo,
-      roomScoresCalculator,
+      roomScoresTemplateProvider,
     )
   })
 
