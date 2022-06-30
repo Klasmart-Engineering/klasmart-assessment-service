@@ -64,8 +64,8 @@ export const parseRawEvent = (
     !h5pId ||
     !timestamp
   ) {
-    logger.error(
-      `XAPI event didn't include all required info (roomId:${roomId}, ` +
+    logger.debug(
+      `xAPI event didn't include all required info (roomId:${roomId}, ` +
         `userId:${userId}, h5pId:${h5pId}, timestamp:${timestamp}). Skipping...`,
     )
     return null
@@ -143,7 +143,7 @@ export class XapiEventProcessor {
         } else {
           invalidXapiEvents.push({
             id,
-            message: { data, error: 'Invalid JSON' },
+            message: { data, reason: 'Missing required fields' },
           })
         }
       } catch (e) {
@@ -157,17 +157,27 @@ export class XapiEventProcessor {
 
     // 1.1 Send the invalid events to the error queue and acknowledge them
     if (invalidXapiEvents.length > 0) {
-      await Promise.all(
-        invalidXapiEvents.map(async (event) => {
-          xClient.add(errorStream, event.message)
-        }),
-      )
-      const invalidEventsIds = invalidXapiEvents.map((x) => x.id)
-      await xClient.ack(stream, group, invalidEventsIds)
-      logger.debug(
-        `process >> ${invalidXapiEvents.length} invalid events acknowledged` +
-          ` and pushed to error stream(${errorStream})`,
-      )
+      try {
+        await Promise.all(
+          invalidXapiEvents.map(async (event) => {
+            xClient.add(errorStream, event.message)
+          }),
+        )
+        const invalidEventsIds = invalidXapiEvents.map((x) => x.id)
+        await xClient.ack(stream, group, invalidEventsIds)
+        logger.debug(
+          `process >> ${invalidXapiEvents.length} invalid events acknowledged` +
+            ` and pushed to error stream(${errorStream})`,
+        )
+      } catch (error) {
+        logger.error('Failed to acknowledge invalidXapiEvents.', {
+          error: error.message,
+        })
+      }
+    }
+
+    if (validXapiEvents.length === 0) {
+      return
     }
 
     const eventsWithRoomIdAndAuthToken: XApiRecordEvent[] = []

@@ -1,7 +1,6 @@
 import 'reflect-metadata'
 import { RedisErrorRecovery, IoRedisClientType } from '../cache/redis'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
-import { RedisValue } from 'ioredis'
 
 const logger = withLogger('RedisStreams')
 
@@ -164,9 +163,18 @@ export class RedisStreams {
 
   // XACK mystream mygroup 1526569495631-0
   @RedisErrorRecovery()
-  public async ack(stream: string, group: string, id: string | string[]) {
-    const ids = [id].flat()
-    return this.client.xack(stream, group, ...ids)
+  public async ack(stream: string, group: string, ids: string[]) {
+    try {
+      return this.client.xack(stream, group, ...ids)
+    } catch (error) {
+      logger.error('client.xack failed.', {
+        error: error.message,
+        stream,
+        group,
+        ids,
+      })
+      throw error
+    }
   }
 
   // XREADGROUP GROUP mygroup Alice COUNT 1 STREAMS mystream >
