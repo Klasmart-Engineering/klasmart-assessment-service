@@ -7,14 +7,12 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryColumn,
-  getRepository,
 } from 'typeorm'
 import { Answer } from './answer'
 import { Base } from './base'
 import { Room } from './room'
 import { ScoreSummary } from '../../../graphql'
 import { TeacherScore } from './teacherScore'
-import { ASSESSMENTS_CONNECTION_NAME } from '../connectToAssessmentDatabase'
 import { Content } from '../../cms/entities/content'
 import { User } from '../../../web'
 import { RawAnswer } from './rawAnswer'
@@ -56,17 +54,6 @@ export class UserContentScore extends Base {
   @TypeormLoader()
   public answers!: Promise<Answer[]>
 
-  // TODO: Is this only being used by tests?
-  public async getAnswers(): Promise<Answer[]> {
-    return getRepository(Answer, ASSESSMENTS_CONNECTION_NAME).find({
-      where: {
-        roomId: this.roomId,
-        studentId: this.studentId,
-        contentKey: this.contentKey,
-      },
-    })
-  }
-
   @Field(() => [TeacherScore])
   @OneToMany(
     () => TeacherScore,
@@ -87,7 +74,7 @@ export class UserContentScore extends Base {
 
   @Field(() => ScoreSummary, { name: 'score' })
   public async scoreSummary(): Promise<ScoreSummary> {
-    return new ScoreSummary((await this.getAnswers()) ?? [])
+    return new ScoreSummary((await this.answers) ?? [])
   }
 
   @Column({ type: 'varchar', nullable: true })
