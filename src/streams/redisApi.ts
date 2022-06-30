@@ -165,7 +165,7 @@ export class RedisStreams {
   @RedisErrorRecovery()
   public async ack(stream: string, group: string, ids: string[]) {
     try {
-      return this.client.xack(stream, group, ...ids)
+      await this.client.xack(stream, group, ...ids)
     } catch (error) {
       logger.error('client.xack failed.', {
         error: error.message,
