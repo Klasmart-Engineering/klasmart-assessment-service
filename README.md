@@ -6,7 +6,13 @@
 
 Consumed by the [cms-backend-service](https://bitbucket.org/calmisland/cms-backend-service/src/ee26db558f8d624d045262d4b28f2daee2ce1591/external/h5p_room_score.go?at=dev%2Fglobal%2Falpha#lines-139), which is then consumed by the cms frontend (link needed).
 
-Branching model: merge into `main`
+**Branching model**
+
+- `feature/fix/etc` -> squash or rebase into `main`
+- The main branch pipeline has a manual _release_ workflow.
+- That workflow will build the docker image, push it to ECR, deploy to alpha, and create a GitHub release.
+- GitHub prereleases are *upserted* in order to reduce changelog duplication.
+- Slack notifications will be sent for non-prereleases.
 
 📢 Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md) 📢
 

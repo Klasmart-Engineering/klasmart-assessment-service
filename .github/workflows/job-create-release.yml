@@ -19,6 +19,8 @@ on:
         required: true
       ECR_AWS_SECRET_ACCESS_KEY:
         required: true
+      SLACK_WEBHOOK:
+        required: true
 
 env:
   ECR_REPOSITORY: ${{ inputs.ecr_repository }}
@@ -98,3 +100,11 @@ jobs:
         run: |
           git push origin $VERSION_TAG
           git push origin $GITHUB_REF_NAME
+
+      - name: Slack notification
+        uses: rtCamp/action-slack-notify@v2
+        if: ${{ inputs.prerelease == '' }}
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: ${{ steps.changelog.outputs.changelog }}
