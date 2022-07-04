@@ -159,7 +159,7 @@ export class XapiEventProcessor {
     if (invalidXapiEvents.length > 0) {
       try {
         await Promise.all(
-          invalidXapiEvents.map(async (event) => {
+          invalidXapiEvents.map((event) => {
             xClient.add(errorStream, event.message)
           }),
         )
@@ -238,6 +238,14 @@ export class XapiEventProcessor {
       }),
     )
 
+    await this.rawAnswerRepo
+      .createQueryBuilder()
+      .insert()
+      .into(RawAnswer)
+      .values(rawAnswers)
+      .orIgnore()
+      .execute()
+
     // 7. Acknowledge
     logger.debug(
       `process >> Redis acknowledge processed events: ${validXapiEvents.length}`,
@@ -247,14 +255,6 @@ export class XapiEventProcessor {
       group,
       validXapiEvents.map((x) => x.entryId),
     )
-
-    await this.rawAnswerRepo
-      .createQueryBuilder()
-      .insert()
-      .into(RawAnswer)
-      .values(rawAnswers)
-      .orIgnore()
-      .execute()
 
     try {
       await this.createRoom(eventsWithRoomIdAndAuthToken)
