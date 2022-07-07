@@ -3,7 +3,7 @@ import { v4 } from 'uuid'
 import { FindConditions, getRepository } from 'typeorm'
 import {
   EndUserBuilder,
-  LessonMaterialBuilder,
+  ContentBuilder,
   UserBuilder,
   UserContentScoreBuilder,
 } from '../../builders'
@@ -20,13 +20,11 @@ import EndUser from '../../entities/endUser'
 import { FileType } from '../../../src/db/cms/enums'
 import { TeacherScore } from '../../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../../src/db/assessments/connectToAssessmentDatabase'
-import { TestTitle } from '../../utils/testTitles'
 import { ErrorMessage } from '../../../src/helpers/errorMessages'
 import ContentKey from '../../../src/helpers/contentKey'
 import Substitute from '@fluffy-spoon/substitute'
 import { CmsContentProvider } from '../../../src/providers/cmsContentProvider'
 import { Container as MutableContainer } from 'typedi'
-import { throwExpression } from '../../../src/helpers/throwExpression'
 import DiKeys from '../../../src/initialization/diKeys'
 import { InMemoryCache } from '../../../src/cache'
 
@@ -43,8 +41,8 @@ describe('teacherScoreResolver.setScore', function () {
   const teacherScoreRepo = () =>
     getRepository(TeacherScore, ASSESSMENTS_CONNECTION_NAME)
 
-  context(TestTitle.Authentication.context, () => {
-    it(TestTitle.Authentication.throwsError, async () => {
+  context('end user is unauthenticated', () => {
+    it('throws authentication error', async () => {
       // Arrange
       await dbConnect()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
@@ -54,7 +52,7 @@ describe('teacherScoreResolver.setScore', function () {
       const student = new UserBuilder().build()
 
       const roomId = 'room1'
-      const lessonMaterial = new LessonMaterialBuilder().build()
+      const lessonMaterial = new ContentBuilder().build()
 
       // Act
       const fn = () =>
@@ -86,7 +84,7 @@ describe('teacherScoreResolver.setScore', function () {
 
         const roomId = 'room1'
         const providedRoomId = 'room2'
-        const lessonMaterial = new LessonMaterialBuilder().build()
+        const lessonMaterial = new ContentBuilder().build()
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
         cmsContentProvider
@@ -137,7 +135,7 @@ describe('teacherScoreResolver.setScore', function () {
         const student = new UserBuilder().build()
 
         const roomId = 'room1'
-        const lessonMaterial = new LessonMaterialBuilder().build()
+        const lessonMaterial = new ContentBuilder().build()
         const providedStudentId = someOtherStudent.userId
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
@@ -188,8 +186,8 @@ describe('teacherScoreResolver.setScore', function () {
         const student = new UserBuilder().build()
 
         const roomId = 'room1'
-        const lessonMaterial = new LessonMaterialBuilder().build()
-        const someOtherLessonMaterial = new LessonMaterialBuilder().build()
+        const lessonMaterial = new ContentBuilder().build()
+        const someOtherLessonMaterial = new ContentBuilder().build()
         const providedContentId = someOtherLessonMaterial.contentId
 
         const cmsContentProvider = Substitute.for<CmsContentProvider>()
@@ -289,7 +287,7 @@ describe('teacherScoreResolver.setScore', function () {
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
 
-      lessonMaterial = new LessonMaterialBuilder().build()
+      lessonMaterial = new ContentBuilder().build()
       const userContentScore = await new UserContentScoreBuilder()
         .withroomId(roomId)
         .withStudentId(student.userId)
@@ -397,9 +395,7 @@ describe('teacherScoreResolver.setScore', function () {
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
 
-      lessonMaterial = new LessonMaterialBuilder()
-        .withSubcontentId(v4())
-        .build()
+      lessonMaterial = new ContentBuilder().withSubcontentId(v4()).build()
       contentKey = ContentKey.construct(
         lessonMaterial.contentId,
         lessonMaterial.subcontentId,

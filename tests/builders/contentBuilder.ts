@@ -1,5 +1,6 @@
 import { v4 } from 'uuid'
 import { Content } from '../../src/db/cms/entities/content'
+import { FileType } from '../../src/db/cms/enums'
 import { Mutable } from '../utils/mutable'
 
 export default class ContentBuilder {
@@ -10,6 +11,17 @@ export default class ContentBuilder {
   protected data?: JSON
   private publishStatus = 'published'
   protected isDataDefined = true
+  private rawSourceId = v4()
+  private sourceId? = v4()
+  private fileType = FileType.H5P
+  private contentType: string | undefined
+  private readonly sourceMap = new Map([
+    [FileType.H5P, this.rawSourceId],
+    [FileType.Image, `assets-${this.rawSourceId}.gif`],
+    [FileType.Video, `assets-${this.rawSourceId}.mp4`],
+    [FileType.Document, `assets-${this.rawSourceId}.pdf`],
+    [FileType.Audio, `assets-${this.rawSourceId}.mp3`],
+  ])
 
   public withContentId(value: string): this {
     this.contentId = value
@@ -46,6 +58,23 @@ export default class ContentBuilder {
     return this
   }
 
+  public withSource(fileType: FileType, id?: string): this {
+    this.fileType = fileType
+    this.sourceId = id ?? this.sourceMap.get(fileType)
+    return this
+  }
+
+  public withUndefinedH5pId(): this {
+    this.fileType = FileType.H5P
+    this.sourceId = undefined
+    return this
+  }
+
+  public withContentType(value?: string): this {
+    this.contentType = value
+    return this
+  }
+
   public build(): Content {
     const entity = new Content(
       this.contentId,
@@ -56,6 +85,15 @@ export default class ContentBuilder {
     const mutableEntity: Mutable<Content> = entity
     mutableEntity.subcontentId = this.subcontentId
     mutableEntity.parentId = this.parentId
+    entity.type = this.contentType
+    if (this.isDataDefined) {
+      const data: unknown = {
+        source: this.sourceId,
+        file_type: this.fileType.valueOf(),
+        input_source: 1,
+      }
+      entity['populateH5pId'](data as JSON)
+    }
     return entity
   }
 }

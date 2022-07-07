@@ -5,7 +5,7 @@ import CustomizedContentProvider from '../../../src/providers/customizedContentP
 import { CmsContentProvider } from '../../../src/providers/cmsContentProvider'
 import TeacherScoreResolver from '../../../src/resolvers/teacherScore'
 import {
-  LessonMaterialBuilder,
+  ContentBuilder,
   TeacherScoreBuilder,
   UserContentScoreBuilder,
 } from '../../builders'
@@ -13,7 +13,7 @@ import {
 describe('teacherScoreResolver.content', () => {
   context('contentName and contentType are undefined', () => {
     it('returns expected content', async () => {
-      const content = new LessonMaterialBuilder().build()
+      const content = new ContentBuilder().build()
       const userContentScore = new UserContentScoreBuilder()
         .withContentName(undefined)
         .withContentType(undefined)

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
-import { LessonMaterialBuilder, UserContentScoreBuilder } from '../../builders'
+import { ContentBuilder, UserContentScoreBuilder } from '../../builders'
 import { RoomScoresTemplateProvider } from '../../../src/providers/roomScoresTemplateProvider'
 import ContentKey from '../../../src/helpers/contentKey'
 import { FileType } from '../../../src/db/cms/enums'
@@ -39,7 +39,7 @@ describe('roomScoresTemplateProvider', () => {
             .withStudentId(userId)
             .withContentParentId(h5pSub1)
             .build()
-          const material = new LessonMaterialBuilder()
+          const material = new ContentBuilder()
             .withSource(FileType.H5P, h5pRoot)
             .build()
           // TODO: This needs to be fixed to reflect the above content scores.

@@ -1,7 +1,6 @@
 import { getRepository } from 'typeorm'
 
 import expect from '../../utils/chaiAsPromisedSetup'
-import { TestTitle } from '../../utils/testTitles'
 import '../../utils/globalIntegrationTestHooks'
 
 import { dbConnect, dbDisconnect } from '../../utils/globalIntegrationTestHooks'
@@ -14,8 +13,8 @@ import ClassCompletion from '../../../src/resolvers/classCompletion'
 describe('classCompletionResolver.completionPercentages', () => {
   const roomRepo = () => getRepository(Room, ASSESSMENTS_CONNECTION_NAME)
 
-  context(TestTitle.Authentication.context, () => {
-    it(TestTitle.Authentication.throwsError, async () => {
+  context('end user is unauthenticated', () => {
+    it('throws authentication error', async () => {
       // Arrange
       await dbConnect()
       const room = await new RoomBuilder().buildAndPersist()

@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { RoomMaterialsProvider } from '../../../src/providers/roomMaterialsProvider'
-import { LessonMaterialBuilder } from '../../builders'
+import { ContentBuilder } from '../../builders'
 import { CmsContentProvider } from '../../../src/providers/cmsContentProvider'
 import { CmsScheduleProvider } from '../../../src/providers/cmsScheduleProvider'
 import { H5pContentProvider } from '../../../src/providers/h5pContentProvider'
@@ -17,7 +17,7 @@ describe('roomMaterialsProvider', () => {
       const h5pType = 'Flashcards'
       const authenticationToken = undefined
 
-      const material = new LessonMaterialBuilder()
+      const material = new ContentBuilder()
         .withSource(FileType.H5P, h5pId)
         .build()
       const cmsContentProvider = Substitute.for<CmsContentProvider>()

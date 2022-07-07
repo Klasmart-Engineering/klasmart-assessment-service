@@ -20,8 +20,6 @@ import {
 } from '../../queriesAndMutations/gqlInterfaces'
 import { FindConditions, getRepository } from 'typeorm'
 import { ErrorMessage } from '../../../src/helpers/errorMessages'
-import { TestTitle } from '../../utils/testTitles'
-import { v4 } from 'uuid'
 import { TeacherComment } from '../../../src/db/assessments/entities'
 import { ASSESSMENTS_CONNECTION_NAME } from '../../../src/db/assessments/connectToAssessmentDatabase'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
@@ -44,8 +42,8 @@ describe('teacherCommentResolver.setComment', () => {
   const teacherCommentRepo = () =>
     getRepository(TeacherComment, ASSESSMENTS_CONNECTION_NAME)
 
-  context(TestTitle.Authentication.context, () => {
-    it(TestTitle.Authentication.throwsError, async () => {
+  context('end user is unauthenticated', () => {
+    it('throws authentication error', async () => {
       // Arrange
       await dbConnect()
       MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
@@ -75,39 +73,42 @@ describe('teacherCommentResolver.setComment', () => {
     after(async () => await dbDisconnect())
   })
 
-  context(TestTitle.ScheduleNotFound.context, () => {
-    it(TestTitle.ScheduleNotFound.throwsError, async () => {
-      // Arrange
-      await dbConnect()
-      const comment = 'great job!'
-      const room = await new RoomBuilder().buildAndPersist()
-      const endUser = new EndUserBuilder().authenticate().build()
-      const student = new UserBuilder().build()
+  context(
+    'no schedule in the cms database corresponding to the provided room id',
+    () => {
+      it('throws "schedule not found" error', async () => {
+        // Arrange
+        await dbConnect()
+        const comment = 'great job!'
+        const room = await new RoomBuilder().buildAndPersist()
+        const endUser = new EndUserBuilder().authenticate().build()
+        const student = new UserBuilder().build()
 
-      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider
-        .getSchedule(room.roomId, endUser.token)
-        .rejects(ErrorMessage.scheduleNotFound(room.roomId))
-      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider
+          .getSchedule(room.roomId, endUser.token)
+          .rejects(ErrorMessage.scheduleNotFound(room.roomId))
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
-      // Act
-      const fn = () =>
-        setTeacherCommentMutation(
-          room.roomId,
-          student.userId,
-          comment,
-          endUser,
-          false,
+        // Act
+        const fn = () =>
+          setTeacherCommentMutation(
+            room.roomId,
+            student.userId,
+            comment,
+            endUser,
+            false,
+          )
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          ErrorMessage.scheduleNotFound(room.roomId),
         )
+      })
 
-      // Assert
-      await expect(fn()).to.be.rejectedWith(
-        ErrorMessage.scheduleNotFound(room.roomId),
-      )
-    })
-
-    after(async () => await dbDisconnect())
-  })
+      after(async () => await dbDisconnect())
+    },
+  )
 
   context('no existing comment', () => {
     const roomId = 'room1'

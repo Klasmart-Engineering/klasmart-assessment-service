@@ -7,8 +7,6 @@ import DiKeys from '../../initialization/diKeys'
 export const getLessonMaterialsKey = (key: string) =>
   `getLessonMaterials:${key}`
 export const getLessonMaterialKey = (key: string) => `getLessonMaterial:${key}`
-export const getLessonMaterialsWithSourceIdKey = (key: string) =>
-  `getLessonMaterialsWithSourceId:${key}`
 
 @Service()
 export class CachedCmsContentApi {

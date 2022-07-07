@@ -1,12 +1,12 @@
 import 'reflect-metadata'
 import { expect } from 'chai'
-import { LessonMaterialBuilder } from '../../builders'
+import { ContentBuilder } from '../../builders'
 
 describe('contentResolver', () => {
   describe('fileType', () => {
     context('content.fileType is undefined', () => {
       it('', async () => {
-        const sut = new LessonMaterialBuilder().withUndefinedData().build()
+        const sut = new ContentBuilder().withUndefinedData().build()
 
         // Act
         const result = sut.fileType
@@ -20,7 +20,7 @@ describe('contentResolver', () => {
   describe('type', () => {
     context('content.type and content.fileType are undefined', () => {
       it('', async () => {
-        const sut = new LessonMaterialBuilder().withUndefinedData().build()
+        const sut = new ContentBuilder().withUndefinedData().build()
 
         // Act
         const result = sut.type

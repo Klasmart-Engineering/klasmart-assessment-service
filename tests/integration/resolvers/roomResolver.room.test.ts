@@ -4,7 +4,6 @@ import { Container as MutableContainer } from 'typedi'
 
 import expect from '../../utils/chaiAsPromisedSetup'
 import { ErrorMessage } from '../../../src/helpers/errorMessages'
-import { TestTitle } from '../../utils/testTitles'
 import { XApiRecord } from '../../../src/db/xapi'
 import '../../utils/globalIntegrationTestHooks'
 import EndUser from '../../entities/endUser'
@@ -33,7 +32,7 @@ import {
 import {
   AnswerBuilder,
   EndUserBuilder,
-  LessonMaterialBuilder,
+  ContentBuilder,
   RawAnswerBuilder,
   RoomBuilder,
   ScheduleBuilder,
@@ -83,8 +82,8 @@ describe('roomResolver.Room', () => {
   const teacherCommentRepo = () =>
     getRepository(TeacherComment, ASSESSMENTS_CONNECTION_NAME)
 
-  context(TestTitle.Authentication.context, () => {
-    it(TestTitle.Authentication.throwsError, async () => {
+  context('end user is unauthenticated', () => {
+    it('throws authentication error', async () => {
       // Arrange
       await dbConnect()
       createSubstitutesToExpectedInjectableServices()
@@ -105,7 +104,7 @@ describe('roomResolver.Room', () => {
   })
 
   context('auth token expired', () => {
-    it(TestTitle.Authentication.throwsError, async () => {
+    it('throws authentication error', async () => {
       // Arrange
       await dbConnect()
       createSubstitutesToExpectedInjectableServices()
@@ -124,9 +123,10 @@ describe('roomResolver.Room', () => {
   })
 
   context(
-    'authorization cookies are defined, ' + TestTitle.ScheduleNotFound.context,
+    'authorization cookies are defined, ' +
+      'no schedule in the cms database corresponding to the provided room id',
     () => {
-      it(TestTitle.ScheduleNotFound.throwsError, async () => {
+      it('throws "schedule not found" error', async () => {
         // Arrange
         await dbConnect()
         MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
@@ -161,39 +161,42 @@ describe('roomResolver.Room', () => {
     },
   )
 
-  context(TestTitle.ScheduleNotFound.context, () => {
-    it(TestTitle.ScheduleNotFound.throwsError, async () => {
-      // Arrange
-      await dbConnect()
-      MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
-      MutableContainer.set(DiKeys.H5pUrl, 'https://h5p.dummyurl.net')
+  context(
+    'no schedule in the cms database corresponding to the provided room id',
+    () => {
+      it('throws "schedule not found" error', async () => {
+        // Arrange
+        await dbConnect()
+        MutableContainer.set(DiKeys.CmsApiUrl, 'https://cms.dummyurl.net')
+        MutableContainer.set(DiKeys.H5pUrl, 'https://h5p.dummyurl.net')
 
-      const roomId = 'room1'
-      const endUser = new EndUserBuilder().authenticate().build()
+        const roomId = 'room1'
+        const endUser = new EndUserBuilder().authenticate().build()
 
-      const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
-      cmsScheduleProvider
-        .getSchedule(roomId, endUser.token)
-        .rejects(ErrorMessage.scheduleNotFound(roomId))
-      MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
+        const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
+        cmsScheduleProvider
+          .getSchedule(roomId, endUser.token)
+          .rejects(ErrorMessage.scheduleNotFound(roomId))
+        MutableContainer.set(CmsScheduleProvider, cmsScheduleProvider)
 
-      const cmsContentProvider = Substitute.for<CmsContentProvider>()
-      cmsContentProvider
-        .getLessonMaterials(roomId, endUser.token)
-        .rejects(ErrorMessage.scheduleNotFound(roomId))
-      MutableContainer.set(CmsContentProvider, cmsContentProvider)
+        const cmsContentProvider = Substitute.for<CmsContentProvider>()
+        cmsContentProvider
+          .getLessonMaterials(roomId, endUser.token)
+          .rejects(ErrorMessage.scheduleNotFound(roomId))
+        MutableContainer.set(CmsContentProvider, cmsContentProvider)
 
-      // Act
-      const fn = () => roomQuery(roomId, endUser, false)
+        // Act
+        const fn = () => roomQuery(roomId, endUser, false)
 
-      // Assert
-      await expect(fn()).to.be.rejectedWith(
-        ErrorMessage.scheduleNotFound(roomId),
-      )
-    })
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          ErrorMessage.scheduleNotFound(roomId),
+        )
+      })
 
-    after(async () => await dbDisconnect())
-  })
+      after(async () => await dbDisconnect())
+    },
+  )
 
   context(
     '1 student, 1 xapi "score" event, no existing UserContentScores, no existing answers',
@@ -216,7 +219,7 @@ describe('roomResolver.Room', () => {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
 
-        lessonMaterial = new LessonMaterialBuilder()
+        lessonMaterial = new ContentBuilder()
           .withSource(FileType.H5P, h5pId)
           .withName(contentName)
           .build()
@@ -436,7 +439,7 @@ describe('roomResolver.Room', () => {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
 
-        lessonMaterial = new LessonMaterialBuilder()
+        lessonMaterial = new ContentBuilder()
           .withSource(FileType.H5P, h5pId)
           .withName(contentName)
           .build()
@@ -676,7 +679,7 @@ describe('roomResolver.Room', () => {
         endUser = new EndUserBuilder().authenticate().build()
         student = new UserBuilder().build()
 
-        const materialBuilder = new LessonMaterialBuilder()
+        const materialBuilder = new ContentBuilder()
           .withSource(FileType.H5P, h5pId)
           .withName(contentName)
         lessonMaterial = materialBuilder.build()
@@ -1105,7 +1108,7 @@ describe('roomResolver.Room', () => {
       student1 = new UserBuilder().build()
       student2 = new UserBuilder().build()
 
-      lessonMaterial = new LessonMaterialBuilder().build()
+      lessonMaterial = new ContentBuilder().build()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
       xapiRecord = new XApiRecordBuilder()
         .withUserId(student2.userId)
@@ -1371,9 +1374,7 @@ describe('roomResolver.Room', () => {
       endUser = new EndUserBuilder().authenticate().build()
       student = new UserBuilder().build()
 
-      lessonMaterial = new LessonMaterialBuilder()
-        .withSource(FileType.Audio)
-        .build()
+      lessonMaterial = new ContentBuilder().withSource(FileType.Audio).build()
       const schedule = new ScheduleBuilder().withRoomId(roomId).build()
       const cmsScheduleProvider = Substitute.for<CmsScheduleProvider>()
       cmsScheduleProvider.getSchedule(roomId, endUser.token).resolves(schedule)
@@ -1581,7 +1582,7 @@ describe('roomResolver.Room', () => {
           )
         MutableContainer.set(H5pContentProvider, h5pContentProvider)
 
-        lessonMaterial = new LessonMaterialBuilder()
+        lessonMaterial = new ContentBuilder()
           .withSource(FileType.H5P, h5pId)
           .withName(contentName)
           .build()

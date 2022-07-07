@@ -12,7 +12,6 @@ export default class ContentKey {
   } {
     const ids = contentKey.split('|', 2)
     const contentId = ids[0]
-    // TODO: Maybe add a warning if there are more than 2 parts.
     const subcontentId = ids.length >= 2 ? ids[1] : undefined
     return { contentId, subcontentId }
   }

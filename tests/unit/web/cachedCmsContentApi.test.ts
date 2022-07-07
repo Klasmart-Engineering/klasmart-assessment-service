@@ -10,10 +10,8 @@ import {
   CachedCmsContentApi,
   getLessonMaterialKey,
   getLessonMaterialsKey,
-  getLessonMaterialsWithSourceIdKey,
 } from '../../../src/web/cms/cachedCmsContentApi'
 
-// TODO: Also add tests for the other 2 CmsContentApi methods.
 describe('cachedCmsContentApi', () => {
   describe('getLessonMaterials', () => {
     context('1 content requested which exists; not cached', () => {
