@@ -87,7 +87,7 @@
     "@kl-engineering/kidsloop-token-validation": "^1.6.1",
     "@newrelic/apollo-server-plugin": "^1.0.2",
     "apollo-server-express": "^3.5.0",
-    "class-validator": "^0.13.1",
+    "class-validator": "^0.14.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
